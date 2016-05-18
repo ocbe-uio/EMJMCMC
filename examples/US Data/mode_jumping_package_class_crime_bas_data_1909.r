@@ -111,8 +111,8 @@ mySearch$p.add = array(data = 0.5,dim = 15)
 mySearch$p.add = array(data = 0.5,dim = 15)
 
 # play around with forward and backward selections
-fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
-bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+#fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+#bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
 
 # proceed with the experiment
 
@@ -230,6 +230,7 @@ rmse.avg.rm <-sqrt(rowMeans(rmse))
 bias.avg.mc<-rowMeans(bias.mc)
 rmse.avg.mc <-sqrt(rowMeans(rmse.mc))
 
+# print the results
 
 print("pi biases rm")
 sprintf("%.10f",bias.avg.rm[ordering$ix]*100)
@@ -241,60 +242,7 @@ sprintf("%.10f",bias.avg.mc[ordering$ix]*100)
 print("pi rmse mc")
 sprintf("%.10f",rmse.avg.mc[ordering$ix]*100)
 
-# #
+# View the results
+
 View((cbind(bias.avg.rm[ordering$ix],rmse.avg.rm[ordering$ix],bias.avg.mc[ordering$ix],rmse.avg.mc[ordering$ix])*100))
 
-
-# indexs<-(sort.int(cols.b, index.return=TRUE))
-# plot(y = inits[indexs$ix], x = 1:1000,col = 1, type = "p")
-# points(cols.b[indexs$ix]*10000,col = 4)
-# points(cols.r[indexs$ix]*50000,col = 5)
-# points(cols.r[indexs$ix]*50000+cols.b[indexs$ix]*10000,col = 3)
-# points(freqs.p[1,indexs$ix]*30,col= 6)
-# points(freqs.p[2,indexs$ix]*30,col= 7)
-# points(freqs.p[3,indexs$ix]*30,col= 8)
-# points(freqs.p[4,indexs$ix]*30,col= 2)
-#
-
-#View((proceeded$p.post-truth)[c(12,14,10,8,6,7,13,11,15,5,9,2,1,3,4)])
-#View((proceeded$p.post^2+truth^2-2*proceeded$p.post*truth)[c(12,14,10,8,6,7,13,11,15,5,9,2,1,3,4)])
-# cor(cols.b,cols.r)
-# cor(cols.b,inits)
-# cor(cols.r,inits)
-cor(masses,freqs.p[1,1:243])
-cor(masses,freqs.p[2,1:243])
-cor(masses,freqs.p[3,1:243])
-cor(masses,freqs.p[4,1:243])
-cor(masses,freqs.p[5,1:243])
-
-#View(statistics1[which(!is.na(statistics1[,1]))])
-
-# build a package
-#package.skeleton(name ="EMJMCMC", code_files =paste(workdir,"mode_jumping_package_class.r",sep = "",collapse = ""))
-freqs.p[,,order.deviat$ix[1:Nlim]]
-freqs[,order.deviat$ix[1:Nlim]]
-iterats[1,order.deviat$ix[1:Nlim]]
-iterats[2,order.deviat$ix[1:Nlim]]
-inits[order.deviat$ix[1:Nlim]]
-
-statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
-statistics <- describe(statistics1)
-mySearch$g.results[4,1]<-0
-mySearch$g.results[4,2]<-0
-mySearch$p.add = array(data = 0.5,dim = 15)
-
-
-mySearch$max.N.glob=as.integer(4)
-mySearch$min.N.glob=as.integer(4)
-mySearch$max.N=as.integer(2)
-mySearch$min.N=as.integer(2)
-mySearch$recalc.margin = as.integer(400)
-distrib_of_neighbourhoods=freqs.p[,,order.deviat$ix[1]]
-distrib_of_proposals = freqs[,order.deviat$ix[1]]
-initsol = inits[order.deviat$ix[1]]
-resm<-mySearch$modejumping_mcmc(list(varcur=mySearch$dectobit(inits[order.deviat$ix[1]]),statid=5, distrib_of_proposals = distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.0001, trit = 3273, trest = 3272 , burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
-mySearch$g.results[4,2]
-mySearch$g.results[4,1]
-resm$bayes.results$s.mass/truth.prob
-
-mean(iterats[2,order.deviat$ix[1:Nlim]])
