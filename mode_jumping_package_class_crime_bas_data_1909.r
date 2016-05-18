@@ -49,43 +49,8 @@ mySearch = EMJMCMC2016()
 mySearch$estimator = estimate.bas.lm
 mySearch$estimator.args = list(data = data.example,prior = 3, g = 47 ,n=47)
 
-#play around with various methods in order to get used to them and see how they work
 
-system.time(
-  zzz<-mySearch$learnlocalMCMC(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-10000,waiccur =10000,statid=5,varold=rep(0,length(fparam.example)),reverse=TRUE))
-)
-
-
-system.time(
-  sss<-mySearch$learnlocalSA(list(varcur=rbinom(n = length(fparam.example),size = 1,prob = 0.5),mlikcur=-Inf,waiccur =Inf,statid=5,varold=rep(0,length(fparam.example)),switch.type=5,objcur = -Inf,objold = -Inf, sa2 = FALSE ,reverse=FALSE))
-)
-
-mySearch$M.nd = as.integer(1000)
-
-system.time(
-  ggg<-mySearch$learnlocalND(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,statid=6,varold=rep(1,length(fparam.example)),switch.type=6,objcur = -Inf,objold = -Inf, reverse=TRUE))
-)
-system.time(
-  ggg<-mySearch$learnlocalND(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,statid=6,varold=rep(1,length(fparam.example)),switch.type=6,objcur = -Inf,objold = -Inf, reverse=FALSE))
-)
-
-system.time(
-  mmm<-mySearch$modejumping_mcmc(list(varcur=rbinom(n = length(fparam.example),size = 1,prob = 0.5),statid=5, distrib_of_proposals = c(35,35,35,35,100),distrib_of_neighbourhoods=array(data = 0.5,dim = c(5,3)), eps = 0.0001, trit = 550, burnin = 50, max.time = 30, maxit = 550, print.freq =1))
-)
-
-system.time(
-  fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE, statid=5))
-)
-
-system.time(
-  bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=5))
-)
-
-system.time(
-  gamba<-mySearch$forw_backw_walk(list(steps=10,p1=0.5,reverse = TRUE))
-)
-
-# this one MUST be completed before moving to the experiments
+# carry out full enumeration to discover the truth
 system.time(
   FFF<-mySearch$full_selection(list(statid=6, totalit =32769, ub = 36,mlikcur=-Inf,waiccur =100000))
 )
