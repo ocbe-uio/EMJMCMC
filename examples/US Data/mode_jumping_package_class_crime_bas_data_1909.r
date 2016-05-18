@@ -73,7 +73,7 @@ sprintf("%.10f",truth[ordering$ix])
 iddx <- sort(statistics1[,1],decreasing = T,index.return=T)$ix
 statistics1[as.numeric(iddx[2000:2^15]),1:15]<-NA
 
-# once full search is completed, get the best performance for the experiment
+# get the "unbeatible" results
 ppp.best<-mySearch$post_proceed_results(statistics1 = statistics1)
 best = ppp.best$p.post # make sure it is equal to Truth column from the article
 bset.m = ppp.best$m.post

@@ -28,18 +28,11 @@ require(stats)
 workdir<-"/results"
 
 #prepare data
-simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-x.txt"),sep = ",")
-simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-y.txt"))
+simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Simulated%20Data%20%28Example%201%29/simcen-x.txt"))
+simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Simulated%20Data%20%28Example%201%29/simcen-y.txt"))
 data.example <- cbind(simy,simx)
 names(data.example)[1]="Y"
 
-#define your working directory
-workdir<-"/mn/anatu/ansatte-u3/aliaksah/Desktop/Untitled Folder/"
-#prepare data
-simx <- read.table(paste(workdir,"simcen-x.txt",sep = "",collapse = ""))
-simy <- read.table(paste(workdir,"simcen-y.txt",sep = "",collapse = ""))
-data.example <- cbind(simy,simx)
-names(data.example)[1]="Y"
 
 #fparam <- c("Const",colnames(data)[-1])
 fparam.example <- colnames(data.example)[-1]
@@ -58,43 +51,7 @@ mySearch$estimator = estimate.bas.lm
 mySearch$estimator.args = list(data = data.example,prior = 3, g = 100 ,n=100)
 
 
-#play around with various methods in order to get used to them and see how they work
-
-system.time(
-  zzz<-mySearch$learnlocalMCMC(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-10000,waiccur =10000,statid=5,varold=rep(0,length(fparam.example)),reverse=TRUE))
-)
-
-
-system.time(
-  sss<-mySearch$learnlocalSA(list(varcur=rbinom(n = length(fparam.example),size = 1,prob = 0.5),mlikcur=-Inf,waiccur =Inf,statid=5,varold=rep(0,length(fparam.example)),switch.type=5,objcur = -Inf,objold = -Inf, sa2 = FALSE ,reverse=FALSE))
-)
-
-mySearch$M.nd = as.integer(1000)
-
-system.time(
-  ggg<-mySearch$learnlocalND(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,statid=6,varold=rep(1,length(fparam.example)),switch.type=6,objcur = -Inf,objold = -Inf, reverse=TRUE))
-)
-system.time(
-  ggg<-mySearch$learnlocalND(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,statid=6,varold=rep(1,length(fparam.example)),switch.type=6,objcur = -Inf,objold = -Inf, reverse=FALSE))
-)
-
-system.time(
-  mmm<-mySearch$modejumping_mcmc(list(varcur=rbinom(n = length(fparam.example),size = 1,prob = 0.5),statid=5, distrib_of_proposals = c(35,35,35,35,100),distrib_of_neighbourhoods=array(data = 0.5,dim = c(5,3)), eps = 0.0001, trit = 550, burnin = 50, max.time = 30, maxit = 550, print.freq =1))
-)
-
-system.time(
-  fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE, statid=5))
-)
-
-system.time(
-  bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=5))
-)
-
-system.time(
-  gamba<-mySearch$forw_backw_walk(list(steps=10,p1=0.5,reverse = TRUE))
-)
-
-# this one MUST be completed before moving to the experiments
+# carry out full enumeration
 system.time(
   FFF<-mySearch$full_selection(list(statid=6, totalit =32769, ub = 100,mlikcur=-Inf,waiccur =100000))
 )
@@ -115,12 +72,33 @@ fake500 <- sum(exp(x = sort(statistics1[,1],decreasing = T)[1:700]),na.rm = TRUE
 print("pi truth")
 sprintf("%.10f",truth[ordering$ix])
 
+
+#estimate best performance possible
+iddx <- sort(statistics1[,1],decreasing = T,index.return=T)$ix
+statistics1[as.numeric(iddx[1907:2^15]),1:15]<-NA
+
+# get the "unbeatible" results
+ppp.best<-mySearch$post_proceed_results(statistics1 = statistics1)
+best = ppp.best$p.post # make sure it is equal to Truth column from the article
+bset.m = ppp.best$m.post
+best.prob = ppp.best$s.mass/truth.prob
+print("pi best")
+sprintf("%.10f",best[ordering$ix])
+
+
+best.bias.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
+best.rmse.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
+
+best.bias<- best - truth
+best.rmse<- abs(best - truth)
+# view results
+View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
+
 # vecbuf<-vect
 # freqs.buf<- freqs
 # freqs.p.buf <- freqs.p
 
 #reproduce the 1st experiment as in BAS article
-
 
 mySearch$switch.type=as.integer(5)
 mySearch$switch.type.glob=as.integer(1)
@@ -131,55 +109,14 @@ mySearch$min.N=as.integer(5)
 mySearch$recalc.margin = as.integer(2^15)
 mySearch$max.cpu=as.integer(4)
 mySearch$p.add = array(data = 0.5,dim = 15)
-mySearch$printable.opt = T
+#mySearch$printable.opt = T
 mySearch$p.add = array(data = 0.5,dim = 15)
-fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
-bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
-
-
-cor(data.example)[1,]
-
-resss<-0
-masss<-0
-mmm<-0
-
-statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
-statistics <- describe(statistics1)
-mySearch$g.results[4,1]<-0
-mySearch$g.results[4,2]<-0
-distrib_of_neighbourhoods=array(data = 2,dim = c(5,7))
-distrib_of_neighbourhoods[,1]<-8
-distrib_of_neighbourhoods[,5]<-5
-distrib_of_neighbourhoods[,7]<-5
-
-while(mmm<9900)
-{
-
-  initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
-  mySearch$p.add = array(data = 0.5,dim = 15)
-  resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals = c(0,0,50,0,5500),distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.0001, trit = 3200, trest = 32000 , burnin = 30, max.time = 30, maxit = 100000, print.freq =5))
-  resss<-c(resss,mySearch$g.results[4,1])
-  mySearch$g.results[4,2]
-  mySearch$g.results[4,1]
-  resm$bayes.results$s.mass/truth.prob
-  mmm<-mySearch$post_proceed_results(statistics1 = statistics1)$s.mass/truth.prob*10000
-  masss<-c(masss,mmm)
-  plot(resss,ylim = c(0,20000),type = "l", main = "EMJMCMC", ylab = "iterations, mass x 10^3",xlab = "test points (every 50 iterations of EMJCMCMC)" )
-  lines(masss,col = 3)
-  #   set.seed(length(resss)*20000)
-  #   mySearch$seed=as.integer(runif(n = 1,min = length(resss),max = length(resss)*20000))
-  #   mySearch$forw_backw_walk(list(steps=2,p1=0.5,reverse = FALSE))
-  #   resss<-c(resss,mySearch$g.results[4,2])
-  #   mmm<-mySearch$post_proceed_results(statistics1 = statistics1)$s.mass/truth.prob*10000
-  #   masss<-c(masss,mmm)
-  #   plot(resss,ylim = c(0,10000))
-  #   points(masss,col = 4)
-  #   set.seed(length(resss)*10000)
-}
+#fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+#bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
 
 mySearch$switch.type=as.integer(1)
 mySearch$switch.type.glob=as.integer(1)
-mySearch$printable.opt = TRUE
+#mySearch$printable.opt = TRUE
 
 
 mySearch$max.N.glob=as.integer(4)
@@ -194,7 +131,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
                                            6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5)))
 distrib_of_neighbourhoods[7]=distrib_of_neighbourhoods[7]/50
-Niter <- 5
+Niter <- 100
 thining<-1
 system.time({
 
@@ -303,60 +240,6 @@ sprintf("%.10f",bias.avg.mc[ordering$ix]*100)
 print("pi rmse mc")
 sprintf("%.10f",rmse.avg.mc[ordering$ix]*100)
 
-# #
+# view the final results
 View((cbind(bias.avg.rm[ordering$ix],rmse.avg.rm[ordering$ix],bias.avg.mc[ordering$ix],rmse.avg.mc[ordering$ix])*100))
 
-
-# indexs<-(sort.int(cols.b, index.return=TRUE))
-# plot(y = inits[indexs$ix], x = 1:1000,col = 1, type = "p")
-# points(cols.b[indexs$ix]*10000,col = 4)
-# points(cols.r[indexs$ix]*50000,col = 5)
-# points(cols.r[indexs$ix]*50000+cols.b[indexs$ix]*10000,col = 3)
-# points(freqs.p[1,indexs$ix]*30,col= 6)
-# points(freqs.p[2,indexs$ix]*30,col= 7)
-# points(freqs.p[3,indexs$ix]*30,col= 8)
-# points(freqs.p[4,indexs$ix]*30,col= 2)
-#
-
-#View((proceeded$p.post-truth)[c(12,14,10,8,6,7,13,11,15,5,9,2,1,3,4)])
-#View((proceeded$p.post^2+truth^2-2*proceeded$p.post*truth)[c(12,14,10,8,6,7,13,11,15,5,9,2,1,3,4)])
-# cor(cols.b,cols.r)
-# cor(cols.b,inits)
-# cor(cols.r,inits)
-cor(masses,freqs.p[1,1:243])
-cor(masses,freqs.p[2,1:243])
-cor(masses,freqs.p[3,1:243])
-cor(masses,freqs.p[4,1:243])
-cor(masses,freqs.p[5,1:243])
-
-#View(statistics1[which(!is.na(statistics1[,1]))])
-
-# build a package
-#package.skeleton(name ="EMJMCMC", code_files =paste(workdir,"mode_jumping_package_class.r",sep = "",collapse = ""))
-freqs.p[,,order.deviat$ix[1:Nlim]]
-freqs[,order.deviat$ix[1:Nlim]]
-iterats[1,order.deviat$ix[1:Nlim]]
-iterats[2,order.deviat$ix[1:Nlim]]
-inits[order.deviat$ix[1:Nlim]]
-
-statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
-statistics <- describe(statistics1)
-mySearch$g.results[4,1]<-0
-mySearch$g.results[4,2]<-0
-mySearch$p.add = array(data = 0.5,dim = 15)
-
-
-mySearch$max.N.glob=as.integer(4)
-mySearch$min.N.glob=as.integer(4)
-mySearch$max.N=as.integer(2)
-mySearch$min.N=as.integer(2)
-mySearch$recalc.margin = as.integer(400)
-distrib_of_neighbourhoods=freqs.p[,,order.deviat$ix[1]]
-distrib_of_proposals = freqs[,order.deviat$ix[1]]
-initsol = inits[order.deviat$ix[1]]
-resm<-mySearch$modejumping_mcmc(list(varcur=mySearch$dectobit(inits[order.deviat$ix[1]]),statid=5, distrib_of_proposals = distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.0001, trit = 3273, trest = 3272 , burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
-mySearch$g.results[4,2]
-mySearch$g.results[4,1]
-resm$bayes.results$s.mass/truth.prob
-
-mean(iterats[2,order.deviat$ix[1:Nlim]])
