@@ -28,8 +28,8 @@ require(stats)
 workdir<-"/results"
 
 #prepare data
-simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/simcen-x1.txt"),sep = ",")
-simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/simcen-y1.txt"))
+simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-x1.txt"),sep = ",")
+simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-y1.txt"))
 data.example <- cbind(simy,simx)
 names(data.example)[1]="Y"
 
