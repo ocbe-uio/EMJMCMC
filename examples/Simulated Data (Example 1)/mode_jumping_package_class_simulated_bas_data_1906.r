@@ -164,7 +164,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.8)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals = distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.0001, trit = 32700, trest = 3200 , burnin = 50, max.time = 30, maxit = 100000, print.freq =500))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals = distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.0001, trit = 3200, trest = 3200 , burnin = 50, max.time = 30, maxit = 100000, print.freq =500))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob
