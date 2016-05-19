@@ -25,7 +25,7 @@ library(BAS)
 require(stats)
 
 #define your working directory, where the data files are stored
-workdir<-"/results"
+workdir<-""
 
 #prepare data
 simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-x1.txt"),sep = ",")
@@ -39,6 +39,18 @@ fparam.example <- colnames(data.example)[-1]
 fobserved.example <- colnames(data.example)[1]
 
 
+#dataframe for results; n/b +1 is required for the summary statistics
+statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
+statistics <- describe(statistics1)
+
+#create MySearch object with default parameters
+mySearch = EMJMCMC2016()
+
+
+# load functions as in BAS article by Clyde, Ghosh and Littman to reproduce their first example
+mySearch$estimator = estimate.bas.lm
+mySearch$estimator.args = list(data = data.example,prior = 3, g = 47 ,n=47)
+#mySearch$printable.opt = T enable printable option if required
 
 # carry full enumeration out (might be time consuming)
 system.time(
@@ -47,6 +59,10 @@ system.time(
 # check that all models are enumerated during the full search procedure
 idn<-which(!is.na(statistics1[,1]))
 length(idn)
+
+# visualize results
+mySearch$visualize_results(statistics1, "test",1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
+
 
 # once full search is completed, get the truth for the experiment
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
