@@ -100,7 +100,7 @@ mySearch$double.hashing<-F
 
 #Proceed for the predefined number of iterations
 
-Niter <- 2
+Niter <- 10
 thining<-1
 system.time({
 
@@ -136,7 +136,7 @@ system.time({
     initsol=rbinom(n =  length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=NULL,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000000001, trit = 2^30, trest = 30000, burnin = 100, max.time = 24*60*6, maxit = 2^20, print.freq = 1000
+    resm<-mySearch$modejumping_mcmc(list(varcur=NULL,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000000001, trit = 2^30, trest = 2^20, burnin = 100, max.time = 24*60*6, maxit = 2^20, print.freq = 1000
     ))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
@@ -158,6 +158,8 @@ system.time({
     smilks100000<-sort(mliks,decreasing = T)[1:100000]
     boxplot(smilks100000,xaxt="n",ylab="log(Marginal Likelihood)",xlab="Replicates",horizontal=FALSE,pch=".",cex.lab=1.7,cex.axis=1.5,omd=c(0,0.7,0,0.7))
     smilks100000[1:10]
+
+
     write(mliklist[,i], file = paste("mliks",i,".csv"),
           ncolumns = 1,
           append = FALSE, sep = " ")
@@ -167,6 +169,7 @@ system.time({
     write(vect.mc[,i], file = paste("pp",i,".mc.csv"),
           ncolumns = 1,
           append = FALSE, sep = " ")
+
     remove(hashStat)
     #clear(hashStat)
     #remove(hashStat)
