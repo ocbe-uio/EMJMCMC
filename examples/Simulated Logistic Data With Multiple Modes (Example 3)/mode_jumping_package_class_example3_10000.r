@@ -90,7 +90,7 @@ min(statistics1[,1],na.rm = TRUE)
 max(statistics1[,1],na.rm = TRUE)
 
 # look at the best possible performance
-statistics1[as.numeric(iddx[5001:2^20]),1:15]<-NA
+statistics1[as.numeric(iddx[10001:2^20]),1:15]<-NA
 ppp.best<-mySearch$post_proceed_results(statistics1 = statistics1)
 best = ppp.best$p.post # make sure it is equal to Truth column from the article
 bset.m = ppp.best$m.post
@@ -188,7 +188,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 5000, trest = 100000, burnin = 3, max.time = 30, maxit = 100000, print.freq =1000))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 10000, burnin = 3, max.time = 30, maxit = 100000, print.freq =1000))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob
