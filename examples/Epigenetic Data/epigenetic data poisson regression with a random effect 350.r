@@ -53,9 +53,9 @@ fm4<-do.call(inla, c(args,formula = formula2))
 summary(fm4)
 
 
+
 # use the precalculated results to save time (if available)
-crits<-as.big.matrix(read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/precalculated.csv"),sep = ",")[,1:3])
-crits1<- describe(crits1)
+crits<-as.big.matrix(read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/precalculated.csv"),sep = ",")[,1:3,15])
 Nvars<-mySearch$Nvars
 bittodec<-mySearch$bittodec
 # estimator based on precalculated and saved into crit data
@@ -63,7 +63,7 @@ esimator<-function(formula, crits)
 {
   values <- strsplit(as.character(formula)[3],split = " + ",fixed = T)
   vec<-array(0,dim = Nvars)
-  for(i in 2:(length(values[[1]])-1))
+  for(i in 2:(length(values[[1]])))
   {
     iid <- which(fparam.example == values[[1]][i])
     if(length(iid)>0)
@@ -88,12 +88,15 @@ statistics <- describe(statistics1)
 
 # carry out full enumeration to learn about the truth this one MUST be completed before moving to the experiments
 system.time(
-  FFF<-mySearch$full_selection(list(statid=-1, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =100000))
+  FFF<-mySearch$full_selection(list(statid=6, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =Inf))
 )
 # completed in   7889  for 1048576 models whilst BAS took 6954.101 seonds and thus now advantage of using C versus R is clearly seen as neglectible  (14688.209 user seconds)
 # BAS completed the same job in
 
 # check that all models are enumerated during the full search procedure
+
+exp(max((statistics1[,1]),na.rm = T))/sum(exp(statistics1[,1]),na.rm = T)
+
 idn<-which(!is.na(statistics1[,1]))
 length(idn)
 
@@ -130,7 +133,7 @@ best.bias<- best - truth
 best.rmse<- abs(best - truth)
 
 # view the inbeatible results
-View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
+View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*10000))
 
 
 
@@ -145,8 +148,8 @@ View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
 mySearch$max.cpu = as.integer(1)
 mySearch$locstop.nd=FALSE
 mySearch$max.cpu.glob = as.integer(1)
-mySearch$max.N.glob=as.integer(1)
-mySearch$min.N.glob=as.integer(1)
+mySearch$max.N.glob=as.integer(4)
+mySearch$min.N.glob=as.integer(4)
 mySearch$max.N=as.integer(1)
 mySearch$min.N=as.integer(1)
 mySearch$recalc.margin = as.integer(2^13)
@@ -192,7 +195,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 500, trest = 3000, burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 375, trest = 3000, burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob
