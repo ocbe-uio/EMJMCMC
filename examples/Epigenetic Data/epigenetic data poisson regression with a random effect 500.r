@@ -26,6 +26,9 @@ library(compiler)
 library(BAS)
 require(stats)
 
+#define the working directory
+
+workdir<-""
 # set up the parameters of the simulation or optimization
 M<-5
 size<-1

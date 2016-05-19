@@ -7,7 +7,7 @@ rm(list = ls(all = TRUE))
 #install.packages("ade4")
 #install.packages("sp")
 #install.packages("BAS")
-#install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC_1.2.tar.gz", repos = NULL, type="source")
+#install.packages("https://github.com/aliaksah/EMJMCMC2016/files/270429/EMJMCMC_1.2.tar.gz", repos = NULL, type="source")
 #install.packages("RCurl")
 #install.packages("hash")
 
@@ -27,7 +27,7 @@ library(BAS)
 require(stats)
 
 #define your working directory, where the data files are stored
-workdir<-"/results"
+workdir<-""
 
 #prepare data
 simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Simulated%20Data%20%28Example%201%29/simcen-x.txt"))

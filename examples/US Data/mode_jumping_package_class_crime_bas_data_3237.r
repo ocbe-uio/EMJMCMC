@@ -7,7 +7,7 @@ rm(list = ls(all = TRUE))
 #install.packages("ade4")
 #install.packages("sp")
 #install.packages("BAS")
-#install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC_1.2.tar.gz", repos = NULL, type="source")
+#install.packages("https://github.com/aliaksah/EMJMCMC2016/files/270429/EMJMCMC_1.2.tar.gz", repos = NULL, type="source")
 #install.packages("RCurl")
 
 library(RCurl)

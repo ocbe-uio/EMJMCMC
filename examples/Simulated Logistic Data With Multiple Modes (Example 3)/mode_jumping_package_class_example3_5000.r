@@ -27,7 +27,7 @@ library(BAS)
 require(stats)
 
 #define your working directory, where the data files are stored
-workdir<-"/results"
+workdir<-""
 
 #prepare data
 simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Simulated%20Logistic%20Data%20With%20Multiple%20Modes%20%28Example%203%29/sim3-X.txt"),sep = ",")
