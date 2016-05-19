@@ -136,7 +136,7 @@ View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
 
 # mySearch$save_results_csv(statistics1, "important results") save the results to avoid recalculating (if required)
 
-# carry out the experiment
+# carry out the experiment (notice that result may slightly vary depending on the part of genome addressed)
 # define parameters of the search
 
 #mySearch$printable.opt=T
