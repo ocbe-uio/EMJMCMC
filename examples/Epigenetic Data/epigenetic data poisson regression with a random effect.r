@@ -31,7 +31,7 @@ M<-5
 size<-1
 
 data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
-
+workdir = ""
 # set up the parameters of the simulation or optimization
 fparam.example <- colnames(data.example )[c(8:10,12:17,21:24,29)]
 fobserved.example <- colnames(data.example)[5]
@@ -39,28 +39,25 @@ fobserved.example <- colnames(data.example)[5]
 mySearch = EMJMCMC2016()
 mySearch$parallelize = lapply
 
-#create an empty data structure
-statistics1 <- read.big.matrix(filename = "/mn/anatu/ansatte-u3/aliaksah/importantresults.csv")
-statistics <- describe(statistics1)
-
+# specify some INLA realted parameters
 mySearch$estimator = inla
 args<-list(family = "poisson",data = data.example)
 args$control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)
-
-formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +f(data.example$pos,model=\"ar1\")")
-fm4<-do.call(inla, c(args,formula = formula2))
-summary(fm4)
-
 mySearch$latent.formula  = ""; "+f(data.example$pos,model=\"ar1\")"
 mySearch$estimator.args = args
 mySearch$printable.opt = F
 
+#example of the underlying model within INLA
+formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +f(data.example$pos,model=\"ar1\")")
+fm4<-do.call(inla, c(args,formula = formula2))
+summary(fm4)
 
 
 # use the precalculated results to save time (if available)
-crits<-read.big.matrix(filename = "/mn/anatu/ansatte-u3/aliaksah/importantresults.csv")[,1:3]
-
-
+crits<-as.big.matrix(read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/precalculated.csv"),sep = ",")[,1:3])
+crits1<- describe(crits1)
+Nvars<-mySearch$Nvars
+bittodec<-mySearch$bittodec
 # estimator based on precalculated and saved into crit data
 esimator<-function(formula, crits)
 {
@@ -76,11 +73,20 @@ esimator<-function(formula, crits)
   return(list(mlik = crits[id,1],waic = crits[id,2] , dic =  crits[id,3]))
 }
 
+# try the estimator function based on precalculated values out
 esimator(formula = formula2, crits = crits)
+
+# specify that one uses precalculated values, if required
 mySearch$estimator = esimator
 mySearch$estimator.args = list(crits = crits)
 
-# this one MUST be completed before moving to the experiments
+
+# create a big memory object to store the results
+
+statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
+statistics <- describe(statistics1)
+
+# carry out full enumeration to learn about the truth this one MUST be completed before moving to the experiments
 system.time(
   FFF<-mySearch$full_selection(list(statid=-1, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =100000))
 )
@@ -89,19 +95,10 @@ system.time(
 
 # check that all models are enumerated during the full search procedure
 idn<-which(!is.na(statistics1[,1]))
-
-statistics1[length(idn),]<-NA
-
-
-View(idn)
-statistics1[idn,1]<- -100000
-idn<-which((statistics1[,1]==-99000))
 length(idn)
-statistics1[idn,4:15]<- 0
-statistics1[,1]<-statistics1[,1]+1000 #multiple marginal log likelihoods with some constant
-statistics1[,7]<-0
 
-mySearch$visualize_results(statistics1, "test3",1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
+# draw the model space for the precalculated results
+mySearch$visualize_results(statistics1, "test",1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
 
 # once full search is completed, get the truth for the experiment
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
@@ -125,36 +122,26 @@ bset.m = ppp.best$m.post
 best.prob = ppp.best$s.mass/truth.prob
 print("pi best")
 sprintf("%.10f",best[ordering$ix])
-# 50000 best models contain 100.0000% of mass 100.0000%
-# 48300 best models contain 99.99995% of mass 100.0000%
-# 48086 best models contain 99.99995% of mass 100.0000%
-# 10000 best models contain 99.99990% of mass 99.99991%
-# 5000  best models contain 93.83923% of mass 94.72895%
-# 3500  best models contain 85.77979% of mass 87.90333%
-# 1500  best models contain 63.33376% of mass 67.71380%
-# 1000  best models contain 53.47534% of mass 57.91971%
-# 500   best models contain 37.72771% of mass 42.62869%
-# 100   best models contain 14.76030% of mass 17.71082%
-# 50    best models contain 14.76030% of mass 11.36970%
-# 10    best models contain 14.76030% of mass 3.911063%
-# 5     best models contain 14.76030% of mass 2.351454%
-# 1     best models contain 14.76030% of mass 0.595301%
 
 best.bias.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
 best.rmse.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
 
 best.bias<- best - truth
 best.rmse<- abs(best - truth)
-# #
+
+# view the inbeatible results
 View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
 
 
-statistics1[1:2^14,5:14]<-0
 
-mySearch$save_results_csv(statistics1, "important results")
+# mySearch$save_results_csv(statistics1, "important results") save the results to avoid recalculating (if required)
 
+# carry out the experiment
+# define parameters of the search
 
-mySearch$printable.opt=T
+#mySearch$printable.opt=T
+
+#mySearch$printable.opt = TRUE
 mySearch$max.cpu = as.integer(1)
 mySearch$locstop.nd=FALSE
 mySearch$max.cpu.glob = as.integer(1)
@@ -173,7 +160,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
                                            1,1,1,1,1,1,1),dim = c(7,5)))
 
-Niter <- 1
+Niter <- 100
 thining<-1
 system.time({
 
@@ -205,7 +192,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 50000, trest = 3000, burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 500, trest = 3000, burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob
@@ -230,9 +217,6 @@ system.time({
 }
 )
 
-# load functions as in BAS article by Clyde, Ghosh and Littman to reproduce their first example
-mySearch$estimator = estimate.bas.lm
-mySearch$estimator.args = list(data = data.example,prior = 3, g = 96 ,n=96)
 
 Nlim <- 1
 order.deviat <- sort(masses,decreasing = TRUE,index.return=T)
@@ -287,5 +271,5 @@ sprintf("%.10f",bias.avg.mc[ordering$ix]*100)
 print("pi rmse mc")
 sprintf("%.10f",rmse.avg.mc[ordering$ix]*100)
 
-# #
+# View the results
 View((cbind(ordering$ix/100,truth[ordering$ix]/100,bias.avg.rm[ordering$ix],rmse.avg.rm[ordering$ix],bias.avg.mc[ordering$ix],rmse.avg.mc[ordering$ix])*100))
