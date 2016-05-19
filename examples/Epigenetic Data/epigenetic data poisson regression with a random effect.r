@@ -1,10 +1,19 @@
-# R CMD build EMJMCMC2016 to build a package 
+rm(list = ls(all = TRUE))
+# install the required packges if needed
+#install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
+#install.packages("bigmemory")
+#install.packages("snow")
+#install.packages("Rmpi")
+#install.packages("ade4")
+#install.packages("sp")
+#install.packages("BAS")
+#install.packages("https://github.com/aliaksah/EMJMCMC2016/files/270429/EMJMCMC_1.2.tar.gz", repos = NULL, type="source")
+#install.packages("RCurl")
+#install.packages("hash")
 
-
-install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC_1.2.tar.gz", repos = NULL, type="source")
-
-
-library(package = EMJMCMC2016)
+library(hash)
+library(RCurl)
+library(EMJMCMC)
 library(sp)
 library(INLA)
 library(parallel)
@@ -15,13 +24,7 @@ library(ade4)
 library(copula)
 library(compiler)
 library(BAS)
-require(stats)     
-library(EMJMCMC)
-
-
-data(data)
-dim(data)
-
+require(stats)
 
 # set up the parameters of the simulation or optimization
 M<-5
@@ -78,7 +81,7 @@ system.time(
   FFF<-mySearch$full_selection(list(statid=-1, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =100000))
 )
 # completed in   7889  for 1048576 models whilst BAS took 6954.101 seonds and thus now advantage of using C versus R is clearly seen as neglectible  (14688.209 user seconds)
-# BAS completed the same job in 
+# BAS completed the same job in
 
 # check that all models are enumerated during the full search procedure
 idn<-which(!is.na(statistics1[,1]))
@@ -118,7 +121,7 @@ bset.m = ppp.best$m.post
 best.prob = ppp.best$s.mass/truth.prob
 print("pi best")
 sprintf("%.10f",best[ordering$ix])
-# 50000 best models contain 100.0000% of mass 100.0000% 
+# 50000 best models contain 100.0000% of mass 100.0000%
 # 48300 best models contain 99.99995% of mass 100.0000%
 # 48086 best models contain 99.99995% of mass 100.0000%
 # 10000 best models contain 99.99990% of mass 99.99991%
@@ -133,12 +136,12 @@ sprintf("%.10f",best[ordering$ix])
 # 5     best models contain 14.76030% of mass 2.351454%
 # 1     best models contain 14.76030% of mass 0.595301%
 
-best.bias.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000 
-best.rmse.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000 
+best.bias.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
+best.rmse.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
 
 best.bias<- best - truth
 best.rmse<- abs(best - truth)
-# # 
+# #
 View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
 
 
@@ -169,7 +172,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
 Niter <- 1
 thining<-1
 system.time({
-  
+
   vect <-array(data = 0,dim = c(length(fparam.example),Niter))
   vect.mc <-array(data = 0,dim = c(length(fparam.example),Niter))
   inits <-array(data = 0,dim = Niter)
@@ -181,7 +184,7 @@ system.time({
   rmse.m <- array(data = 0,dim = Niter)
   rmse.m.mc <- array(data = 0,dim = Niter)
   iterats <- array(data = 0,dim = c(2,Niter))
-  
+
   for(i in 1:Niter)
   {
     statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
@@ -218,7 +221,7 @@ system.time({
     print(iterats[2,i])
     remove(statistics1)
     remove(statistics)
-    
+
   }
 }
 )
@@ -280,5 +283,5 @@ sprintf("%.10f",bias.avg.mc[ordering$ix]*100)
 print("pi rmse mc")
 sprintf("%.10f",rmse.avg.mc[ordering$ix]*100)
 
-# # 
+# #
 View((cbind(ordering$ix/100,truth[ordering$ix]/100,bias.avg.rm[ordering$ix],rmse.avg.rm[ordering$ix],bias.avg.mc[ordering$ix],rmse.avg.mc[ordering$ix])*100))
