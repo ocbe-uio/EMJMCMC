@@ -29,15 +29,17 @@ require(stats)
 # set up the parameters of the simulation or optimization
 M<-5
 size<-1
+
+data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
+
 # set up the parameters of the simulation or optimization
-fparam.example <- colnames(data)[c(8:10,12:17,21:24,29)]
-fobserved.example <- colnames(data)[5]
-data.example <- data[c(1:500,7000:7500,10000:10500),]
-data.example$express<-data.example$express+rnorm(n = 1502,mean = 1000,sd = 800)
-#create MySearch object with default parameters
-  mySearch = EMJMCMC2016()
+fparam.example <- colnames(data.example )[c(8:10,12:17,21:24,29)]
+fobserved.example <- colnames(data.example)[5]
+#create MySearch object with default parameters default estimator is INLA!
+mySearch = EMJMCMC2016()
 mySearch$parallelize = lapply
-#dataframe for results; n/b +1 is required for the summary statistics
+
+#create an empty data structure
 statistics1 <- read.big.matrix(filename = "/mn/anatu/ansatte-u3/aliaksah/importantresults.csv")
 statistics <- describe(statistics1)
 
@@ -54,6 +56,8 @@ mySearch$estimator.args = args
 mySearch$printable.opt = F
 
 
+
+# use the precalculated results to save time (if available)
 crits<-read.big.matrix(filename = "/mn/anatu/ansatte-u3/aliaksah/importantresults.csv")[,1:3]
 
 
