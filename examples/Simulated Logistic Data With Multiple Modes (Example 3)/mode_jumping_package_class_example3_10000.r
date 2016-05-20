@@ -126,29 +126,17 @@ View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
 # proceed with the experiment
 
 # set parameters of the search
-mySearch$switch.type=as.integer(5)
-mySearch$switch.type.glob=as.integer(1)
-mySearch$max.N.glob=as.integer(6)
-mySearch$min.N.glob=as.integer(5)
-mySearch$max.N=as.integer(12)
-mySearch$min.N=as.integer(5)
-mySearch$recalc.margin = as.integer(2^20+1)
-mySearch$max.cpu=as.integer(4)
-mySearch$p.add = array(data = 0.5,dim = 15)
-#mySearch$printable.opt = F
-mySearch$p.add = array(data = 0.5,dim = 15)
-#fff<-mySearch$forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
-#bbb<-mySearch$backward_selection(list(varcur=c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+
 mySearch$switch.type=as.integer(1)
 mySearch$switch.type.glob=as.integer(1)
-mySearch$printable.opt = TRUE
+#mySearch$printable.opt = TRUE
 mySearch$max.N.glob=as.integer(5)
 mySearch$min.N.glob=as.integer(3)
 mySearch$max.N=as.integer(1)
 mySearch$min.N=as.integer(1)
 mySearch$recalc.margin = as.integer(2^20)
 distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852)
-distrib_of_proposals = с(0,0,0,0,10)
+#distrib_of_proposals = с(0,0,0,0,10)
 distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                            0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                            1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
@@ -181,9 +169,6 @@ system.time({
     mySearch$g.results[4,1]<-0
     mySearch$g.results[4,2]<-0
     mySearch$p.add = array(data = 0.5,dim = length(fparam.example))
-    #distrib_of_neighbourhoods=array(data = runif(n = 5*7,min = 0, max = 20),dim = c(5,7))
-    #distrib_of_proposals = runif(n = 5,min = 0, max = 100)
-    #distrib_of_proposals[5]=sum(distrib_of_proposals[1:4])*runif(n = 1,min = 50, max = 150)
     print("BEGIN ITERATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     print(i)
     set.seed(10*i)

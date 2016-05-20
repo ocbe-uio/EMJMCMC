@@ -29,16 +29,18 @@ require(stats)
 #define the working directory
 
 workdir<-""
-# set up the parameters of the simulation or optimization
+
+# get the data
 M<-5
 size<-1
 
 data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
 workdir = ""
-# set up the parameters of the simulation or optimization
+
+
 fparam.example <- colnames(data.example )[c(8:10,12:17,21:24,29)]
 fobserved.example <- colnames(data.example)[5]
-#create MySearch object with default parameters default estimator is INLA!
+#create MySearch object with default parameters. N/B default estimator is INLA!
 mySearch = EMJMCMC2016()
 mySearch$parallelize = lapply
 
@@ -57,7 +59,7 @@ summary(fm4)
 
 
 
-# use the precalculated results to save time (if available)
+# use the precalculated results to save time (if available). This should not get addressed if the data set is analysed for the first time!
 crits<-as.big.matrix(read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/precalculated.csv"),sep = ",")[,1:3,15])
 Nvars<-mySearch$Nvars
 bittodec<-mySearch$bittodec
@@ -83,27 +85,24 @@ esimator(formula = formula2, crits = crits)
 mySearch$estimator = esimator
 mySearch$estimator.args = list(crits = crits)
 
+#end defining the precalculated results
 
 # create a big memory object to store the results
 
 statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
 statistics <- describe(statistics1)
 
-# carry out full enumeration to learn about the truth this one MUST be completed before moving to the experiments
+# carry out full enumeration to learn about the truth. This one MUST be completed before moving to the experiments in this example!
 system.time(
   FFF<-mySearch$full_selection(list(statid=6, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =Inf))
 )
-# completed in   7889  for 1048576 models whilst BAS took 6954.101 seonds and thus now advantage of using C versus R is clearly seen as neglectible  (14688.209 user seconds)
-# BAS completed the same job in
+
 
 # check that all models are enumerated during the full search procedure
-
-exp(max((statistics1[,1]),na.rm = T))/sum(exp(statistics1[,1]),na.rm = T)
-
 idn<-which(!is.na(statistics1[,1]))
 length(idn)
 
-# draw the model space for the precalculated results
+# draw the model space and get other graphical output
 mySearch$visualize_results(statistics1, "test",1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
 
 # once full search is completed, get the truth for the experiment
@@ -116,12 +115,10 @@ fake500 <- sum(exp(x = (sort(statistics1[,1],decreasing = T)[1:2])),na.rm = TRUE
 print("pi truth")
 sprintf("%.10f",truth[ordering$ix])
 
+# get the best performance results for a given number of iterations
 iddx <- sort(statistics1[,1],decreasing = T,index.return=T,na.last = NA)$ix
-# check that all models are enumerated during the full search procedure
-
 statistics1[as.numeric(iddx[376:2^14]),1:15]<-NA
 
-# once full search is completed, get the truth for the experiment
 ppp.best<-mySearch$post_proceed_results(statistics1 = statistics1)
 best = ppp.best$p.post # make sure it is equal to Truth column from the article
 bset.m = ppp.best$m.post
@@ -135,14 +132,15 @@ best.rmse.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
 best.bias<- best - truth
 best.rmse<- abs(best - truth)
 
-# view the inbeatible results
+# view the "unbeatible" results
 View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*10000))
 
 
 
 # mySearch$save_results_csv(statistics1, "important results") save the results to avoid recalculating (if required)
 
-# carry out the experiment (notice that result may slightly vary depending on the part of genome addressed)
+
+
 # define parameters of the search
 
 #mySearch$printable.opt=T
@@ -165,6 +163,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
                                            1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
                                            1,1,1,1,1,1,1),dim = c(7,5)))
+# carry out the experiment (notice that result may vary depending on the part of genome addressed)
 
 Niter <- 100
 thining<-1
@@ -189,9 +188,6 @@ system.time({
     mySearch$g.results[4,1]<-0
     mySearch$g.results[4,2]<-0
     mySearch$p.add = array(data = 0.5,dim = length(fparam.example))
-    #distrib_of_neighbourhoods=array(data = runif(n = 5*7,min = 0, max = 20),dim = c(5,7))
-    #distrib_of_proposals = runif(n = 5,min = 0, max = 100)
-    #distrib_of_proposals[5]=sum(distrib_of_proposals[1:4])*runif(n = 1,min = 50, max = 150)
     print("BEGIN ITERATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     print(i)
     set.seed(10*i)
