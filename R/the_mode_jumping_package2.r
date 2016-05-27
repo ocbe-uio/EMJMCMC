@@ -24,18 +24,18 @@ library(copula)
 library(BAS)
 library(stringi)
 require(stats)
-#compile INLA 
+#compile INLA
 
 
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
-  
+
   #only poisson and binomial families are currently adopted
   X <- model.matrix(object = formula,data = data)
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
   return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank)))
-  
+
 }
 
 parallelize<-function(X,FUN)
@@ -55,20 +55,20 @@ parallelize<-function(X,FUN)
 
 estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 {
-  
+
   out <- lm(formula = formula,data = data)
   # 1 for aic, 2 bic prior, else g.prior
-  
+
   p <- out$rank
   if(prior == 1)
   {
     ss<-sum(out$residuals^2)
-    logmarglik <- -0.5*(log(ss)+2*p) 
+    logmarglik <- -0.5*(log(ss)+2*p)
   }
   else if(prior ==2)
   {
     ss<-sum(out$residuals^2)
-    logmarglik <- -0.5*(log(ss)+log(n)*p) 
+    logmarglik <- -0.5*(log(ss)+log(n)*p)
   }
   else
   {
@@ -76,24 +76,24 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
     #logmarglik =  .5*(log(1.0 + g) * (n - p -1)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
     logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
   }
-  
+
   # use dic and aic as bic and aic correspondinly
   return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out)))
-  
+
 }
 
 # covariates are thus
 # 1) A constant +1
 # 2) Base structures (CHG, CGH, CHH) +2
 # 3) Gene class (5 classes) +4
-# 4) Position within a gene (4 positions including promoters, after coding parts, intrones, exones) +3 
+# 4) Position within a gene (4 positions including promoters, after coding parts, intrones, exones) +3
 # 5) Gene expression (continious) +1
 # 6) A CpG island factor +1
 # 7) A tranposone factor +1
 # 8) combinations (if reasonable)
-#closeAllConnections()  
+#closeAllConnections()
 
-EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016", 
+EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                            fields = list(estimator.args = "list",
                                          max.cpu = "integer",
                                          objective = "integer",
@@ -105,9 +105,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          parallelize.hyper  = "function",
                                          min.N.randomize = "integer",
                                          max.N.randomize = "integer",
-                                         type.randomize = "integer", 
+                                         type.randomize = "integer",
                                          thin_rate = "integer",
-                                         aa = "numeric", 
+                                         aa = "numeric",
                                          cc = "numeric",
                                          printable.opt = "logical",
                                          fobserved = "vector",
@@ -125,8 +125,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          fparam = "vector",
                                          p.add = "array",
                                          latent.formula = "character",
-                                         Nvars = "integer", 
-                                         seed = "integer", 
+                                         Nvars = "integer",
+                                         seed = "integer",
                                          M.nd = "integer",
                                          locstop.nd = "logical",
                                          M.mcmc = "integer",
@@ -144,16 +144,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          allow_offsprings = "integer",
                                          mutation_rate = "integer",
                                          g.results = "big.matrix"
-                           ), 
+                           ),
                            methods = list(
-                             #class constructor   
+                             #class constructor
                              initialize = function(estimator.function = inla, estimator.args.list = list(family = "gaussian",data = data.example, control.fixed=list(prec=list(default= 0.00001),prec.intercept = 0.00001,mean=list(default= 0),mean.intercept = 0),
                                                                                                          control.family = list(hyper = list(prec = list(prior = "loggamma",param = c(0.00001,0.00001),initial = 0))),
                                                                                                          control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)), search.args.list = NULL,latent.formula = "")
                              {
                                estimator <<- estimator.function
                                estimator.args <<- estimator.args.list
-                               latent.formula <<- latent.formula   
+                               latent.formula <<- latent.formula
                                g.results <<- big.matrix(nrow = 4,ncol = 2)
                                g.results[1,1]<- -Inf
                                g.results[1,2]<- 1
@@ -163,7 +163,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                g.results[3,2]<- 1
                                g.results[4,1]<- 0
                                g.results[4,2]<- 0
-                               
+
                                if(is.null(search.args.list))
                                {
                                  max.cpu <<- as.integer(Nvars*0.05 + 1)
@@ -180,7 +180,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    parallelize.global <<- mclapply
                                    parallelize.hyper  <<- mclapply
                                  }
-                                 Nvars  <<- as.integer(length(fparam.example)) 
+                                 Nvars  <<- as.integer(length(fparam.example))
                                  min.N <<- as.integer(Nvars/6)
                                  min.N.glob <<- as.integer(Nvars/3)
                                  max.N.glob <<- as.integer(Nvars/2)
@@ -264,7 +264,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  isobsbinary <<- as.array(0:(length(fparam)-1))
                                  p.add <<- as.array(search.args.list$p.add)
                                  recalc.margin <<- search.args.list$recalc.margin
-                                 Nvars  <<- as.integer(length(fparam)) 
+                                 Nvars  <<- as.integer(length(fparam))
                                  seed <<-  search.args.list$seed
                                  max.tree.size<<- as.integer(search.args.list$max.tree.size)
                                  Nvars.max <<- as.integer(search.args.list$Nvars.max)
@@ -278,18 +278,18 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  double.hashing <<- search.args.list$double.hashing
                                  hash.length <<- as.integer(search.args.list$hash.length)
                                }
-                               
+
                              },
                              #transform binary numbers to decimal
                              bittodec.alt = function(bit) #transform a binary vector into a natural number to correspond between vector of solutions and storage array
                              {
-                               
+
                                  n<-length(bit)
                                  dec <- 0
                                  for(i in 1:n)
                                  {
                                    j<-n-i
-                                   dec <- dec + ((2)^j)*bit[i] 
+                                   dec <- dec + ((2)^j)*bit[i]
                                  }
                                  return(dec)
                              },
@@ -301,17 +301,17 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                for(i in 1:n)
                                {
                                  j<-n-i
-                                 dec <- dec + ((2)^j)*bit[i] 
+                                 dec <- dec + ((2)^j)*bit[i]
                                }
-                               
+
                                return(dec)
-                               
+
                                }
                                else
                                {
                                  if(exists("statistics1"))
                                  {
-                                   
+
                                    hash.level<-0
                                    dec<- hashing(bit)+1
                                    #print(dec)
@@ -327,7 +327,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                   }
                                   #print(jjj)
                                   dec <- dec - 1
-                                 } 
+                                 }
                                  else if(exists("statistics"))
                                  {
                                    hash.level<-0
@@ -340,67 +340,67 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      dec<- hashing(bit1)+1
                                      #print(dec)
                                    }
-                                   dec <- dec - 1 
+                                   dec <- dec - 1
                                  }
                                  return(dec)
                                }
-                               
-                           
+
+
                              },
                              add.key = function(dec,bit,sum.one,levl)
                              {
                                lb<-length(bit)
                                if(dec>2^hash.length)
                                  return(FALSE)
-                               
+
                                if(levl)
-                               { 
-                                 
+                               {
+
                                  if(is.na(statistics1[dec,1]))
                                  {
                                    statistics1[dec,16]<-sum.one
                                    hash.keys1[dec,]<-bit
                                    return(TRUE)
                                  }
-                                 
+
                                  if(is.na(statistics1[dec,16]))
                                  {
                                    statistics1[dec,16]<-sum.one
                                    hash.keys1[dec,]<-bit#c(array(0,dim = Nvars-lb),bit)
                                    return(TRUE)
                                  }
-                                 
+
                                  if(statistics1[dec,16]!=sum.one)
                                    return(FALSE)
                                  i<-1
                                  #print(lb)
                                  lb <- length(bit)
-                                 while(i<=lb&&(hash.keys1[dec,Nvars-i+1])==bit[lb - i +1]) 
+                                 while(i<=lb&&(hash.keys1[dec,Nvars-i+1])==bit[lb - i +1])
                                    i<-i+1
                                  return((i-1)==lb)
                                }
                                else
                                {
-                               
+
                                  if(is.na(statistics[dec,1]))
                                  {
                                    statistics[dec,16]<-sum.one
                                    hash.keys[dec,]<-bit
                                    return(TRUE)
                                  }
-                                 
+
                                  if(is.na(statistics[dec,16]))
                                  {
                                    statistics[dec,16]<-sum.one
                                    hash.keys[dec,]<-bit#c(array(0,dim = Nvars-lb),bit)
                                    return(TRUE)
                                  }
-                                 
+
                                  if(statistics[dec,16]!=sum.one)
                                    return(FALSE)
                                  i<-1
                                  lb <- length(bit)
-                                 while(i<=lb&&(hash.keys[dec,Nvars-i+1])==bit[lb - i +1]) 
+                                 while(i<=lb&&(hash.keys[dec,Nvars-i+1])==bit[lb - i +1])
                                    i<-i+1
                                  return((i-1)==lb)
                                }
@@ -414,44 +414,44 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              },
                              binlog = function (x) # bitwise logorithm (base 2) computations based on Al Kashi's algorithm
                              {
-                               
+
                                lx <- length(x)
                                tol = -lx
                                y <- 0 # initialise output
                                b <- 0.5 # initialise mantissa
-                               
-                         
+
+
                                # arrange the input into a known range
                                if(lx == 1){
                                  if(x[1] == 0)
                                    return(-Inf)
-        
+
                                  if(x[1] == 1)
                                    return(0)
                                }
                                # move one bit to the left end
                                # elsewhise
-                               
+
                                if(x[2]==0 && lx==2)
                                   return(1)
-                                 
+
                                powto<-2^(-c(1:(lx-1)))
                                float.x<-sum(x[2:lx]*powto)
                                x <- 1 +  float.x
                                y <- lx -1
-                                 
-                               
+
+
                                f<-0
                                fb<--1
                                # move one bit to the right end
                                # now x = 1.5
                                # loop until desired tolerance met
-                               
+
                                while(fb > tol)
                                {
-                               
+
                                 x <- x*x
-                               
+
                                # update the index
                                if (x >= 2)
                                {
@@ -463,7 +463,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                b  <- b/2
                                fb <- (fb-log(2))
                               }
-                              return(list(y = y,z = lx -1, f = f)) 
+                              return(list(y = y,z = lx -1, f = f))
                              },
                              #transform decimal numbers to binary
                              dectobit = function(dec) #transform a natural number into a binary vector to correspond between vector of solutions and storage array
@@ -481,14 +481,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  return(bin)
                                }
- 
+
                               return(dehash(dec))
-                                   
-                               
+
+
                              },
                              dectobit.alt = function(dec) #transform a natural number into a binary vector to correspond between vector of solutions and storage array
                              {
-                              
+
                                  if(dec == 0)
                                    return(0)
                                  q<-dec
@@ -500,9 +500,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    bin<-c(as.integer(2*(r-q)),bin)
                                  }
                                  return(bin)
-                              
-                               
-                               
+
+
+
                              },
                              dehash=function(dec)
                              {
@@ -510,7 +510,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  return(hash.keys1[dec,])
                                if(exists("hash.keys"))
                                  return(hash.keys[dec,])
-                               return(NULL)   
+                               return(NULL)
                              },
                              #calculate move probabilities
                              calculate.move.logprobabilities = function(varold, varnew, switch.type,min.N,max.N)
@@ -519,14 +519,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  warning("This option should not be chosen for randomization unless p.add == 0.5 ", call. = FALSE)
                                  min.N = max.N
-                                 
+
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1)) # probability of having that many differences
                                  KK<-sum(abs(varold-varnew))
-                                 
+
                                  log.mod.switch.prob <- 0 #always the same probabilities for moves within thenighbourhood for p=0.5
                                  log.mod.switchback.prob <- 0
                                } else if(switch.type == 2) #fixed N(x) inverse operator
-                               {  
+                               {
                                  if(min.N!=max.N)
                                  {
                                    warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
@@ -534,13 +534,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-max.N
-                                 log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
-                                 log.mod.switchback.prob <- log.mod.switch.prob 
+                                 log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
+                                 log.mod.switchback.prob <- log.mod.switch.prob
                                }else if(switch.type == 3)  # random sized inverse N(x)
                                {
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-sum(abs(varold-varnew))
-                                 log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
+                                 log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                  log.mod.switchback.prob <- log.mod.switch.prob
                                }else if(switch.type == 4)  # fixed N(x) for reverse from type 2 swaps
                                {
@@ -551,11 +551,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-max.N
-                                 log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
-                                 log.mod.switchback.prob <- log.mod.switch.prob 
+                                 log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
+                                 log.mod.switchback.prob <- log.mod.switch.prob
                                }else if(switch.type >  4)
                                {
-                                 
+
                                  log.mod.switch.prob <- log(x = 1)
                                  log.mod.switchback.prob <-log(x = 1)
                                }
@@ -563,9 +563,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              },
                              #build a new model to draw from the old one return selection probabilities
                              buildmodel= function(varcur.old,statid, shift.cpu,max.cpu,switch.type,min.N,max.N,changeble.coord = NULL)
-                             {   
+                             {
                                vect<- vector(length = max.cpu,mode = "list")
-                               shift<-0  
+                               shift<-0
                                for(cpu in 1:(max.cpu))
                                {
                                  set.seed(runif(1,1,10000), kind = NULL, normal.kind = NULL)
@@ -577,7 +577,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    varcur<-rbinom(n = (Nvars),size = 1,0.5)
                                    varcur.old<-varcur
                                  }
-                                 
+
                                  changeble <-FALSE
                                  if(!is.null(changeble.coord))
                                  {
@@ -587,7 +587,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-floor(runif(n=1, min.N, max.N + 0.999999999))
-                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
+                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                    log.mod.switchback.prob <- log.mod.switch.prob
                                    change.buf <- array(data = 0,dim = Nvars)
                                    if(changeble){
@@ -616,9 +616,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-max.N
-                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
+                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                    log.mod.switchback.prob <- log.mod.switch.prob
-                                   
+
                                    change.buf <- array(data = 0,dim = Nvars)
                                    if(changeble){
                                      for(ttt in 1:KK)
@@ -638,12 +638,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      change.buf[iid] = 1
                                      varcur[iid] = 1-varcur[iid]
                                    }
-                                   
+
                                  }else if(switch.type == 3)  # random sized inverse N(x)
                                  {
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-floor(runif(n=1, min.N, max.N + 0.999999999))
-                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
+                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                    log.mod.switchback.prob <- log.mod.switch.prob
                                    change.buf <- array(data = 0,dim = Nvars)
                                    if(changeble){
@@ -673,7 +673,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-max.N
-                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars)) 
+                                   log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                    log.mod.switchback.prob <- log.mod.switch.prob
                                    ids <- which(changeble.coord == 0)
                                    change.buf <- array(data = 0,dim = Nvars)
@@ -726,7 +726,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      varcur<-varcur.old
                                      varcur[cpu+shift]<-1
                                    }
-                                   
+
                                  }else if(switch.type == 6)
                                  {
                                    change.buf <- array(data = 0,dim = (Nvars))
@@ -738,14 +738,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      shift<-1 - cpu
                                      varcur.old<-rep(1,times = Nvars)
                                    }
-                                   
+
                                    if(varcur.old[cpu+shift]!=0)
                                    {
                                      varcur<-varcur.old
                                      varcur[cpu+shift]<-0
                                    }else
                                    {
-                                     
+
                                      if(cpu+shift<Nvars)
                                        shift<-shift+1
                                      while(varcur.old[cpu+shift]==0)
@@ -760,7 +760,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      varcur<-varcur.old
                                      varcur[cpu+shift]<-0
                                    }
-                                   
+
                                  }else if(switch.type == 7)
                                  {
                                    change.buf <- array(data = 0,dim = (Nvars))
@@ -770,7 +770,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    varcur<-c(array(0,dim = (Nvars -length(vec))),vec) #issues here
                                  }else if(switch.type == 8)
                                  {
-                                   
+
                                    log.mod.switch.prob <-0
                                    log.mod.switchback.prob <-0
                                    varcur<-varcur.old
@@ -779,7 +779,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    #if(printable.opt)print(varcur)
                                  }else
                                  {
-                                   
+
                                    log.mod.switch.prob <- 0
                                    log.mod.switchback.prob <-0
                                    change.buf <- array(data = 1,dim = Nvars)
@@ -787,7 +787,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    #if(printable.opt)print("type 8 invoked")
                                    #if(printable.opt)print(varcur)
                                  }
-                                 
+
                                  #     for(g in 1:max(isobsbinary))
                                  #     {
                                  #       if(length(varcur[which(isobsbinary == g && varcur %in% c(1,3))])==length(which(isobsbinary == g)))
@@ -795,74 +795,74 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  #       if(length(varcur[which(isobsbinary == g && varcur %in% c(2,3))])==length(which(isobsbinary == g)))
                                  #         varcur[which(isobsbinary == g && varcur %in% c(2,3))[1]]=0
                                  #     }
-                                 
-                                 
-                                 
+
+
+
                                  covobs <- if(fparam[1]=="Const")fparam[which(varcur[-1] == 1)+1]else fparam[which(varcur==1)]
-                                 
-                                 
-                                 #obsconst<-2*as.integer((varcur[1] %in% c(1,3)) || length(covobs) == 0 || (length(covobs)==length(which(isobsbinary != 0))) ) -1 
-                                 
+
+
+                                 #obsconst<-2*as.integer((varcur[1] %in% c(1,3)) || length(covobs) == 0 || (length(covobs)==length(which(isobsbinary != 0))) ) -1
+
                                  obsconst<-ifelse(fparam[1]=="Const",2*as.integer((varcur[1])) -1,1)
-                                 
-                                 
+
+
                                  id<-bittodec(varcur)
                                  id<-id+1
-                                 
-                                 
-                                 
+
+
+
                                  if(ifelse(exists("statistics1"),is.na(statistics1[id,1]),ifelse(exists("statistics"),is.na(statistics[id,1,]),ifelse(exists("hashStat"),!has.key(hash = hashStat,key = paste(varcur,collapse = "")),TRUE))))#||TRUE)
                                  {
                                    formula <- NULL
                                    capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})}) ## not considered currently in RJMCMC, is only valid for model selection
                                    if(is.null(formula)){
                                      formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
-                                     
+
                                    }
-                                   
+
                                  }else
                                  {
                                    formula <- NULL
                                  }
-                                 
+
                                  vect[[cpu]]<-list(formula = formula, varcur = varcur, statid = statid, changed = change.buf, log.mod.switch.prob = log.mod.switch.prob , log.mod.switchback.prob = log.mod.switchback.prob )
-                                 
+
                                }
                                return(vect)
                              },
                              #fit the given model by means of the specified estimator
                              fitmodel = function(model)
-                             { 
+                             {
                                if(!is.null(model))
                                {
-                                 
+
                                  fm<-NULL
                                  id<-bittodec(model$varcur)
-                                 
+
                                  if(is.null(id))
                                    id = 0
                                  id<-id+1
-                                 
+
                                  if(exists("statistics1")){
                                    if(is.na(statistics1[id,1]))
-                                   { 
-                                     
+                                   {
+
                                      #if(printable.opt)print("Invoked from EMJMCMC environment")
                                      onerr<-FALSE
                                      #if(printable.opt)print("INLA internal error")
                                      statistics1[id,c(2,3)]<-100000
                                      statistics1[id,1]<--100000
                                      statistics1[id,4:14]<-0
-                                     #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))                                                                       
-                                     
+                                     #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
+
                                      #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
                                      #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                     #       
+                                     #
                                      capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                     
-                                     
-                                     
+
+
+
                                      if(!is.null(fm))
                                      {
                                        statistics1[id,2]<-fm$waic[[1]]
@@ -872,9 +872,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #                                                          {
                                        #                                                            inxx<-which(model$varcur==1)
                                        #                                                            if(length(inxx)==length(fm$summary.fixed$mean))
-                                       #                                                              statistics1[id,15+inxx]<-fm$summary.fixed$mean 
+                                       #                                                              statistics1[id,15+inxx]<-fm$summary.fixed$mean
                                        #                                                          }
-                                       
+
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
                                          g.results[2,1]<-fm$waic[[1]]
@@ -885,22 +885,22 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          g.results[1,1]<-fm$mlik[[1]]
                                          g.results[1,2]<-as.integer(id)
                                        }
-                                       
+
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
                                          g.results[3,1]<-fm$dic[[1]]
                                          g.results[3,2]<-as.integer(id)
                                        }
-                                       
+
                                        g.results[4,2] <- g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          p.add <<- as.array(post_proceed_results(statistics1)$p.post)
                                        }
-                                       
+
                                      }
-                                     
-                                     
+
+
                                    }
                                    if(model$statid!=-1)
                                      statistics1[id,model$statid+1]<-statistics1[id,model$statid+1] + 1
@@ -908,23 +908,23 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    return(list(mlik=statistics1[id,1],waic=statistics1[id,2],dic=statistics1[id,3]))
                                  }else  if(exists("statistics")){
                                    if(is.na(statistics[id,1]))
-                                   { 
+                                   {
                                      #if(printable.opt)print("Invoked from EMJMCMC SUB environment")
                                      onerr<-FALSE
                                      #if(printable.opt)print("INLA internal error")
                                      statistics[id,c(2,3)]<-100000
                                      statistics[id,1]<--100000
                                      statistics[id,4:14]<-0
-                                     #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))                                                                       
-                                     
+                                     #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
+
                                      #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
                                      #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                     #       
+                                     #
                                      capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                     
-                                     
-                                     
+
+
+
                                      if(!is.null(fm))
                                      {
                                        statistics[id,2]<-fm$waic[[1]]
@@ -934,7 +934,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #                                                          {
                                        #                                                            inxx<-which(model$varcur==1)
                                        #                                                            if(length(inxx)==length(fm$summary.fixed$mean))
-                                       #                                                              statistics[id,14+inxx]<-fm$summary.fixed$mean 
+                                       #                                                              statistics[id,14+inxx]<-fm$summary.fixed$mean
                                        #                                                          }
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
@@ -946,61 +946,61 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          g.results[1,1]<-fm$mlik[[1]]
                                          g.results[1,2]<-as.integer(id)
                                        }
-                                       
+
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
                                          g.results[3,1]<-fm$dic[[1]]
                                          g.results[3,2]<-as.integer(id)
                                        }
-                                       
+
                                        g.results[4,2] <- g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          proceeeded <- post_proceed_results(statistics)
                                          p.add <<- as.array(proceeeded$p.post)
-                                         #g.results[4,2] <- 
+                                         #g.results[4,2] <-
                                        }
                                      }
-                                     
-                                     
+
+
                                    }
                                    if(model$statid!=-1)
                                      statistics[id,model$statid+1]<-statistics[id,model$statid+1] + 1
                                    g.results[4,1] <- g.results[4,1]+1
                                    return(list(mlik=statistics[id,1],waic=statistics[id,2],dic=statistics[id,3]))
-                                   
+
                                  }else if(exists("hashStat")){
                                    idd<- as.character(paste(model$varcur,collapse = ""))
                                    if(!has.key(key = idd,hash = hashStat))
-                                   { 
+                                   {
                                      #if(printable.opt)print("Invoked from EMJMCMC hash table environment")
                                      onerr<-FALSE
                                      #if(printable.opt)print("INLA internal error")
                                      hashBuf<-array(data = 0,dim = 3)
                                      hashBuf[c(2,3)]<-100000
                                      hashBuf[1]<- -100000
-                                     #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))                                                                       
-                                     
+                                     #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
+
                                      #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
                                      #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                     #       
+                                     #
                                      capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                     
-                                     
-                                     
+
+
+
                                      if(!is.null(fm))
                                      {
                                        hashBuf[2]<-fm$waic[[1]]
                                        hashBuf[1]<-fm$mlik[[1]]
                                        hashBuf[3]<-fm$dic[[1]]
-                                       
+
                                        hashStat[idd] <- hashBuf
                                        #                                                          if(id>1)
                                        #                                                          {
                                        #                                                            inxx<-which(model$varcur==1)
                                        #                                                            if(length(inxx)==length(fm$summary.fixed$mean))
-                                       #                                                              statistics[id,14+inxx]<-fm$summary.fixed$mean 
+                                       #                                                              statistics[id,14+inxx]<-fm$summary.fixed$mean
                                        #                                                          }
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
@@ -1012,35 +1012,35 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          g.results[1,1]<-fm$mlik[[1]]
                                          g.results[1,2]<-(id)
                                        }
-                                       
+
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
                                          g.results[3,1]<-fm$dic[[1]]
                                          g.results[3,2]<-(id)
                                        }
-                                       
+
                                        g.results[4,2] <- g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          proceeeded <- post_proceed_results_hash(hashStat)
                                          p.add <<- as.array(proceeeded$p.post)
-                                         #g.results[4,2] <- 
+                                         #g.results[4,2] <-
                                        }
                                      }
-                                     
-                                     
+
+
                                    }
                                    g.results[4,1] <- g.results[4,1]+1
                                    hasRes<- values(hashStat[idd])
                                    return(list(mlik=hasRes[1],waic=hasRes[2],dic=hasRes[3]))
-                                   
+
                                  }else
                                  {
                                    capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                    })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                   
+
                                    if(!is.null(fm)){
-                                     
+
                                      if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                      {
                                        g.results[2,1]<-fm$waic[[1]]
@@ -1051,7 +1051,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        g.results[1,1]<-fm$mlik[[1]]
                                        g.results[1,2]<-(id)
                                      }
-                                     
+
                                      if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                      {
                                        g.results[3,1]<-fm$dic[[1]]
@@ -1104,18 +1104,18 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                varcur<-model$varcur
                                varcurb<-model$varcur
                                varglob<-model$varcur
-                               
+
                                modglob<-NULL
                                fm<-NULL
                                fmb<-NULL
-                               
+
                                # estimate large jump in a reverse move
                                if(model$reverse || is.infinite(mlikcur))
                                {
-                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcur,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcur,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                  if(!is.null(vectbg[[1]]$formula))
                                  {
-                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                    waiccur<-bgmod[[1]]$waic
                                    mlikcur<-bgmod[[1]]$mlik
                                  }
@@ -1130,49 +1130,49 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccur<-values(hashStat[iidd])[2]
                                    mlikcur<-values(hashStat[iidd])[1]
                                  }
-                                 
-                                 
-                                 
+
+
+
                                }
-                               
-                               
+
+
                                if(printable.opt)print(paste("Begin with ", mlikcur))
-                               
+
                                mlikglob<- mlikcur
                                mlikcand<- mlikcur
                                waiccand<- waiccur
                                waicglob<- waiccur
                                waiccur<-  waiccur
-                               
+
                                for(m in 1:M)
                                {
                                  withRestarts(tryCatch({
-                                   
+
                                    # statistics <- describe(statistics)
                                    vect<-buildmodel(varcur.old = varcur,statid = model$statid,max.cpu = max.cpu,switch.type=switch.type, min.N = min.N, max.N = max.N)
                                    cluster<-TRUE
                                    flag1<-0
-                                   
+
                                    for(mod_id in 1:max.cpu)
                                    {
                                      if(is.null(vect[[mod_id]]$formula))
                                      {
                                        flag1<-flag1+1
                                      }
-                                     
+
                                    }
-                                   
+
                                    #flag1<-sum(is.null(vect[[]]$formula))
-                                   
+
                                    if(flag1==max.cpu)
                                    {
                                      cluster<-FALSE
                                      if(printable.opt)print("!!!!MTMCMC models already estimated!!!!")
                                    }else
                                    {
-                                     
+
                                      res.par <- parallelize(X = vect,FUN = .self$fitmodel)
-                                     
+
                                    }
                                    p.select.y <- array(data = 0, dim = max.cpu)
                                    for(mod_id in 1:max.cpu)
@@ -1180,7 +1180,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(cluster)
                                      {
                                        fm<-res.par[[mod_id]]
-                                       
+
                                        if(is.null(fm)&&(is.na(res.par[[mod_id]]$waic)))
                                        {
                                          varcand<-varcurb
@@ -1188,9 +1188,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          next
                                        }
                                      }
-                                     
+
                                      varcand<-vect[[mod_id]]$varcur
-                                     
+
                                      if(cluster)
                                      {
                                        waiccand<-res.par[[mod_id]]$waic
@@ -1206,7 +1206,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccand<-values(hashStat[iidd])[2]
                                        mlikcand<-values(hashStat[iidd])[1]
                                      }
-                                     
+
                                      if((mlikcand>mlikglob)) #update the parameter of interest
                                      {
                                        if(printable.opt)print(paste("locMTMCMC update waic.glob = ", waiccand))
@@ -1217,39 +1217,39 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(cluster)
                                          modglob<-fm
                                      }
-                                     
-                                     
+
+
                                      g1 <- waiccur
-                                     
+
                                      if(waiccur == Inf)
                                      {
                                        g1 = 1
                                      }
-                                     
+
                                      p.select.y[mod_id]<-(mlikcand + vect[[mod_id]]$log.mod.switchback.prob+log(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos =  FALSE))) # correct for different criteria later
-                                     
+
                                      if(is.na(p.select.y[mod_id]))
                                        p.select.y[mod_id] <- 0
                                      if(is.infinite(p.select.y[mod_id]) || p.select.y[mod_id]>100000000)
-                                     { 
+                                     {
                                        #if(printable.opt)print(paste("very large log.w.y detected ",p.select.y[mod_id]))
                                        p.select.y[mod_id] <- 100000000
                                      }
-                                     
+
                                    }
-                                   
+
                                    max.p.select.y <- max(p.select.y)
                                    p.select.y<-p.select.y-max.p.select.y
-                                   
+
                                    #if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
-                                   
-                                   
+
+
                                    ID<-sample(x = max.cpu,size = 1,prob = exp(p.select.y))
-                                   
+
                                    if(printable.opt)print(paste("cand ",ID," selected"))
-                                   
+
                                    varcand<-vect[[ID]]$varcur
-                                   
+
                                    if(cluster)
                                    {
                                      waiccand<-res.par[[ID]]$waic
@@ -1265,31 +1265,31 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      waiccand<-values(hashStat[iidd])[2]
                                      mlikcand<-values(hashStat[iidd])[1]
                                    }
-                                   
+
                                    #p.Q.cand<- p.select.y[ID]/sum(p.select.y)
-                                   
+
                                    if(printable.opt)print("do reverse step")
-                                   
+
                                    p.select.z <- array(data = 0.01, dim = max.cpu)
-                                   
-                                   
+
+
                                    if(max.cpu!=1)
                                    {
                                      vect1<-buildmodel(max.cpu = max.cpu -1,varcur.old = varcand,statid = model$statid,switch.type = switch.type, min.N = min.N, max.N = max.N)
-                                     
+
                                      cluster<-TRUE
-                                     
+
                                      flag1<-0
-                                     
+
                                      for(mod_id in 1:(max.cpu-1))
                                      {
                                        if(is.null(vect1[[mod_id]]$formula))
                                        {
                                          flag1<-flag1+1
                                        }
-                                       
+
                                      }
-                                     
+
                                      if(flag1==(max.cpu-1))
                                      {
                                        cluster<-FALSE
@@ -1298,10 +1298,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        res.par.back <- parallelize(X = vect1,FUN = .self$fitmodel)
                                      }
-                                     
+
                                      for(mod_id in 1:(max.cpu-1))
                                      {
-                                       
+
                                        if(cluster)
                                        {
                                          if(is.null(fm)&&(is.na(res.par.back[[mod_id]]$waic)))
@@ -1310,9 +1310,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            next
                                          }
                                        }
-                                       
+
                                        varcand.b<-vect1[[mod_id]]$varcur
-                                       
+
                                        if(cluster)
                                        {
                                          waiccand.b<-res.par.back[[mod_id]]$waic
@@ -1328,7 +1328,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          waiccand.b<-values(hashStat[iidd])[2]
                                          mlikcand.b<-values(hashStat[iidd])[1]
                                        }
-                                       
+
                                        if((mlikcand.b>mlikglob))
                                        {
                                          if(printable.opt)print(paste("locMTMCMC update waic.glob = ", waiccand.b))
@@ -1339,16 +1339,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          if(cluster)
                                            modglob<-fm
                                        }
-                                       
+
                                        g1 = waiccand
-                                       
+
                                        if(waiccand == Inf)
                                        {
                                          g1 = 1
                                        }
-                                       
+
                                        p.select.z[mod_id]<-(mlikcand.b+vect1[[mod_id]]$log.mod.switchback.prob+(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand.b,g.domain.pos = FALSE))) # correct for different criteria later
-                                       
+
                                        if(is.na(p.select.z[mod_id]))
                                          p.select.z[mod_id]=0
                                        if(is.infinite(p.select.z[mod_id]) || p.select.z[mod_id] > 100000000)
@@ -1358,13 +1358,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
                                      }
                                    }
-                                   
+
                                    if( waiccur == Inf)
                                    {
                                      g1 = 1
                                    }
                                    p.select.z[max.cpu] <- (mlikcur+vect[[ID]]$log.mod.switch.prob+(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos = FALSE)))
-                                   
+
                                    if(is.na(p.select.z[mod_id]))
                                      p.select.z[mod_id]=0
                                    if(is.infinite(p.select.z[mod_id]) || p.select.z[mod_id] > 100000000)
@@ -1372,12 +1372,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      #if(printable.opt)print(paste("very large log.w.y detected ",p.select.z[mod_id]))
                                      p.select.z[mod_id] <- 100000000
                                    }
-                                   
+
                                    max.p.select.z <- max(p.select.z)
                                    p.select.z<-p.select.z-max.p.select.z
-                                   
+
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
-                                   
+
                                    if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
                                    {
                                      mlikcur<-mlikcand
@@ -1385,16 +1385,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(printable.opt)print(paste("locMTMCMC accept move with ", waiccand))
                                      varcur<-varcand
                                      waiccur<-waiccand
-                                     
+
                                    }
-                                   
+
                                  }),abort = function(){fm<-fmb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
                                }
-                               
+
                                #if(printable.opt)print("FINISH LOCAL MTMCMC")
-                               
+
                                #!#if(printable.opt)print(points)
-                               
+
                                if(model$reverse == FALSE)
                                {
                                  if(is.null(varcur))
@@ -1404,16 +1404,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccur<-waiccand
                                    varcur<-varcand
                                  }
-                                 
+
                                  vect<-buildmodel(max.cpu = 1,varcur.old = varcur,statid = model$statid,switch.type = type.randomize,min.N = min.N.randomize,max.N = max.N.randomize)
-                                 
-                                 
+
+
                                  varcur<-vect[[1]]$varcur
                                  #if(printable.opt)print(varcur)
-                                 
+
                                  cluster<-TRUE
-                                 
-                                 
+
+
                                  if(is.null(vect[[1]]$formula))
                                  {
                                    cluster<-FALSE
@@ -1422,7 +1422,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    mod<-fitmodel(vect[[1]])
                                  }
-                                 
+
                                  if(cluster)
                                  {
                                    waiccur<-mod$waic
@@ -1439,10 +1439,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    mlikcur<-values(hashStat[iidd])[1]
                                  }
                                  # incorporate what happens for the backward optimization
-                                 
+
                                  model.prob<-vect[[1]]$log.mod.switch.prob
                                  model.prob.fix<-vect[[1]]$log.mod.switchback.prob
-                                 
+
                                }else  # incorporate what happens for the reverse move
                                {
                                  if(is.null(varcur))
@@ -1451,11 +1451,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    varcur<-varcand
                                    waiccur<-waiccand
                                  }
-                                 model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = model$varold,switch.type = type.randomize,min.N = min.N.randomize,max.N = max.N.randomize) 
+                                 model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = model$varold,switch.type = type.randomize,min.N = min.N.randomize,max.N = max.N.randomize)
                                  model.prob<-model.probs$log.switch.forw.prob
                                  model.prob.fix<-model.probs$log.switch.back.prob
                                }
-                               
+
                                if(is.null(varcur))
                                {
                                  #if(printable.opt)print("NO VARCUR OBTAINED")
@@ -1463,7 +1463,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  waiccur<-Inf
                                  varcur<-model$varold
                                }
-                               
+
                                return(list(varcur = varcur, waiccur = waiccur, mlikcur = mlikcur, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
                              #local simulated annealing optimization
@@ -1484,17 +1484,17 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                first.prob <- 1
                                fm<-NULL
                                fmb<-NULL
-                               
+
                                mlikcur<- model$mlikcur
                                waiccur<-model$waiccur
                                # estimate large jump in a reverse move
                                # estimate large jump in a reverse move
                                if((model$reverse && !model$sa2) || is.infinite(mlikcur))
                                {
-                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcur,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcur,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                  if(!is.null(vectbg[[1]]$formula))
                                  {
-                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                    waiccur<-bgmod[[1]]$waic
                                    mlikcur<-bgmod[[1]]$mlik
                                  }
@@ -1509,16 +1509,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccur<-values(hashStat[iidd])[2]
                                    mlikcur<-values(hashStat[iidd])[1]
                                  }
-                                 
+
                                }
-                               
+
                                if(printable.opt)print(paste("Begin with ", mlikcur))
                                mlikglob<- mlikcur
                                mlikcand<- mlikcur
                                waiccand<- waiccur
                                waicglob<- waiccur
                                waiccur<-  waiccur
-                               
+
                                while(t>t.min)
                                {
                                  if(printable.opt)print(paste("anneal to ",t))
@@ -1530,7 +1530,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  for(m in 1:M)
                                  {
                                    withRestarts(tryCatch({
-                                     
+
                                      mmax.cpu = max.cpu
                                      if(model$switch.type == 5)
                                      {
@@ -1541,8 +1541,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }
                                      if(mmax.cpu == 0)
                                        mmax.cpu = 1
-                                     
-                                     vect<-buildmodel(max.cpu = mmax.cpu,varcur.old = varcur,statid = model$statid,switch.type=model$switch.type, min.N = min.N,max.N = max.N) 
+
+                                     vect<-buildmodel(max.cpu = mmax.cpu,varcur.old = varcur,statid = model$statid,switch.type=model$switch.type, min.N = min.N,max.N = max.N)
                                      cluster<-TRUE
                                      flag1<-0
                                      for(mod_id in 1:mmax.cpu)
@@ -1551,7 +1551,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          flag1<-flag1+1
                                        }
-                                       
+
                                      }
                                      if(flag1==mmax.cpu)
                                      {
@@ -1559,7 +1559,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(printable.opt)print("!!!!SA Models already estimated!!!!")
                                      }else
                                      {
-                                       res.par <- parallelize(X = vect,FUN = .self$fitmodel)      
+                                       res.par <- parallelize(X = vect,FUN = .self$fitmodel)
                                      }
                                      for(mod_id in 1:mmax.cpu)
                                      {
@@ -1575,7 +1575,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            next
                                          }
                                        }
-                                       
+
                                        varcand<-vect[[mod_id]]$varcur
                                        if(cluster)
                                        {
@@ -1592,7 +1592,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          waiccand<-values(hashStat[iidd])[2]
                                          mlikcand<-values(hashStat[iidd])[1]
                                        }
-                                       
+
                                        if(objective==0)
                                        {
                                          objcand<-waiccand
@@ -1604,13 +1604,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          objcur<-  -mlikcur
                                          objglob<- -mlikglob
                                        }
-                                       
+
                                        if(t == SA.param$t.init && mod_id == 1 && m == 2)
                                        {
                                          delta<-objcand - objcur
                                          first.prob <- vect[[mod_id]]$log.mod.switchback.prob + log(punif(q = exp(x = delta/t),min = 0,max = 1))
                                        }
-                                       
+
                                        if(objcand<objcur)
                                        {
                                          if(printable.opt)print(paste("SA accept move with ", objcand))
@@ -1624,16 +1624,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            mlikglob<-mlikcand
                                            if(cluster)
                                              modglob<-fm
-                                           
+
                                            if(printable.opt)print(paste("SA update global optima with", objcand))
                                          }
                                        }else
-                                       { 
+                                       {
                                          delta<-objcand - objcur
                                          if(runif(n = 1,min = 0,max = 1) <= exp(x = -delta/t))
                                          {
-                                           
-                                           model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = varcand,switch.type = model$switch.type,min.N = min.N,max.N = max.N) 
+
+                                           model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = varcand,switch.type = model$switch.type,min.N = min.N,max.N = max.N)
                                            probcur<-model.probs$log.switch.forw.prob
                                            probrevcur<-model.probs$log.switch.back.prob
                                            waiccur<-waiccand
@@ -1642,51 +1642,51 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            if(printable.opt)print(paste("SA accept move with ", objcand))
                                          }
                                        }
-                                       
+
                                      }
-                                     
+
                                    }),abort = function(){varcur<-varcurb; fm<-fmb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
                                  }
-                                 t<-t.new   
+                                 t<-t.new
                                }
                                t<-t/exp(-dt)
-                               
+
                                if(model$reverse == FALSE)
                                {
                                  model.prob<-log(punif(q = exp(x = -delta/t),min = 0,max = 1)) +  probcur # log(P(Mk,Mk-1))
                                  model.prob.fix<-log(punif(q = exp(x = delta/t),min = 0,max = 1)) + probrevcur # log(P(Mk-1,Mk))
-                                 
+
                                  if(model$sa2 == TRUE)
                                  {
                                    model.prob.fix<-model.prob.fix + first.prob # correcting for the term for local improvements of type 3.
                                  }
                                }else  # incorporate what happens for the reverse move
                                {
-                                 
+
                                  if(is.null(varcur))
                                  {
                                    if(printable.opt)print("No moves accepted in the reverse procedure")
                                    varcur<-model$varcur
                                    objcur<-model$objcur
                                  }
-                                 
+
                                  delta<-objcur-model$objold
-                                 
-                                 
-                                 model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = model$varold, switch.type = model$switch.type,min.N = min.N,max.N = max.N)  
+
+
+                                 model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = model$varold, switch.type = model$switch.type,min.N = min.N,max.N = max.N)
                                  model.prob<-punif(q = exp(x = -delta/t),min = 0,max = 1,log.p = TRUE) +  model.probs$log.switch.forw.prob
                                  model.prob.fix<-punif(q = exp(x = delta/t),min = 0,max = 1,log.p = TRUE) + model.probs$log.switch.back.prob
-                                 
+
                                  if(model.prob==-Inf)
                                  {
                                    model.prob<- -100000000
                                  }
                                  if(model.prob.fix==-Inf)
-                                 {   
+                                 {
                                    model.prob.fix<- -100000000
                                  }
                                }
-                               
+
                                return(list(varcur = varcur, waiccur = waiccur, mlikcur = mlikcur, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
                              #forward selection procedure
@@ -1704,24 +1704,24 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                waiccurb<-model$waiccur
                                varglob<-NULL
                                modglob<-NULL
-                               
-                               
+
+
                                fm<-NULL
                                fmb<-NULL
-                               
+
                                ub<-bittodec(array(1,length(varcurb)))
                                layer<-length(which(varcurb == 0))
-                               
+
                                mlikcur<- model$mlikcur
                                waiccur<-model$waiccur
                                # estimate large jump in a reverse move
                                # estimate large jump in a reverse move
                                if(is.infinite(mlikcur))
                                {
-                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                  if(!is.null(vectbg[[1]]$formula))
                                  {
-                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                    waiccur<-bgmod[[1]]$waic
                                    mlikcur<-bgmod[[1]]$mlik
                                  }
@@ -1730,7 +1730,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    iidd<-bittodec(varcand)+1
                                    waiccur<-statistics1[iidd,2]
                                    mlikcur<-statistics1[iidd,1]
-                                 }  
+                                 }
                                  else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcand,collapse = "")
@@ -1747,19 +1747,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccurb<- waiccur
                                  }
                                }
-                               
-                               
+
+
                                while(layer>0)
                                {
                                  withRestarts(tryCatch({
-                                   
+
                                    if(printable.opt)print(paste("proceed with layer",layer))
                                    if(printable.opt)print(paste("current solution is",as.character(varcand)))
-                                   
+
                                    vect<-buildmodel(max.cpu = layer,varcur.old = varcurb,statid = model$statid, switch.type = 5,min.N = min.N, max.N = max.N)
-                                   
+
                                    if(printable.opt)print(paste("finish preparing models at layer",layer))
-                                   
+
                                    cluster<-TRUE
                                    flag1<-0
                                    for(mod_id in 1:layer)
@@ -1768,7 +1768,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        flag1<-flag1+1
                                      }
-                                     
+
                                    }
                                    if(flag1==layer)
                                    {
@@ -1776,9 +1776,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(printable.opt)print("!!!!forward Models already estimated!!!!")
                                    }else
                                    {
-                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)       
+                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)
                                    }
-                                   
+
                                    if(printable.opt)print(paste("end forward optimizing at layer",layer))
                                    for(mod_id in 1:layer)
                                    {
@@ -1793,7 +1793,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          next
                                        }
                                      }
-                                     
+
                                      varcand<-vect[[mod_id]]$varcur
                                      if(cluster)
                                      {
@@ -1810,7 +1810,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccand<-values(hashStat[iidd])[2]
                                        mlikcand<-values(hashStat[iidd])[1]
                                      }
-                                     
+
                                      if(objective==0)
                                      {
                                        objcand<-waiccand
@@ -1822,8 +1822,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        objcur<-  -mlikcur
                                        objglob<- -mlikglob
                                      }
-                                     
-                                     
+
+
                                      if(objcand<=objcur || mod_id ==1)
                                      {
                                        if(printable.opt)print(paste("forward accept with ", objcand))
@@ -1832,7 +1832,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccur<-waiccand
                                        varcur<-varcand
                                        mlikcur<-mlikcand
-                                       
+
                                        if(objcur<objglob)
                                        {
                                          objglob<-objcur
@@ -1841,44 +1841,44 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          mlikglob<-mlikcand
                                          if(!is.null(fm))
                                            modglob<-fm
-                                         
+
                                          if(printable.opt)print(paste("forward global optima with ", objcand))
                                        }
                                      }
                                      #                                                         else
-                                     #                                                          { 
+                                     #                                                          {
                                      #                                                            if(waiccand<=waiccur)
                                      #                                                            {
                                      #                                                              waiccur<-waiccand
                                      #                                                              varcur<-varcand
                                      #                                                            }
-                                     #                                                            
+                                     #
                                      #                                                          }
-                                     
+
                                    }
                                    if(objcur!=objglob)
                                    {
                                      if(model$locstop)
-                                     { 
-                                       break 
+                                     {
+                                       break
                                      }else
                                      {
                                        varcurb<-varcur
                                      }
                                    }
-                                   
+
                                  }),abort = function(){varcur<-varcurb; fm<-fmb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
-                                 
-                                 
+
+
                                  layer<-layer-1
                                }
-                               
+
                                model.prob<-1
-                               
-                               
+
+
                                model.prob.fix<-1
-                               
-                               
+
+
                                return(list(varcur = varglob, waiccur = waicglob, mlikcur = mlikglob, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
                              #backward selection procedure
@@ -1895,19 +1895,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                varglob<-NULL
                                modglob<-NULL
                                waiccurb<- model$waiccur
-                               
+
                                fm<-NULL
                                fmb<-NULL
-                               
+
                                ub<-bittodec(array(1,length(varcurb)))
                                layer<-length(which(varcurb == 1))
-                               
+
                                if(is.infinite(mlikcur))
                                {
-                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                  if(!is.null(vectbg[[1]]$formula))
                                  {
-                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                    waiccur<-bgmod[[1]]$waic
                                    mlikcur<-bgmod[[1]]$mlik
                                  }
@@ -1932,18 +1932,18 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccurb<- waiccur
                                  }
                                }
-                               
-                               
+
+
                                while(layer>0)
                                {
                                  withRestarts(tryCatch({
-                                   
+
                                    if(printable.opt)print(paste("backward proceed with layer",layer))
                                    if(printable.opt)print(paste("current backward solution is",as.character(varcand)))
-                                   vect<-buildmodel(max.cpu = layer,varcur.old = varcurb,statid = model$statid, switch.type = 6,min.N = min.N, max.N = max.N) 
-                                   
+                                   vect<-buildmodel(max.cpu = layer,varcur.old = varcurb,statid = model$statid, switch.type = 6,min.N = min.N, max.N = max.N)
+
                                    if(printable.opt)print(paste("finish backward preparing models at layer",layer))
-                                   
+
                                    cluster<-TRUE
                                    flag1<-0
                                    for(mod_id in 1:layer)
@@ -1952,7 +1952,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        flag1<-flag1+1
                                      }
-                                     
+
                                    }
                                    if(flag1==layer)
                                    {
@@ -1960,10 +1960,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(printable.opt)print("!!!!backward Models already estimated!!!!")
                                    }else
                                    {
-                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)       
+                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)
                                    }
                                    if(printable.opt)print(paste("end backward optimizing at layer",layer))
-                                   
+
                                    for(mod_id in 1:layer)
                                    {
                                      if(cluster){
@@ -1977,7 +1977,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          next
                                        }
                                      }
-                                     
+
                                      varcand<-vect[[mod_id]]$varcur
                                      if(cluster)
                                      {
@@ -1994,7 +1994,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccand<-values(hashStat[iidd])[2]
                                        mlikcand<-values(hashStat[iidd])[1]
                                      }
-                                     
+
                                      if(objective==0)
                                      {
                                        objcand<-waiccand
@@ -2006,8 +2006,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        objcur<-  -mlikcur
                                        objglob<- -mlikglob
                                      }
-                                     
-                                     
+
+
                                      if(objcand<=objcur|| mod_id ==1)
                                      {
                                        if(printable.opt)print(paste("backward accept with ", objcand))
@@ -2016,7 +2016,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccur<-waiccand
                                        varcur<-varcand
                                        mlikcur<-mlikcand
-                                       
+
                                        if(objcur<objglob)
                                        {
                                          objglob<-objcur
@@ -2025,47 +2025,47 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          mlikglob<-mlikcand
                                          if(!is.null(fm))
                                            modglob<-fm
-                                         
+
                                          if(printable.opt)print(paste("backward global optima with ", objcand))
                                        }
                                      }
-                                     
+
                                    }
                                    if(objcur!=objglob)
                                    {
                                      if(model$locstop)
-                                     { 
-                                       break 
+                                     {
+                                       break
                                      }else
                                      {
                                        varcurb<-varcur
                                      }
                                    }
-                                   
-                                   
+
+
                                  }),abort = function(){varcur<-varcurb; fm<-fmb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
-                                 
-                                 
+
+
                                  layer<-layer-1
                                }
-                               
-                               
-                               
+
+
+
                                model.prob<-1
-                               
-                               
+
+
                                model.prob.fix<-1
-                               
-                               
+
+
                                return(list(varcur = varglob, waiccur = waicglob, mlikcur = mlikglob, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
-                             #full selection procedure 
+                             #full selection procedure
                              full_selection=function(model)
                              {
                                if(printable.opt)print(paste("begin full selection procedure!","Careful, ",2^Nvars," models have to be estimated"))
                                if(Nvars>30)
                                  if(printable.opt)print("Finishing the procedure might well take forever!")
-                               
+
                                varcand<-array(0,Nvars)
                                varcurb<-varcand
                                varglob<-varcand
@@ -2077,28 +2077,28 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                waicglob<-model$waiccur
                                waiccur<-model$waiccur
                                waiccurb<-model$waiccur
-                               
-                               
+
+
                                fm<-NULL
                                fmb<-NULL
-                               
+
                                ubs<-as.integer(bittodec(array(1,Nvars)) + 1)
-                               
+
                                ub<-model$ub
-                               
+
                                totit<-as.integer(ubs/ub) + 1
-                               
+
                                if(model$totalit<totit)
                                {
                                  totit<-model$totalit
                                }
-                               
+
                                if(is.infinite(mlikcur))
                                {
-                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                  if(!is.null(vectbg[[1]]$formula))
                                  {
-                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                    waiccur<-bgmod[[1]]$waic
                                    mlikcur<-bgmod[[1]]$mlik
                                  }
@@ -2123,21 +2123,21 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccurb<- waiccur
                                  }
                                }
-                               
-                               
+
+
                                for(i in 1:totit)
                                {
                                  if(ub*i>ubs)
                                  {
-                                   
+
                                    ub<-ubs - ub*(i-1)-1
                                    if(printable.opt)print(paste("last ",ub," iterations to complete"))
                                    varcurb<-varcand
                                  }
                                  withRestarts(tryCatch({
-                                   
-                                   
-                                   vect<-buildmodel(max.cpu = ub,varcur.old = varcurb,statid = model$statid,switch.type = 7, shift.cpu = model$ub*(i-1),min.N = min.N,max.N = max.N) 
+
+
+                                   vect<-buildmodel(max.cpu = ub,varcur.old = varcurb,statid = model$statid,switch.type = 7, shift.cpu = model$ub*(i-1),min.N = min.N,max.N = max.N)
                                    if(printable.opt)print(paste("proceed with full ecumeration"))
                                    if(printable.opt)print(paste("current solution is",as.character(varcand)))
                                    cluster<-TRUE
@@ -2148,7 +2148,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        flag1<-flag1+1
                                      }
-                                     
+
                                    }
                                    if(flag1==ub)
                                    {
@@ -2156,11 +2156,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(printable.opt)print("!!!!full models already estimated!!!!")
                                    }else
                                    {
-                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)       
+                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)
                                    }
-                                   
+
                                    if(printable.opt)print(paste("end optimizing full ecumeration"))
-                                   
+
                                    for(mod_id in 1:ub)
                                    {
                                      if(cluster){
@@ -2174,7 +2174,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          next
                                        }
                                      }
-                                     
+
                                      varcand<-vect[[mod_id]]$varcur
                                      if(cluster)
                                      {
@@ -2191,7 +2191,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccand<-values(hashStat[iidd])[2]
                                        mlikcand<-values(hashStat[iidd])[1]
                                      }
-                                     
+
                                      if(objective==0)
                                      {
                                        objcand<-waiccand
@@ -2203,8 +2203,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        objcur<-  -mlikcur
                                        objglob<- -mlikglob
                                      }
-                                     
-                                     
+
+
                                      if(objcand<=objcur)
                                      {
                                        if(printable.opt)print(paste("full accept with ", objcand))
@@ -2213,7 +2213,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccur<-waiccand
                                        varcur<-varcand
                                        mlikcur<-mlikcand
-                                       
+
                                        if(objcur<objglob)
                                        {
                                          objglob<-objcur
@@ -2222,25 +2222,25 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          mlikglob<-mlikcand
                                          if(!is.null(fm))
                                            modglob<-fm
-                                         
+
                                          if(printable.opt)print(paste("full global optima with ", objcand))
                                        }
                                      }
-                                     varcurb<-varcand  
+                                     varcurb<-varcand
                                    }
-                                   
+
                                    #waiccurb<-waiccur
-                                   
+
                                  }),abort = function(){varcur<-varcurb; fm<-fmb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
                                }
-                               
-                               
+
+
                                #                                                     if(length(which(varcur == 1))==(Nvars-1))
                                #                                                     {
-                               #                                                       vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                               #                                                       vectbg<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                #                                                       if(!is.null(vectbg[[1]]$formula))
                                #                                                       {
-                               #                                                         bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                               #                                                         bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                #                                                         waiccand<-bgmod[[1]]$waic
                                #                                                         mlikcand<-bgmod[[1]]$mlik
                                #                                                       }
@@ -2249,7 +2249,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                #                                                         iidd<-bittodec(varcur)+1
                                #                                                         waiccand<-statistics1[iidd,2]
                                #                                                         mlikcand<-statistics1[iidd,1]
-                               #                                                       } 
+                               #                                                       }
                                #                                                       if(objective==0)
                                #                                                       {
                                #                                                         objcand<-waiccand
@@ -2261,8 +2261,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                #                                                         objcur<-  -mlikcur
                                #                                                         objglob<- -mlikglob
                                #                                                       }
-                               #                                                       
-                               #                                                       
+                               #
+                               #
                                #                                                       if(objcand<=objcur)
                                #                                                       {
                                #                                                         if(printable.opt)print(paste("full accept with ", objcand))
@@ -2271,7 +2271,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                #                                                         waiccur<-waiccand
                                #                                                         varcur<-varcand
                                #                                                         mlikcur<-mlikcand
-                               #                                                         
+                               #
                                #                                                         if(objcur<objglob)
                                #                                                         {
                                #                                                           objglob<-objcur
@@ -2280,18 +2280,18 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                #                                                           mlikglob<-mlikcand
                                #                                                           if(!is.null(fm))
                                #                                                             modglob<-fm
-                               #                                                           
+                               #
                                #                                                           if(printable.opt)print(paste("full global optima with ", objcand))
                                #                                                         }
                                #                                                       }
                                #                                                     }
-                               #                                                     
+                               #
                                model.prob<-1
-                               
-                               
+
+
                                model.prob.fix<-1
-                               
-                               
+
+
                                return(list(varcur = varglob, waiccur = waicglob, mlikcur = mlikglob, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
                              #forward backward random dance
@@ -2320,7 +2320,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      varcur<-fff$varglob
                                      waiccur<-fff$waicglob
                                    }
-                                   
+
                                  }
                                  set.seed(i*model$steps)
                                  bbb<-backward_selection(list(varcur=rbinom(n = Nvars,size = 1,prob =  runif(n = 1,min = model$p1,max = 1)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
@@ -2341,32 +2341,32 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      varcur<-bbb$varglob
                                      waiccur<-bbb$waicglob
                                    }
-                                   
+
                                  }
                                }
                                if(model$reverse == FALSE)
                                {
-                                 
+
                                  vect<-buildmodel(max.cpu = 1,varcur.old = varcur,statid = -1,switch.type = type.randomize,min.N = min.N.randomize,max.N = max.N.randomize)
-                                 
+
                                  varcur<-vect[[1]]$varcur
                                  #if(printable.opt)print(varcur)
-                                 
+
                                  cluster<-TRUE
-                                 
-                                 
-                                 
+
+
+
                                  if(is.null(vect[[1]]$formula))
                                  {
                                    cluster<-FALSE
                                    if(printable.opt)print("!!!!Back Forw reverse model already estimated!!!!")
                                  }else
                                  {
-                                   
+
                                    mod <- lapply(X = vect, FUN = fitmodel)
-                                   
+
                                  }
-                                 
+
                                  if(cluster)
                                  {
                                    waiccur<-mod[[1]]$waic
@@ -2382,27 +2382,27 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccur<-values(hashStat[iidd])[2]
                                    mlikcur<-values(hashStat[iidd])[1]
                                  }
-                                 
+
                                  # incorporate what happens for the backward optimization
-                                 
+
                                  model.prob<-vect[[1]]$log.mod.switch.prob
                                  model.prob.fix<-vect[[1]]$log.mod.switchback.prob
-                                 
+
                                }else  # incorporate what happens for the reverse move
                                {
-                                 
-                                 model.probs<-calculate.move.logprobabilities(switch.type = type.randomize,varold = varcur, varnew = model$varold,min.N = min.N.randomize,max.N = max.N.randomize) 
+
+                                 model.probs<-calculate.move.logprobabilities(switch.type = type.randomize,varold = varcur, varnew = model$varold,min.N = min.N.randomize,max.N = max.N.randomize)
                                  model.prob<-model.probs$log.switch.forw.prob
                                  model.prob.fix<-model.probs$log.switch.back.prob
-                                 
+
                                }
-                               
+
                                return(list(varcur = varcur, waiccur = waiccur, mlikcur = mlikcur, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varcur, waicglob = waiccur, mlikglob = mlikcur))
-                             },  
+                             },
                              #local greedy optimization
                              learnlocalND=function(model)
                              {
-                               
+
                                # Step.nd
                                varcand<-model$varcur
                                varglob<-model$varcur
@@ -2413,15 +2413,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                fm<-NULL
                                fmb<-NULL
                                opt.achieved<-FALSE
-                               
-                               
+
+
                                # estimate large jump in a reverse move
                                if(model$reverse || is.infinite(mlikcand))
                                {
-                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcand,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N) 
+                                 vectbg<-buildmodel(max.cpu = 1,varcur.old = varcand,statid = model$statid,switch.type=8, min.N = min.N,max.N = max.N)
                                  if(!is.null(vectbg[[1]]$formula))
                                  {
-                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)  
+                                   bgmod <- lapply(X = vectbg,FUN = .self$fitmodel)
                                    waiccand<-bgmod[[1]]$waic
                                    mlikcand<-bgmod[[1]]$mlik
                                  }
@@ -2436,19 +2436,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccand<-values(hashStat[iidd])[2]
                                    mlikcand<-values(hashStat[iidd])[1]
                                  }
-                                 
-                                 
+
+
                                }
-                               
-                               
+
+
                                if(printable.opt)print(paste("Begin with ",mlikcand))
-                               
+
                                mlikglob<- mlikcand
                                mlikcand<- mlikcand
                                waiccand<- waiccand
                                waicglob<- waiccand
                                waiccur<-  waiccand
-                               
+
                                buf.M.nd <- M.nd
                                if(model$switch.type == 5)
                                {
@@ -2461,7 +2461,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  buf.M.nd = 1
                                if(M.nd<buf.M.nd)
                                  buf.M.nd<-M.nd
-                               
+
                                for(iterat in 1:buf.M.nd)
                                {
                                  withRestarts(tryCatch({
@@ -2477,29 +2477,29 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(mmax.cpu == 0)
                                      mmax.cpu = 1
                                    vect<-buildmodel(max.cpu = mmax.cpu,varcur.old = varcurb,statid = model$statid, switch.type = model$switch.type,min.N = min.N,max.N = max.N)
-                                   
+
                                    cluster<-TRUE
-                                   
+
                                    flag1<-0
-                                   
+
                                    for(mod_id in 1:mmax.cpu)
                                    {
                                      if(is.null(vect[[mod_id]]$formula))
                                      {
                                        flag1<-flag1+1
                                      }
-                                     
+
                                    }
-                                   
+
                                    if(flag1==mmax.cpu)
                                    {
                                      cluster<-FALSE
                                      if(printable.opt)print("!!!!Greedy Models already estimated!!!!")
                                    }else
                                    {
-                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)   
+                                     res.par <- parallelize(X = vect,FUN = .self$fitmodel)
                                    }
-                                   
+
                                    for(mod_id in 1:mmax.cpu)
                                    {
                                      varcand1<-vect[[mod_id]]$varcur
@@ -2518,7 +2518,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccand1<-values(hashStat[iidd])[2]
                                        mlikcand1<-values(hashStat[iidd])[1]
                                      }
-                                     
+
                                      if(objective==0)
                                      {
                                        objcand<-waiccand1
@@ -2531,9 +2531,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        objcur<-  -mlikcand
                                        objglob<- -mlikglob
                                      }
-                                     
+
                                      if(objcand<objcur || mod_id ==1)
-                                     { 
+                                     {
                                        varcand<-varcand1
                                        waiccand<-waiccand1
                                        mlikcand<-mlikcand1
@@ -2543,7 +2543,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }
                                    }
                                    #if(printable.opt)print(waiccand)
-                                   
+
                                    if(objective==0)
                                    {
                                      objcand<-waiccand1
@@ -2556,7 +2556,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      objcur<-  -mlikcand
                                      objglob<- -mlikglob
                                    }
-                                   
+
                                    if(objcur<objglob)
                                    {
                                      waicglob<-waiccand
@@ -2565,52 +2565,52 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      mlikglob<-mlikcand
                                      if(cluster)
                                        modglob<-fm
-                                     
+
                                      if(printable.opt)print(paste("GREEDY update global optima with ", objcur))
-                                     
+
                                    }
-                                   
+
                                  }),abort = function(){opt.achieved <- TRUE; fm<-fmb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
-                                 
+
                                  if(objcur!=objglob)
                                  {
                                    if(locstop.nd)
-                                   { 
-                                     break 
+                                   {
+                                     break
                                    }else
                                    {
                                      varcurb<-varcand
                                    }
                                  }
-                                 
-                                 
+
+
                                }
-                               
+
                                #!#if(printable.opt)print(points)
-                               
+
                                if(model$reverse == FALSE)
                                {
-                                 
+
                                  vect<-buildmodel(max.cpu = 1,varcur.old = varcand,statid = model$statid,switch.type = type.randomize,min.N = min.N.randomize,max.N = max.N.randomize)
-                                 
+
                                  varcur<-vect[[1]]$varcur
                                  #if(printable.opt)print(varcur)
-                                 
+
                                  cluster<-TRUE
-                                 
-                                 
-                                 
+
+
+
                                  if(is.null(vect[[1]]$formula))
                                  {
                                    cluster<-FALSE
                                    if(printable.opt)print("!!!!Greedy reverse model already estimated!!!!")
                                  }else
                                  {
-                                   
+
                                    mod <- lapply(X = vect, FUN = fitmodel)
-                                   
+
                                  }
-                                 
+
                                  if(cluster)
                                  {
                                    waiccur<-mod[[1]]$waic
@@ -2626,29 +2626,29 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    waiccur<-values(hashStat[iidd])[2]
                                    mlikcur<-values(hashStat[iidd])[1]
                                  }
-                                 
+
                                  # incorporate what happens for the backward optimization
-                                 
+
                                  model.prob<-vect[[1]]$log.mod.switch.prob
                                  model.prob.fix<-vect[[1]]$log.mod.switchback.prob
-                                 
+
                                }else  # incorporate what happens for the reverse move
                                {
-                                 
-                                 model.probs<-calculate.move.logprobabilities(switch.type = type.randomize,varold = varcand, varnew = model$varold,min.N = min.N.randomize,max.N = max.N.randomize) 
+
+                                 model.probs<-calculate.move.logprobabilities(switch.type = type.randomize,varold = varcand, varnew = model$varold,min.N = min.N.randomize,max.N = max.N.randomize)
                                  model.prob<-model.probs$log.switch.forw.prob
                                  model.prob.fix<-model.probs$log.switch.back.prob
                                  varcur <- varcand
                                  waiccur <- waiccand
                                  mlikcur <- mlikcand
                                }
-                               
+
                                return(list(varcur = varcur, waiccur = waiccur, mlikcur = mlikcur, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
                              #global emjmcmc procedure for model selection (hyper heuristic logic in terms of COP)
                              modejumping_mcmc=function(glob.model)
                              {
-                               
+
                                stm <- proc.time()
                                if(printable.opt)print("Begin model selection EMJMCMC2016 procedure")
                                set.seed(runif(n = 1, min = 1, max = seed), kind = NULL, normal.kind = NULL)
@@ -2661,8 +2661,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                g.results[4,2]<- 0
                                forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
                                backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
-                               
-                               
+
+
                                if(exists("statistics1")&&recalc.margin != 2^Nvars)
                                {
                                  p.add <<- as.array(post_proceed_results(statistics1)$p.post)
@@ -2672,7 +2672,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                mlikcur<- -Inf
                                mlikglob<- -Inf
                                ratcur<- -Inf
-                               
+
                                #set up initial parameters
                                if(is.null(glob.model$varcur))
                                {
@@ -2685,9 +2685,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    mlikcur<- g.results[1,1]
                                    mlikglob<- g.results[1,1]
                                    ratcur<- g.results[1,1]
-                                  
+
                                    print(paste("initial solution is set with mlik of ",mlikcur))
-                              
+
                                  }else{
                                   vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
                                   varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
@@ -2701,13 +2701,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(printable.opt)print("Incorrect initial solution set be the user, a random one is generated")
                                  vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
-                                 
+
                                }
-                               
+
                                varcurb<-varcur
                                varglob<-varcur
                                modglob<-NULL
-                               
+
                                p1 = array(data = 0,dim = Nvars)
                                p2 = array(data = 1,dim = Nvars)
                                j<-0
@@ -2724,7 +2724,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                LocImprove<-0
                                LocNeighbor<-0
                                max.cpu.buf<-max.cpu.glob
-                               
+
                                while((eps.emp>=glob.model$eps || j<= glob.model$maxit || j <= glob.model$burnin) && delta.time < glob.model$max.time && g.results[4,1]<= glob.model$trit && g.results[4,2]<= glob.model$trest)
                                {
                                  p1<-p.post/acc_moves
@@ -2737,23 +2737,23 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    switch.type.glob.buf = 9
                                    switch.type.buf = 9
-                                   
+
                                  }
-                                 
+
                                  #if(printable.opt)print(LocImprove)
                                  j<-j+1
                                  if(j%%glob.model$print.freq == 0)
                                  {
-                                   print(paste(j," iterations completed up to now after ",delta.time," cpu minutes"," best MLIK found ",g.results[1,1] ," current mlik found ",mlikcur,  "current acceptance ratio ",acc_moves/j))             
+                                   print(paste(j," iterations completed up to now after ",delta.time," cpu minutes"," best MLIK found ",g.results[1,1] ," current mlik found ",mlikcur,  "current acceptance ratio ",acc_moves/j))
                                  }
                                  if(j%%100==0)
                                    seed = runif(n = 1,min = 0,max = 100000)
-                                 
+
                                  #withRestarts(tryCatch({
-                                 
+
                                  varcur<-varcurb
                                  if(LocImprove<=3)
-                                 {  
+                                 {
                                    vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = 4 + LocImprove,min.N = min.N.glob,max.N = max.N.glob,switch.type = switch.type.glob.buf)
                                    max.cpu.buf = 1
                                  }else
@@ -2761,20 +2761,20 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    vect<-buildmodel(max.cpu = max.cpu.glob,varcur.old = varcurb,statid = 4 + LocImprove,min.N = min.N,max.N = max.N,switch.type = switch.type.glob.buf)
                                    max.cpu.buf = max.cpu.glob
                                  }
-                                 
+
                                  cluster<-TRUE
-                                 
+
                                  flag1<-0
-                                 
+
                                  for(mod_id in 1:max.cpu.buf)
                                  {
                                    if(is.null(vect[[mod_id]]$formula))
                                    {
                                      flag1<-flag1+1
                                    }
-                                   
+
                                  }
-                                 
+
                                  if(flag1==max.cpu.glob)
                                  {
                                    cluster<-FALSE
@@ -2786,10 +2786,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    else
                                      res.par <- lapply(X = vect,FUN = .self$fitmodel)
                                  }
-                                 
+
                                  if(LocImprove>3)
                                  {
-                                   
+
                                    if(printable.opt)print("!!!!Proceed with no local improvements!!!!")
                                    p.select.y <- array(data = 0, dim = max.cpu.glob)
                                    for(mod_id in 1:max.cpu.glob)
@@ -2797,7 +2797,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(cluster)
                                      {
                                        fm<-res.par[[mod_id]]
-                                       
+
                                        if(is.null(fm)&&(is.na(res.par[[mod_id]]$waic)))
                                        {
                                          varcand<-varcurb
@@ -2805,9 +2805,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          next
                                        }
                                      }
-                                     
+
                                      varcand<-vect[[mod_id]]$varcur
-                                     
+
                                      if(cluster)
                                      {
                                        waiccand<-res.par[[mod_id]]$waic
@@ -2823,7 +2823,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        waiccand<-values(hashStat[iidd])[2]
                                        mlikcand<-values(hashStat[iidd])[1]
                                      }
-                                     
+
                                      if((mlikcand>mlikglob)) #update the parameter of interest
                                      {
                                        if(printable.opt)print(paste("GlobMTMCMC update waic.glob = ", waiccand))
@@ -2834,39 +2834,39 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(cluster)
                                          modglob<-fm
                                      }
-                                     
-                                     
+
+
                                      g1 <- waiccur
-                                     
+
                                      if(waiccur == Inf)
                                      {
                                        g1 = 1
                                      }
-                                     
+
                                      p.select.y[mod_id]<-(mlikcand + vect[[mod_id]]$log.mod.switchback.prob+log(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos =  FALSE))) # correct for different criteria later
-                                     
+
                                      if(is.na(p.select.y[mod_id]))
                                        p.select.y[mod_id] <- 0
                                      if(is.infinite(p.select.y[mod_id]) || p.select.y[mod_id]>100000000)
-                                     { 
+                                     {
                                        #if(printable.opt)print(paste("very large log.w.y detected ",p.select.y[mod_id]))
                                        p.select.y[mod_id] <- 100000000
                                      }
-                                     
+
                                    }
-                                   
+
                                    max.p.select.y <- max(p.select.y)
                                    p.select.y<-p.select.y-max.p.select.y
-                                   
+
                                    #if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
-                                   
-                                   
+
+
                                    ID<-sample(x = max.cpu.glob,size = 1,prob = exp(p.select.y))
-                                   
+
                                    if(printable.opt)print(paste("cand ",ID," selected"))
-                                   
+
                                    varcand<-vect[[ID]]$varcur
-                                   
+
                                    if(cluster)
                                    {
                                      waiccand<-res.par[[ID]]$waic
@@ -2882,14 +2882,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      waiccand<-values(hashStat[iidd])[2]
                                      mlikcand<-values(hashStat[iidd])[1]
                                    }
-                                   
+
                                    #p.Q.cand<- p.select.y[ID]/sum(p.select.y)
-                                   
+
                                    if(printable.opt)print("do reverse step")
-                                   
+
                                    p.select.z <- array(data = 0.01, dim = max.cpu.glob)
-                                   
-                                   
+
+
                                    if(max.cpu.glob!=1)
                                    {
                                      if(switch.type.glob.buf==5)
@@ -2903,20 +2903,20 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        cstm <- switch.type.glob.buf
                                      }
                                      vect1<-buildmodel(max.cpu = max.cpu.glob -1,varcur.old = varcand,statid = 4 + LocImprove,switch.type = cstm, min.N = min.N, max.N = max.N)
-                                     
+
                                      cluster<-TRUE
-                                     
+
                                      flag1<-0
-                                     
+
                                      for(mod_id in 1:(max.cpu.glob-1))
                                      {
                                        if(is.null(vect1[[mod_id]]$formula))
                                        {
                                          flag1<-flag1+1
                                        }
-                                       
+
                                      }
-                                     
+
                                      if(flag1==(max.cpu.glob-1))
                                      {
                                        cluster<-FALSE
@@ -2925,10 +2925,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        res.par.back <- parallelize(X = vect1,FUN = .self$fitmodel)
                                      }
-                                     
+
                                      for(mod_id in 1:(max.cpu.glob-1))
                                      {
-                                       
+
                                        if(cluster)
                                        {
                                          if(is.null(fm)&&(is.na(res.par.back[[mod_id]]$waic)))
@@ -2937,9 +2937,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            next
                                          }
                                        }
-                                       
+
                                        varcand.b<-vect1[[mod_id]]$varcur
-                                       
+
                                        if(cluster)
                                        {
                                          waiccand.b<-res.par.back[[mod_id]]$waic
@@ -2955,7 +2955,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          waiccand.b<-values(hashStat[iidd])[2]
                                          mlikcand.b<-values(hashStat[iidd])[1]
                                        }
-                                       
+
                                        if((mlikcand.b>mlikglob))
                                        {
                                          if(printable.opt)print(paste("GlobMTMCMC update waic.glob = ", waiccand.b))
@@ -2966,16 +2966,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          if(cluster)
                                            modglob<-fm
                                        }
-                                       
+
                                        g1 = waiccand
-                                       
+
                                        if(waiccand == Inf)
                                        {
                                          g1 = 1
                                        }
-                                       
+
                                        p.select.z[mod_id]<-(mlikcand.b+vect1[[mod_id]]$log.mod.switchback.prob+(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand.b,g.domain.pos = FALSE))) # correct for different criteria later
-                                       
+
                                        if(is.na(p.select.z[mod_id]))
                                          p.select.z[mod_id]=0
                                        if(is.infinite(p.select.z[mod_id]) || p.select.z[mod_id] > 100000000)
@@ -2985,13 +2985,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
                                      }
                                    }
-                                   
+
                                    if( waiccur == Inf)
                                    {
                                      g1 = 1
                                    }
                                    p.select.z[max.cpu.glob] <- (mlikcur+vect[[ID]]$log.mod.switch.prob+(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos = FALSE)))
-                                   
+
                                    if(is.na(p.select.z[mod_id]))
                                      p.select.z[mod_id]=0
                                    if(is.infinite(p.select.z[mod_id]) || p.select.z[mod_id] > 100000000)
@@ -2999,12 +2999,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      #if(printable.opt)print(paste("very large log.w.y detected ",p.select.z[mod_id]))
                                      p.select.z[mod_id] <- 100000000
                                    }
-                                   
+
                                    max.p.select.z <- max(p.select.z)
                                    p.select.z<-p.select.z-max.p.select.z
-                                   
+
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
-                                   
+
                                    if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
                                    {
                                      mlikcur<-mlikcand
@@ -3013,9 +3013,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(printable.opt)print(paste("global MTMCMC accept move with ", waiccand))
                                      varcurb<-varcand
                                      waiccur<-waiccand
-                                     
+
                                      id<-bittodec(varcurb)+1
-                                     
+
                                      acc_moves<-acc_moves+1
                                      if(j<glob.model$burnin)
                                      {
@@ -3028,13 +3028,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          statistics1[id,4]<-statistics1[id,4] + 1
                                        }
                                        p.post<- (p.post + varcurb)
-                                       
+
                                        if(allow_offsprings > 0  && acc_moves%%mutation_rate == 0)
                                        {
                                          idmut<-which(varcurb == 1 & p.post > p.allow.tree)
                                          lidmut<-length(idmut)
                                          if(lidmut>0){
-                                           
+
                                              imut<-idmut[round(runif(n = 1, min = 1, max =  lidmut))]
                                              ltreem<-stri_length(fparam[imut])
                                              if(ltreem<=max.tree.size)
@@ -3045,11 +3045,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                                {
                                                  if(allow_offsprings==1)
                                                   proposal<-paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(1-"),substring(fparam[imut],first=2, last = ltreem),sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(","(1-"),substring(fparam[idmut[crossid]],first=2, last = ltreef),"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
-                                                 else 
+                                                 else
                                                   proposal<-paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),substring(fparam[imut],first=2, last = ltreem),sep = ""),paste("(",substring(fparam[idmut[crossid]],first=2, last = ltreef),"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
                                                  #maybe check correlations here
                                                  if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
-                                                 { 
+                                                 {
                                                    fparam<<-c(fparam,proposal)
                                                    Nvars<<-as.integer(Nvars+1)
                                                    print(paste("mutation happended ",proposal," tree  added"))
@@ -3071,12 +3071,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                                        {
                                                          del(x = keysarr[jjj],hash = hashStat)
                                                        }
-                                                       
+
                                                      }
-                                                     
+
                                                    }
-                                                   
-                                                   
+
+
 
                                                  }
                                                }
@@ -3089,21 +3089,21 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          p1 = c(p1,array(0,dim = (Nvars -length(p1))))
                                          p2 = c(p1,array(0,dim = (Nvars -length(p1))))
                                        }
-                                       
+
                                      }
                                    }else if(j<glob.model$burnin && distrib_of_proposals[5]>0)
                                    {
                                      distrib_of_proposals[5]<-distrib_of_proposals[5] - 1
                                    }
-                                   
-                                   
+
+
                                  }else
                                  {
-                                   
+
                                    if(cluster)
                                    {
                                      fm<-res.par[[mod_id]]
-                                     
+
                                      if(is.null(fm)&&(is.na(res.par[[mod_id]]$waic)))
                                      {
                                        varcand<-varcurb
@@ -3111,9 +3111,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        next
                                      }
                                    }
-                                   
+
                                    varcand<-vect[[mod_id]]$varcur
-                                   
+
                                    if(cluster)
                                    {
                                      waiccand<-res.par[[mod_id]]$waic
@@ -3129,10 +3129,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      waiccand<-values(hashStat[iidd])[2]
                                      mlikcand<-values(hashStat[iidd])[1]
                                    }
-                                   
+
                                    varcur<-varcand
                                  }
-                                 
+
                                  # try local improvements
                                  if(LocImprove<=3)
                                  {
@@ -3143,12 +3143,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      buf.change <- array(data = 1,dim = Nvars)
                                      buf.change[which(varcur - varcurb!=0)]=0
                                      #buf.opt[floor(runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
-                                     
+
                                      if(objective ==0)
                                      {
                                        objold<-waiccur
                                        objcur<-waiccand
-                                       
+
                                      }else
                                      {
                                        objold<- -mlikcur
@@ -3156,30 +3156,30 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }
                                      model = list(statid = 4 + LocImprove, switch.type = switch.type.buf, change = buf.change,mlikcur = mlikcur,
                                                   varcur = varcur,varold = varcurb, objcur = objcur,objold = objold, sa2 = ifelse(LocImprove == 3,TRUE,FALSE) ,reverse=FALSE)
-                                     
-                                     SA.forw<-learnlocalSA(model)          
+
+                                     SA.forw<-learnlocalSA(model)
                                      ratcand<-SA.forw$mlikcur
-                                     
+
                                      if(LocImprove == 0)
                                      {
-                                       
+
                                        ids = which(buf.change == 1)
                                        model$varcur <- SA.forw$varcur
                                        model$waiccur<-SA.forw$waiccur
                                        model$varcur[ids] = 1 - model$varcur[ids]
-                                       
+
                                        model$mlikcur<- -Inf
                                        model$waiccur<- Inf
                                        #estimate the jump!!!
                                        if(objective ==0)
                                        {
                                          model$objold<-waiccur
-                                         
+
                                        }else
                                        {
                                          model$objold<- -ratcand
                                        }
-                                       
+
                                        model$reverse = TRUE
                                        if(switch.type.buf==5)
                                        {
@@ -3189,13 +3189,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          model$switch.type <- 5
                                        }
-                                       SA.back<-learnlocalSA(model)      
-                                       
+                                       SA.back<-learnlocalSA(model)
+
                                      }
-                                     
+
                                      if(LocImprove == 0)
                                      {
-                                       
+
                                        if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - SA.forw$log.prob.cur + SA.forw$log.prob.fix + SA.back$log.prob.cur - SA.back$log.prob.fix))
                                        {
                                          ratcur<-ratcand
@@ -3204,7 +3204,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          varcurb<-SA.forw$varcur
                                          acc_moves<-acc_moves+1
                                          id<-bittodec(varcurb)+1
-                                         
+
                                          if(j<glob.model$burnin)
                                          {
                                            distrib_of_proposals[1]<-distrib_of_proposals[1]+1
@@ -3216,7 +3216,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            }
                                            p.post<- (p.post + varcurb)
                                          }
-                                         
+
                                        }else if(j<glob.model$burnin && distrib_of_proposals[1]>0)
                                        {
                                          distrib_of_proposals[1]<-distrib_of_proposals[1] - 1
@@ -3229,7 +3229,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          varglob<-SA.back$varglob
                                          modglob<-SA.back$modglob
                                        }
-                                       
+
                                      }else
                                      {
                                        if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - SA.forw$log.prob.cur + SA.forw$log.prob.fix + vect[[mod_id]]$log.mod.switchback.prob - vect[[mod_id]]$log.mod.switch.prob))
@@ -3238,9 +3238,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          mlikcur<-ratcand
                                          if(printable.opt)print(paste("update ratcur through SA = ", ratcur))
                                          varcurb<-SA.forw$varcur
-                                         
+
                                          id<-bittodec(varcurb)+1
-                                         
+
                                          acc_moves<-acc_moves+1
                                          if(j<glob.model$burnin)
                                          {
@@ -3252,14 +3252,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              statistics1[id,4]<-statistics1[id,4] + 1
                                            }
                                            p.post<- (p.post + varcurb)
-                                           
+
                                          }
-                                         
+
                                        }else if(j<glob.model$burnin && distrib_of_proposals[4]>0)
                                        {
                                          distrib_of_proposals[4]<-distrib_of_proposals[4] - 1
                                        }
-                                       
+
                                      }
                                      if((SA.forw$mlikglob<mlikglob))
                                      {
@@ -3269,39 +3269,39 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varglob<-SA.forw$varglob
                                        modglob<-SA.forw$modglob
                                      }
-                                     
+
                                    }else  if(LocImprove == 1)
                                    {
                                      if(printable.opt)print("Try MTMCMC imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
                                      buf.change[which(varcur - varcurb!=0)]=0
                                      #buf.opt[floor(runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
-                                     
-                                     
-                                     
+
+
+
                                      model = list(statid = 4 + LocImprove,reverse = FALSE, change = buf.change,mlikcur = mlikcur,waiccur = waiccur,
                                                   varcur = varcur,varold = varcurb)
-                                     
-                                     MTMCMC.forw<-learnlocalMCMC(model)          
+
+                                     MTMCMC.forw<-learnlocalMCMC(model)
                                      ids = which(buf.change == 1)
                                      model$varcur <- MTMCMC.forw$varcur
-                                     
-                                     
+
+
                                      model$varcur[ids] = 1 - model$varcur[ids]
                                      model$mlikcur<- -Inf
                                      model$waiccur<- Inf
                                      model$reverse = TRUE
-                                     
+
                                      #if(printable.opt)print("learn reverse local MTMCMC")
-                                     MTMCMC.back<-learnlocalMCMC(model)      
-                                     
+                                     MTMCMC.back<-learnlocalMCMC(model)
+
                                      #if(printable.opt)print("finish reverse local MTMCMC")
-                                     
+
                                      MTMCMC.p.forw<-MTMCMC.forw$log.prob.cur
                                      MTMCMC.p.back<-MTMCMC.back$log.prob.fix
                                      ratcand<-MTMCMC.forw$mlikcur
-                                     
-                                     
+
+
                                      if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
                                      {
                                        ratcur<-ratcand
@@ -3310,7 +3310,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varcurb<-MTMCMC.forw$varcur
                                        acc_moves<-acc_moves+1
                                        id<-bittodec(varcurb)+1
-                                       
+
                                        if(j<glob.model$burnin)
                                        {
                                          distrib_of_proposals[2]<-distrib_of_proposals[2]+1
@@ -3321,13 +3321,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            statistics1[id,4]<-statistics1[id,4] + 1
                                          }
                                          p.post<- (p.post + varcurb)
-                                         
+
                                        }
                                      }else if(j<glob.model$burnin && distrib_of_proposals[2]>1)
                                      {
                                        distrib_of_proposals[2]<-distrib_of_proposals[2] - 1
                                      }
-                                     
+
                                      if((MTMCMC.forw$mlikglob<mlikglob))
                                      {
                                        #if(printable.opt)print(paste("update waic.glob MTMCMC.forw = ", MTMCMC.forw$waicglob))
@@ -3336,7 +3336,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varglob<-MTMCMC.forw$varglob
                                        modglob<-MTMCMC.forw$modglob
                                      }
-                                     
+
                                      if((MTMCMC.back$mlikglob<mlikglob))
                                      {
                                        #if(printable.opt)print(paste("update waic.glob MTMCMC.back = ", MTMCMC.back$waicglob))
@@ -3345,42 +3345,42 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varglob<-MTMCMC.back$varglob
                                        modglob<-MTMCMC.back$modglob
                                      }
-                                     
+
                                    }else if(LocImprove == 2)
                                    {
                                      if(printable.opt)print("Try greedy heuristic imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
                                      buf.change[which(varcur - varcurb!=0)]=0
-                                     
+
                                      #buf.opt <- buf.change
                                      #buf.opt[floor(runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
                                      if(objective ==0)
                                      {
                                        objold<-waiccur
                                        objcur<-waiccand
-                                       
+
                                      }else
                                      {
                                        objold<- -mlikcur
                                        objcur<- -mlikcand
                                      }
-                                     
+
                                      model = list(statid = 4 + LocImprove, change = buf.change,
                                                   varcur = varcur,varold = varcurb, switch.type = switch.type.buf,mlikcur = mlikcur,objcur = objcur, objold = objold, reverse=FALSE)
-                                     GREEDY.forw<-learnlocalND(model)          
+                                     GREEDY.forw<-learnlocalND(model)
                                      ids = which(buf.change == 1)
                                      model$varcur <- GREEDY.forw$varcur
-                                     
+
                                      model$varcur[ids] = 1 - model$varcur[ids]
                                      model$mlikcur<- -Inf
                                      model$waiccur<- Inf
                                      model$reverse = TRUE
                                      ratcand<-GREEDY.forw$mlikcur
-                                     
+
                                      if(objective ==0)
                                      {
                                        model$objold<-waiccur
-                                       
+
                                      }else
                                      {
                                        model$objold<- -ratcand
@@ -3393,14 +3393,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        model$switch.type <- 5
                                      }
-                                     
-                                     GREEDY.back<-learnlocalND(model)      
-                                     
+
+                                     GREEDY.back<-learnlocalND(model)
+
                                      GREEDY.p.forw<-GREEDY.forw$log.prob.cur
                                      GREEDY.p.back<-GREEDY.back$log.prob.fix
-                                     
-                                     
-                                     
+
+
+
                                      if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
                                      {
                                        ratcur<-ratcand
@@ -3409,7 +3409,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varcurb<-GREEDY.forw$varcur
                                        acc_moves<-acc_moves+1
                                        id<-bittodec(varcurb)+1
-                                       
+
                                        if(j<glob.model$burnin)
                                        {
                                          distrib_of_proposals[3]<-distrib_of_proposals[3]+1
@@ -3420,13 +3420,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            statistics1[id,4]<-statistics1[id,4] + 1
                                          }
                                          p.post<- (p.post + varcurb)
-                                         
+
                                        }
                                      }else if(j<glob.model$burnin && distrib_of_proposals[3]>1)
                                      {
                                        distrib_of_proposals[3]<-distrib_of_proposals[3] - 1
                                      }
-                                     
+
                                      if((GREEDY.forw$mlikglob<mlikglob))
                                      {
                                        if(printable.opt)print(paste("update waic.glob ND.forw = ", GREEDY.forw$waicglob))
@@ -3435,7 +3435,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varglob<-GREEDY.forw$varglob
                                        modglob<-GREEDY.forw$modglob
                                      }
-                                     
+
                                      if((GREEDY.back$mlikglob<mlikglob))
                                      {
                                        if(printable.opt)print(paste("update waic.glob ND.back = ", GREEDY.back$waicglob))
@@ -3444,45 +3444,45 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        varglob<-GREEDY.back$varglob
                                        modglob<-GREEDY.back$modglob
                                      }
-                                     
+
                                    }
-                                   
+
                                  }
-                                 
+
                                  #}),abort = function(){if(printable.opt)print("error");varcur<-varcurb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
-                                 
+
                                  if(thin_rate!=-1)
-                                 { 
+                                 {
                                    if(acc_moves == accept_old && j>glob.model$burnin && j%%as.integer(thin_rate)==0) #carry out smart thinning
                                    {
-                                     
+
                                      if(!is.null(varcurb))
                                      {
-                                       p.post<- (p.post + varcurb) 
+                                       p.post<- (p.post + varcurb)
                                        thin_count <- thin_count  +1
                                        id<-bittodec(varcurb)+1
                                        if(exists("statistics1"))
                                        {
-                                         
+
                                          statistics1[id,4]<-statistics1[id,4] + 1
                                        }
                                      }
                                    }
                                  }
-                                 
+
                                  accept_old <- acc_moves
-                                 
+
                                  p2<-p.post/acc_moves
                                  if(j>glob.model$burnin && recalc.margin == 2^Nvars && sum(p2)!=0)
                                  {
                                    p.add <<- p2
-                                   
+
                                  }
                                  eps.emp<-normprob(p1,p2)
                                  etm <- proc.time()
                                  delta.time <- (etm[3] - stm[3])/60.0
                                }
-                               
+
                                if(is.null(modglob))
                                {
                                  vect<-buildmodel(max.cpu = 1,varcur.old = varglob,statid = 3, switch.type = 8)
@@ -3490,25 +3490,25 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  modglob<-res.par[[1]]$fm
                                }
                                #!#print the results
-                               
+
                                if(printable.opt)print(paste(j," iterations completed in total"))
                                #if(printable.opt)print(paste("WAIC.glob = ", waicglob))
                                etm <- proc.time()
                                tt<-(etm[3]-stm[3])/60.0
-                               
+
                                acc_ratio <-  acc_moves/j
-                               
+
                                if(printable.opt)print(paste(j," moves proposed in total, ", acc_moves," of them accepted, acceptance ratio is ",acc_ratio))
-                               
+
                                if(printable.opt)print(paste("posterior distribution ofproposals is",  distrib_of_proposals))
-                               
+
                                id<-bittodec(varglob)+1
-                               
+
                                if(exists("statistics1"))
                                {
                                  bayes.res<-post_proceed_results(statistics1)
                                  m.post<-statistics1[,4]/j
-                                 
+
                                }else if(exists("hashStat"))
                                {
                                  bayes.res<-post_proceed_results_hash(hashStat)
@@ -3519,7 +3519,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  bayes.res<-NULL
                                  m.post<-NULL
                                }
-                               
+
                                return(list(model=modglob, vars=varglob, waic = waicglob, mlik = mlikglob,  time=(tt), freqs = distrib_of_proposals, acc_ratio =  acc_ratio, p.post = p.post/acc_moves, m.post =  m.post, p.post.freq = p.post, eps=eps.emp, bayes.results =  bayes.res))
                              },
                              #save big.data results, if the latter are available
@@ -3531,7 +3531,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              visualize_results = function(statistics1, template, mds_size, crit,draw_dist = FALSE)
                              {
                                ids = NULL
-                               
+
                                if(crit$mlik){
                                  ids<-c(ids,which(statistics1[,1]==-100000))
                                  ids<-c(ids,which(statistics1[,1]==-Inf))}
@@ -3541,7 +3541,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  ids<-c(ids,which(statistics1[,3]==Inf))}
                                if(crit$dic){
                                  ids<-c(ids,which(is.na(statistics1[,3])))}
-                               
+
                                if(length(ids)!=0)
                                {
                                  if(crit$mlik)
@@ -3559,12 +3559,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(crit$dic)
                                    dic.lim<-c(min(statistics1[,3],na.rm = TRUE),max(statistics1[,3],na.rm = TRUE))
                                }
-                               
+
                                norm<-0.5*sqrt(sum(statistics1[,4],na.rm = TRUE))
-                               
+
                                if(crit$mlik)
                                {
-                                 
+
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_legend.jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    jpeg(file=paste(workdir,template,"_legend.jpg",sep = ""))
@@ -3585,8 +3585,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    legend(x = 0.35,y = 7.5,legend = "- Totally explored",bty="n" )
                                    legend(x = 0.35,y = 8.5,legend = "- Bayes formula based posterior",bty="n" )
                                    dev.off()
-                                   
-                                   
+
+
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_mlik.jpg",sep = ""))
                                    jpeg(file=paste(workdir,template,"_mlik.jpg",sep = ""))
                                    plot(ylim = mlik.lim, xlab = "model_id", ylab="MLIK" , statistics1[,1],pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
@@ -3597,13 +3597,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    points(statistics1[,1],pch=6,  col = ifelse(statistics1[,13]>0,6,0),cex= ifelse(statistics1[,13]>0,statistics1[,13]/norm+1,0))
                                    points(statistics1[,1],pch=1,  col = ifelse(statistics1[,14]>0,1,0),cex= ifelse(statistics1[,14]>0,statistics1[,14]/norm+1,0))
                                    dev.off()
-                                   
+
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$waic)
                                {
-                                 
+
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_waic.jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    jpeg(file=paste(workdir,template,"_waic.jpg",sep = ""))
@@ -3617,10 +3617,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$dic)
                                {
-                                 
+
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_dic.jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    jpeg(file=paste(workdir,template,"_dic.jpg",sep = ""))
@@ -3634,10 +3634,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$waic && crit$mlik)
                                {
-                                 
+
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_mlik-waic.jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    jpeg(file=paste(workdir,template,"_mlik-waic.jpg",sep = ""))
@@ -3651,10 +3651,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$dic && crit$mlik)
                                {
-                                 
+
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_mlik-dic.jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    jpeg(file=paste(workdir,template,"_mlik-dic.jpg",sep = ""))
@@ -3668,10 +3668,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$dic && crit$waic)
                                {
-                                 
+
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_waic-dic.jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    jpeg(file=paste(workdir,template,"_waic-dic.jpg",sep = ""))
@@ -3685,10 +3685,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
-                               
+
+
                                norm1<-(sum(statistics1[,4],na.rm = TRUE))
-                               
+
                                xyz<-which(!is.na(statistics1[,1]))
                                xyz<-intersect(xyz,which(statistics1[,1]!=-10000))
                                moddee<-which(statistics1[,1]==max(statistics1[,1],na.rm = TRUE))[1]
@@ -3699,24 +3699,24 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  zyx[xyz]<-exp(statistics1[xyz,1]-statistics1[moddee,1])/nconsum
                                  y.post.lim<-c(0,max(zyx[xyz]))
                                }else{
-                                 
+
                                  zyx[xyz]<-statistics1[xyz,3]/norm1
                                  y.post.lim<-c(0,NaN)
                                }
-                               
-                               
+
+
                                if(is.nan(y.post.lim[2]))
                                  y.post.lim[2]<-max(statistics1[,3]/norm1,na.rm = TRUE)
                                if(is.nan(y.post.lim[2]))
                                  y.post.lim[2]<-1
-                               
+
                                if(crit$mlik)
                                {
-                                 
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_Pr(M|D).jpg",sep = ""))
+
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_Pr(M.D).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   jpeg(file=paste(workdir,template,"_Pr(M|D).jpg",sep = ""))
-                                   plot(xlab = "model_id", ylab="Pr(M(model_id)|D)",ylim = y.post.lim, statistics1[,4]/norm1,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   jpeg(file=paste(workdir,template,"_Pr(M.D).jpg",sep = ""))
+                                   plot(xlab = "model_id", ylab="Pr(M(model_id).D)",ylim = y.post.lim, statistics1[,4]/norm1,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -3727,14 +3727,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$waic && crit$mlik)
                                {
-                                 
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_waic-Pr(M|D).jpg",sep = ""))
+
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_waic-Pr(M.D).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   jpeg(file=paste(workdir,template,"_waic-Pr(M|D).jpg",sep = ""))
-                                   plot(xlim = waic.lim, ylim = y.post.lim,xlab = "WAIC(M)", ylab="Pr(M|D)",statistics1[,2],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   jpeg(file=paste(workdir,template,"_waic-Pr(M.D).jpg",sep = ""))
+                                   plot(xlim = waic.lim, ylim = y.post.lim,xlab = "WAIC(M)", ylab="Pr(M.D)",statistics1[,2],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -3745,14 +3745,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(crit$dic && crit$mlik)
                                {
-                                 
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_dic-Pr(M|D).jpg",sep = ""))
+
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_dic-Pr(M.D).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   jpeg(file=paste(workdir,template,"_dic-Pr(M|D).jpg",sep = ""))
-                                   plot(xlim = dic.lim, ylim = y.post.lim,xlab = "dic(M)", ylab="Pr(M|D)",statistics1[,3],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   jpeg(file=paste(workdir,template,"_dic-Pr(M.D).jpg",sep = ""))
+                                   plot(xlim = dic.lim, ylim = y.post.lim,xlab = "dic(M)", ylab="Pr(M.D)",statistics1[,3],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -3763,14 +3763,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
-                               
+
+
                                if(crit$mlik)
                                {
-                                 
-                                 jpeg(file=paste(workdir,template,"_mlik-Pr(M|D).jpg",sep = ""))
+
+                                 jpeg(file=paste(workdir,template,"_mlik-Pr(M.D).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   plot(xlim = mlik.lim,ylim = y.post.lim, xlab = "MLIK", ylab="Pr(M|D)",statistics1[,1],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   plot(xlim = mlik.lim,ylim = y.post.lim, xlab = "MLIK", ylab="Pr(M.D)",statistics1[,1],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/statistics1[,3]*3 +1,0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/statistics1[,4]*3 +1,0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/statistics1[,4]*3 +1,0))
@@ -3781,56 +3781,56 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    dev.off()
                                  })), abort = function(){onerr<-TRUE})})
                                }
-                               
+
                                if(draw_dist)
-                               {   
+                               {
                                  if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    lldd<-2^(Nvars)+1
-                                   
+
                                    moddee<-which(zyx==max(zyx,na.rm = TRUE))
                                    iidr<-which(statistics1[moddee,1]==max(statistics1[moddee,1],na.rm = TRUE))
                                    iidr<-which(statistics1[moddee[iidr],3]==max(statistics1[moddee[iidr],3],na.rm = TRUE))
                                    moddee<-moddee[iidr]
                                    if(length(moddee)>1)
                                      moddee<-moddee[1]
-                                   
-                                   vec<-dectobit(moddee-1)
+
+                                   vec<-dectobit.alt(moddee-1)
                                    varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                    df = data.frame(varcur)
-                                   
-                                   
+
+
                                    for(i in 1:(lldd-1))
                                    {
                                      if(i==moddee)
                                      {
                                        next
-                                       
+
                                      }else
                                      {
-                                       vec<-dectobit(i-1)
+                                       vec<-dectobit.alt(i-1)
                                        varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                        df<-cbind(df,varcur)
                                        #colnames(x = df)[i] <- paste("solution ",i)
                                      }
                                    }
                                    df<-t(df)
-                                   
-                                   
+
+
                                    x<-dist(x = df,method = "binary")
-                                   
+
                                    dists<-c(0,x[1:lldd-1])
-                                   
+
                                    #length(dists)
                                    #which(dists==0)
                                  })), abort = function(){onerr<-TRUE})})
-                                 
+
                                  if(crit$mlik)
                                  {
-                                   
+
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-mlik.jpg",sep = ""))
                                    capture.output({withRestarts(tryCatch(capture.output({
-                                     jpeg(file=paste(workdir,template,"_distance-MLIK",sep = ""))
+                                     jpeg(file=paste(workdir,template,"_distance-MLIK.jpg",sep = ""))
                                      plot(xlab = "x = |M* - M| = distance from the main mode", ylab="MLIK(M)",ylim = mlik.lim,y=c(statistics1[moddee,1],statistics1[-moddee,1]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,1],statistics1[-moddee,1]),x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
                                      points(y=c(statistics1[moddee,1],statistics1[-moddee,1]),x=dists,pch=2,  col = ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,2,0),cex= ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,c(statistics1[moddee,10],statistics1[-moddee,10])/norm+1,0))
@@ -3843,10 +3843,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  if(crit$waic)
                                  {
-                                   
+
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-waic.jpg",sep = ""))
                                    capture.output({withRestarts(tryCatch(capture.output({
-                                     jpeg(file=paste(workdir,template,"_distance-waic",sep = ""))
+                                     jpeg(file=paste(workdir,template,"_distance-waic.jpg",sep = ""))
                                      plot(xlab = "x = |M* - M| = distance from the main mode", ylab="WAIC(M)",ylim = waic.lim,y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
                                      points(y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=2,  col = ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,2,0),cex= ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,c(statistics1[moddee,10],statistics1[-moddee,10])/norm+1,0))
@@ -3859,10 +3859,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  if(crit$dic)
                                  {
-                                   
+
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-dic.jpg",sep = ""))
                                    capture.output({withRestarts(tryCatch(capture.output({
-                                     jpeg(file=paste(workdir,template,"_distance-dic",sep = ""))
+                                     jpeg(file=paste(workdir,template,"_distance-dic.jpg",sep = ""))
                                      plot(xlab = "x = |M* - M| = distance from the main mode", ylab="DIC(M)",ylim = dic.lim,y=c(statistics1[moddee,3],statistics1[-moddee,3]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,3],statistics1[-moddee,3]),x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
                                      points(y=c(statistics1[moddee,3],statistics1[-moddee,3]),x=dists,pch=2,  col = ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,2,0),cex= ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,c(statistics1[moddee,10],statistics1[-moddee,10])/norm+1,0))
@@ -3873,14 +3873,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      dev.off()
                                    })), abort = function(){onerr<-TRUE})})
                                  }
-                                 
+
                                  if(crit$mlik)
                                  {
-                                   
-                                   if(printable.opt)print(paste("drawing ",workdir,template,"_distance-Pr(M|D).jpg",sep = ""))
+
+                                   if(printable.opt)print(paste("drawing ",workdir,template,"_distance-Pr(M.D).jpg",sep = ""))
                                    capture.output({withRestarts(tryCatch(capture.output({
-                                     jpeg(file=paste(workdir,template,"_distance-Pr(M|D).jpg",sep = ""))
-                                     plot(xlab = "x = |M* - M| = distance from the main mode",ylim = y.post.lim, ylab="Pr(M|D)",y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                     jpeg(file=paste(workdir,template,"_distance-Pr(M.D).jpg",sep = ""))
+                                     plot(xlab = "x = |M* - M| = distance from the main mode",ylim = y.post.lim, ylab="Pr(M.D)",y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=2,  col = ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,2,0),cex= ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,c(statistics1[moddee,10],statistics1[-moddee,10])/norm+1,0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=3,  col = ifelse(c(statistics1[moddee,11],statistics1[-moddee,11])>0,3,0),cex= ifelse(c(statistics1[moddee,11],statistics1[-moddee,11])>0,c(statistics1[moddee,11],statistics1[-moddee,11])/norm+1,0))
@@ -3891,59 +3891,60 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      dev.off()
                                    })), abort = function(){onerr<-TRUE})})
                                  }
-                               }
+
+
                                if(crit$mlik)
                                {
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(M|D).jpg",sep = ""))
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(M.D).jpg",sep = ""))
                                  if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
-                                 if(printable.opt)print("Calculating mds coordinates, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   # further address subset of the set of the best solution of cardinality 1024  
-                                   if(lldd>mds_size)    
+                                   # further address subset of the set of the best solution of cardinality 1024
+
+                                   if(lldd>mds_size)
                                    {
                                      lldd<-mds_size
                                      quant<-(sort(statistics1[,1],decreasing = TRUE)[lldd+1])
                                      indmds<-which(statistics1[,1]>quant)
                                      length(indmds)
-                                     
+
                                    }else{
                                      quant<- -Inf
                                      indmds<-1:(lldd)
                                    }
-                                   
-                                   
-                                   
-                                   
-                                   
-                                   vec<-dectobit(moddee-1)
+
+
+
+
+
+                                   vec<-dectobit.alt(moddee-1)
                                    varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                    df = data.frame(varcur)
-                                   
-                                   
+
+
                                    for(i in 1:(lldd-1))
                                    {
                                      if(i==moddee)
                                      {
                                        next
-                                       
+
                                      }else
                                      {
-                                       vec<-dectobit(indmds[i]-1)
+                                       vec<-dectobit.alt(indmds[i]-1)
                                        varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                        df<-cbind(df,varcur)
                                        #colnames(x = df)[i] <- paste("solution ",i)
                                      }
                                    }
                                    df<-t(df)
-                                   
-                                   
+
+
                                    x<-dist(x = df,method = "binary")
-                                   
+
                                    dists<-c(0,x[1:lldd-1])
-                                   
+
                                    fit.mds <- cmdscale(d = x,eig=FALSE, k=2) # k is the number of dim
-                                   
-                                   
+
+
                                    #fit.mds # view results
                                    x.mds <- fit.mds[,1]
                                    y.mds <- fit.mds[,2]
@@ -3964,35 +3965,36 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=7,pch = 19,cex= 0.4)
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=1,pch = 19,cex= 0.01)
-                                   dev.off() 
+                                   dev.off()
                                  })), abort = function(){onerr<-TRUE})})
+                               }
                                }
                              },
                              #calculates posterior probabilities based on a current search
                              post_proceed_results = function(statistics1)
                              {
-                               
+
                                xyz<-which(!is.na(statistics1[,1]))
                                g.results[4,2] <- length(xyz)
                                xyz<-intersect(xyz,which(statistics1[,1]!=-10000))
                                moddee<-which(statistics1[,1]==max(statistics1[,1],na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = length(statistics1[,1]))
                                nconsum<-sum(exp(-statistics1[moddee,1]+statistics1[xyz,1]),na.rm = TRUE)
-                               
+
                                if( nconsum > 0)
                                {
                                  zyx[xyz]<-exp(statistics1[xyz,1]-statistics1[moddee,1])/nconsum
-                               
+
                                }else{
-                                 
+
                                  nnnorm<-sum(statistics1[xyz,4],na.rm = T)
                                  if(nnnorm==0)
                                    nnnorm <- 1
                                  zyx[xyz]<-statistics1[xyz,4]/nnnorm
-                            
+
                                }
                                statistics1[,15]<-zyx
-                               
+
                                lldd<-2^(Nvars)+1
                                p.post<-array(data = 0,dim = Nvars)
                                for(i in xyz)
@@ -4000,19 +4002,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  vec<-dectobit(i-1)
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                  p.post <- (p.post + varcur*statistics1[i,15])
-                                 
+
                                }
-                               
+
                                if(sum(p.post)==0 || sum(p.post)>Nvars)
                                {
                                  p.post <- array(data = 0.5,dim = Nvars)
                                }
-                               
+
                                return(list(p.post = p.post, m.post = zyx, s.mass = sum(exp(statistics1[xyz,1]),na.rm = TRUE)))
                              },
                              post_proceed_results_hash = function(hashStat)
                              {
-                          
+
                                lHash<-length(hashStat)
                                mliks <- values(hashStat)[which((1:(lHash * 3)) %%3 == 1)]
                                xyz<-which(mliks!=-10000)
@@ -4020,21 +4022,21 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = lHash)
                                nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
-                               
+
                                if( nconsum > 0)
                                {
                                  zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
-                   
+
                                }else{
-                                
+
                                  diff<-0-mliks[moddee]
                                  mliks<-mliks+diff
                                  nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
                                  zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
-                                
+
                                }
-                          
-                               
+
+
                                keysarr <- as.array(keys(hashStat))
                                p.post<-array(data = 0,dim = Nvars)
                                for(i in 1:lHash)
@@ -4044,14 +4046,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  #vec<-dectobit(strtoi(keysarr[i], base = 0L)-1) # we will have to write some function that would handle laaaaargeee integers!
                                  varcur<- as.integer(strsplit(keysarr[i],split = "")[[1]])
                                  p.post <- (p.post + varcur*zyx[i])
-                                 
+
                                }
-                               
+
                                if(sum(p.post)==0 || sum(p.post)>Nvars)
                                {
                                  p.post <- array(data = 0.5,dim = Nvars)
                                }
-                               
+
                                return(list(p.post = p.post, m.post = zyx, s.mass = sum(exp(mliks),na.rm = TRUE)))
                              },
                              calculate_quality_measures = function(vect,n,truth)
@@ -4067,9 +4069,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                rmse.pi <- rmse.pi/n
                                return(list(bias.pi = bias.pi, rmse.pi = rmse.pi))
                              }
-                             
+
                            )
-                           
+
 )
 
 options(bigmemory.typecast.warning=FALSE)

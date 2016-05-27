@@ -1,4 +1,4 @@
-﻿**********************************Read Me******************************************
+************************************************************************************************Read Me*************************************************************************************************************
 
 1. EMJMCMC 1.2.tar.gz (GNU zipped tar) file includes the most recent version of EMJMCMC package.
 
@@ -20,7 +20,5 @@
 
 10. /examples/Protein Activity Data/ contains the protein activity data (proteincen.txt) and code (Protein activity data.r) for the fifth experiment. Notice that /examples/Protein Activity Data/BAS includes BAS based replications for the same experiment.
 
-11. For additional details and updates see http://aliaksah.github.io/EMJMCMC2016/.
-
-**********************************The End******************************************
+************************************************************************************************The End*************************************************************************************************************
 
