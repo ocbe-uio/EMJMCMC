@@ -79,10 +79,10 @@ for(i in 1:length(transform))
 
 data.example1<-data.example
 data.example2<-data.example
-
+data.example<-data.example2
 
 #fparam <- c("Const",colnames(data)[-1])
-fparam.example <- colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]
+fparam.example <- colnames(data.example)[-c(1,2,3,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]
 fobserved.example <- colnames(data.example)[1]
 
 
@@ -230,7 +230,7 @@ statistics <- describe(statistics1)
 mySearch = EMJMCMC2016()
 # load functions for MLIK estimation
 mySearch$estimator = estimate.bas.glm
-mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(1000))
+mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(10000))
 mySearch$save.beta=T
 
 
@@ -264,7 +264,7 @@ for(i in ids)
 {
   X<-c(1,as.numeric(data.example1[i,-c(1,2,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]))
   #print(X)
-  y.hat<-round(mySearch$foreast(covariates = X,nvars = 25,link.g = g)$forecast)
+  y.hat<-round(mySearch$foreast(covariates = X,nvars = 24,link.g = g)$forecast)
   error<-as.numeric(data.example1[i,1])-y.hat
   if(error == 1)
     fn<-fn+1
@@ -291,10 +291,10 @@ length(idn)
 
 xxxx<-statistics1[,15]
 
-which(statistics1[,15]==min(statistics1[,15],na.rm = T))
+which(statistics1[,15]==max(statistics1[,15],na.rm = T))
 
 statistics1[,15]<-NA
-statistics1[c(3,259),15]<-0.5
+statistics1[2^8,15]<-1
 
 
 template = "test"
