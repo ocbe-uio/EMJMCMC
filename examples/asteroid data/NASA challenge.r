@@ -15,7 +15,7 @@ install.packages("copula")
 
 library(hash)
 library(RCurl)
-library(EMJMCMC)
+#library(EMJMCMC)
 library(sp)
 library(INLA)
 library(parallel)
@@ -31,14 +31,30 @@ require(stats)
 #define your working directory, where the data files are stored
 workdir<-""
 
+
 #prepare data
-simx <- read.table("C:\\Users\\Aliaksandr\\Documents\\mjmcmc repos\\EMJMCMC2016\\examples\\asteroid data\\Recognize\\NEAs.txt",sep = ",",header = T,fill=TRUE)
-simy <-  read.table("C:\\Users\\Aliaksandr\\Documents\\mjmcmc repos\\EMJMCMC2016\\examples\\asteroid data\\Recognize\\NotNeas8+.txt",sep = ",",header = T,fill=TRUE)
+simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NEAs.txt"),sep = ",",header = T,fill=TRUE)
+simy <-  read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NotNeas8%2B.txt"),sep = ",",header = T,fill=TRUE)
 simx$neo<-1
 simy$neo<-0
-data.example <- as.data.frame(t(cbind(t(simy[sample.int(size = 3000,n = 6621,replace = T),]),t(simx[sample.int(size = 7000,n = 14099,replace = T),]))),stringsAsFactors = F)
+data.example <- as.data.frame(t(cbind(t(simy[sample.int(size = 200,n = 6621,replace = T),]),t(simx[sample.int(size = 300,n = 14099,replace = T),]))),stringsAsFactors = F)
+#data.example$epoch<-factor(data.example$epoch,labels = c(0,1))
+
+
+#prepare data
+simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Teach/NeoPHA.txt"),sep = ",",header = T,fill=TRUE)
+simy <-  read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Teach/NotNeo-Type7.txt"),sep = ",",header = T,fill=TRUE)
+simx$neo<-1
+simy$neo<-0
+
+
+
+
+data.example <- as.data.frame(t(cbind(t(simy),t(simx))),stringsAsFactors = F)
 #data.example$epoch<-factor(data.example$epoch,labels = c(0,1))
 #data.example$Polarization<-factor(data.example$Polarization,labels = c(0,1))
+
+
 data.example$orbit1<-0
 data.example$orbit2<-0
 data.example$orbit3<-0
@@ -52,20 +68,25 @@ data.example$orbit4[which(data.example$ref1==3)]<-1
 data.example$orbit5[which(data.example$ref1==4)]<-1
 data.example$orbit6[which(data.example$ref1>=5)]<-1
 
-transform<-colnames(data.example)[-c(5,13,14,15,16,17,20,21,22,23,24,25)]
+transform<-colnames(data.example)[-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]
 
 for(i in 1:length(transform))
 {
+  print(i)
   data.example[[transform[i]]]<-as.numeric(as.character(data.example[[transform[i]]]))
 }
 
 
+data.example1<-data.example
+data.example2<-data.example
+
+
 #fparam <- c("Const",colnames(data)[-1])
-fparam.example <- colnames(data.example)[-c(1,2,5,13,14,15,16,17,19.20,21,22,23,24,25,26,27,28,29,30,31)]
+fparam.example <- colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]
 fobserved.example <- colnames(data.example)[1]
 
 
-View(cor(data.example[,-c(5,13,14,15,16,17,20,21,22,23,24,25,26,27,28,29,30,31)]))
+View(cor(data.example[,-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)],use = "complete.obs"))
 
 
 hashStat <- hash()
@@ -75,7 +96,7 @@ mySearch = EMJMCMC2016()
 mySearch$estimator = estimate.bas.glm
 mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64))
 
-
+remove(hashStat)
 
 
 mySearch$printable.opt=F
@@ -201,7 +222,7 @@ barplot(vect.mc[,1],density = 46,border="black",main = "Marginal Inclusion (MC)"
 # if full enumeration and algorithm assesment proceed with:
 
 #dataframe for results; n/b +1 is required for the summary statistics
-statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
+statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 16 + length(fparam.example),init = NA, type = "double")
 statistics <- describe(statistics1)
 
 
@@ -209,18 +230,53 @@ statistics <- describe(statistics1)
 mySearch = EMJMCMC2016()
 # load functions for MLIK estimation
 mySearch$estimator = estimate.bas.glm
-mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64))
+mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(1000))
+mySearch$save.beta=T
 
 
-
+xxx<-mySearch$estimator(formula = neo~1+rms_residual,family = binomial(),prior = aic.prior(),logn = log(64),data = data.example)
+xxx$summary.fixed$mean
+length(xxx$summary.fixed$mean)
 
 #estimate.bas.glm(formula = y~V1+V2+V3,data = data.example,family = binomial(),prior =aic.prior(),logn = log(64))
 #play around with various methods in order to get used to them and see how they work
 
-# carry out full enumeration (it is still feasible)
-system.time(
-  FFF<-mySearch$full_selection(list(statid=6, totalit =2^length(fparam.example)+1, ub = 36,mlikcur=-Inf,waiccur =100000))
-)
+  # carry out full enumeration (it is still feasible)
+  system.time(
+    FFF<-mySearch$full_selection(list(statid=6, totalit =2^length(fparam.example)+1, ub = 36,mlikcur=-Inf,waiccur =100000))
+  )
+  ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
+
+g<-function(x)
+{
+  #return(x)
+  return((x = 1/(1+exp(-x))))
+}
+
+mySearch$foreast(covariates = rep(1,11),nvars = 26,link.g = g)
+
+tot.er<-0
+fp<-0
+fn<-0
+test.size<-100
+ids<-sample.int(size = test.size,n = 20720,replace = F)
+for(i in ids)
+{
+  X<-c(1,as.numeric(data.example1[i,-c(1,2,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]))
+  #print(X)
+  y.hat<-round(mySearch$foreast(covariates = X,nvars = 25,link.g = g)$forecast)
+  error<-as.numeric(data.example1[i,1])-y.hat
+  if(error == 1)
+    fn<-fn+1
+  else
+    if(error == -1)
+      fp<-fp+1
+  print(paste(i," ",y.hat," ",(as.numeric(data.example1[i,1])-y.hat)))
+}
+tot.er<-(fp+fn)
+print(tot.er/test.size)
+print(fp/test.size)
+print(fn/test.size)
 
 write.big.matrix(x = statistics1,filename = "cosmoneo.csv")
 # completed in   7889  for 1048576 models whilst BAS took 6954.101 seonds and thus now advantage of using C versus R is clearly seen as neglectible  (14688.209 user seconds)
@@ -229,10 +285,21 @@ write.big.matrix(x = statistics1,filename = "cosmoneo.csv")
 # check that all models are enumerated during the full search procedure
 idn<-which(is.na(statistics1[,1]))
 length(idn)
+# check that all models are enumerated during the full search procedure
+idn<-which(is.na(statistics1[,16]))
+length(idn)
+
+xxxx<-statistics1[,15]
+
+which(statistics1[,15]==min(statistics1[,15],na.rm = T))
+
+statistics1[,15]<-NA
+statistics1[c(3,259),15]<-0.5
+
 
 template = "test"
 # n/b visualization iisues on Windows! To be fixed!
-mySearch$visualize_results(statistics1, "test3.jpg", 2^10, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
+mySearch$visualize_results(statistics1, "test", 2^10-1, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
 # once full search is completed, get the truth for the experiment
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
 truth = ppp$p.post # make sure it is equal to Truth column from the article
@@ -261,7 +328,7 @@ min(statistics1[,1],na.rm = TRUE)
 max(statistics1[,1],na.rm = TRUE)
 
 # look at the best possible performance
-statistics1[as.numeric(iddx[10001:2^20]),1:15]<-NA
+statistics1[as.numeric(iddx[100:2^10-1]),1:26]<-NA
 ppp.best<-mySearch$post_proceed_results(statistics1 = statistics1)
 best = ppp.best$p.post # make sure it is equal to Truth column from the article
 bset.m = ppp.best$m.post
@@ -333,7 +400,7 @@ system.time({
 
   for(i in 1:Niter)
   {
-    statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
+    statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 26,init = NA, type = "double")
     statistics <- describe(statistics1)
     mySearch$g.results[4,1]<-0
     mySearch$g.results[4,2]<-0
@@ -344,7 +411,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 500, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 100, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob

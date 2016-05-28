@@ -1,4 +1,4 @@
-neo,absolute_magnitude,magnitude_slope,epoch,mean_anomaly,argument_of_perihelion,longitude_of_the_ascending node,inclination,eccentricity,mean_motion,semi_major_axis,ref1,ref2,observations,oppostion,time_of_perihelion_passage, rms_residual,Polarization,rotation_period,computer,classification,desn,label,last _observation,
+neo,desn,absolute_magnitude,magnitude_slope,epoch,mean_anomaly,argument_of_perihelion,longitude_of_the_ascending node,inclination,eccentricity,mean_motion,semi_major_axis,ref1,ref2,observations,oppostion,time_of_perihelion_passage, rms_residual,Polarization,rotation_period,computer,classification,desn,label,last _observation,
 1,433,11.16,0.46,K161D,95.3612,178.79795,304.32983,10.82861,0.2226787,0.55991538,1.4578778,0,MPO355095,6896,49,1893-2014,0.66,M-v,38h,MPCLINUX,1804,-433,Eros,20141222
 1,719,15.5,0.15,K161D,132.63149,156.01908,183.97346,11.56459,0.5508742,0.2306562,2.6332533,0,MPO365250,1080,15,1911-2016,0.42,M-v,38h,MPCLINUX,1804,-719,Albert,20160206
 1,887,13.4,-0.12,K161D,250.36358,350.34614,110.5523,9.35748,0.5672175,0.25255284,2.4787604,0,MPO365253,799,31,1918-2015,0.73,M-h,3Eh,MPCLINUX,1804,-887,Alinda,20150706

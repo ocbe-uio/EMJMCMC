@@ -34,7 +34,7 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
   X <- model.matrix(object = formula,data = data)
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank)))
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank), summary.fixed =list(mean = out$coefficients)))
 
 }
 
@@ -78,7 +78,7 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
   }
 
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out)))
+  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
 
 }
 
@@ -115,6 +115,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          n.size ="integer",
                                          LocImprove = "array",
                                          max.N = "integer",
+                                         save.beta = "logical",
                                          recalc.margin = "numeric",
                                          max.N.glob = "integer",
                                          min.N.glob = "integer",
@@ -191,6 +192,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  type.randomize <<- as.integer(3)
                                  max.cpu.glob <<- as.integer(Nvars*0.05 + 1)
                                  max.cpu.hyper <<- as.integer(2)
+                                 save.beta <<- FALSE
                                  printable.opt <<- FALSE
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
@@ -249,6 +251,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  max.cpu.glob <<- as.integer(search.args.list$max.cpu.glob)
                                  locstop.nd <<-search.args.list$locstop.nd
                                  max.cpu.hyper <<- as.integer(search.args.list$max.cpu.hyper)
+                                 save.beta <<- search.args.list$save.beta
                                  aa <<- search.args.list$lambda.a
                                  thin_rate <-search.args.list$thin_rate
                                  cc <<- search.args.list$lambda.c
@@ -853,6 +856,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      statistics1[id,c(2,3)]<-100000
                                      statistics1[id,1]<--100000
                                      statistics1[id,4:14]<-0
+
                                      #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
 
                                      #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
@@ -868,12 +872,24 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        statistics1[id,2]<-fm$waic[[1]]
                                        statistics1[id,1]<-fm$mlik[[1]]
                                        statistics1[id,3]<-fm$dic[[1]]
-                                       #                                                          if(id>1)
-                                       #                                                          {
-                                       #                                                            inxx<-which(model$varcur==1)
-                                       #                                                            if(length(inxx)==length(fm$summary.fixed$mean))
-                                       #                                                              statistics1[id,15+inxx]<-fm$summary.fixed$mean
-                                       #                                                          }
+                                       if(save.beta)
+                                       {
+
+
+                                         if(fparam[1]=="Const")
+                                         {
+                                           inxx<-which(model$varcur==1)
+                                           if(length(inxx)==length(fm$summary.fixed$mean))
+                                             statistics1[id,15+inxx]<-fm$summary.fixed$mean
+                                         }else
+                                         {
+                                           inxx<-c(0,which(model$varcur==1))
+                                           if(length(inxx)==length(fm$summary.fixed$mean))
+                                             statistics1[id,16+inxx]<-fm$summary.fixed$mean
+                                         }
+
+
+                                       }
 
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
@@ -930,12 +946,25 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        statistics[id,2]<-fm$waic[[1]]
                                        statistics[id,1]<-fm$mlik[[1]]
                                        statistics[id,3]<-fm$dic[[1]]
-                                       #                                                          if(id>1)
-                                       #                                                          {
-                                       #                                                            inxx<-which(model$varcur==1)
-                                       #                                                            if(length(inxx)==length(fm$summary.fixed$mean))
-                                       #                                                              statistics[id,14+inxx]<-fm$summary.fixed$mean
-                                       #                                                          }
+                                       if(save.beta)
+                                       {
+
+
+                                         if(fparam[1]=="Const")
+                                         {
+                                           inxx<-which(model$varcur==1)
+                                           if(length(inxx)==length(fm$summary.fixed$mean))
+                                             statistics[id,15+inxx]<-fm$summary.fixed$mean
+                                         }else
+                                         {
+                                           inxx<-c(0,which(model$varcur==1))
+                                           if(length(inxx)==length(fm$summary.fixed$mean))
+                                             statistics[id,16+inxx]<-fm$summary.fixed$mean
+                                         }
+
+
+                                       }
+
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
                                          g.results[2,1]<-fm$waic[[1]]
@@ -3713,10 +3742,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(crit$mlik)
                                {
 
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_Pr(M.D).jpg",sep = ""))
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_Pr(MID).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   jpeg(file=paste(workdir,template,"_Pr(M.D).jpg",sep = ""))
-                                   plot(xlab = "model_id", ylab="Pr(M(model_id).D)",ylim = y.post.lim, statistics1[,4]/norm1,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   jpeg(file=paste(workdir,template,"_Pr(MID).jpg",sep = ""))
+                                   plot(xlab = "model_id", ylab="Pr(M(model_id)ID)",ylim = y.post.lim, statistics1[,4]/norm1,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -3731,10 +3760,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(crit$waic && crit$mlik)
                                {
 
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_waic-Pr(M.D).jpg",sep = ""))
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_waic-Pr(MID).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   jpeg(file=paste(workdir,template,"_waic-Pr(M.D).jpg",sep = ""))
-                                   plot(xlim = waic.lim, ylim = y.post.lim,xlab = "WAIC(M)", ylab="Pr(M.D)",statistics1[,2],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   jpeg(file=paste(workdir,template,"_waic-Pr(MID).jpg",sep = ""))
+                                   plot(xlim = waic.lim, ylim = y.post.lim,xlab = "WAIC(M)", ylab="Pr(MID)",statistics1[,2],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -3749,10 +3778,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(crit$dic && crit$mlik)
                                {
 
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_dic-Pr(M.D).jpg",sep = ""))
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_dic-Pr(MID).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   jpeg(file=paste(workdir,template,"_dic-Pr(M.D).jpg",sep = ""))
-                                   plot(xlim = dic.lim, ylim = y.post.lim,xlab = "dic(M)", ylab="Pr(M.D)",statistics1[,3],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   jpeg(file=paste(workdir,template,"_dic-Pr(MID).jpg",sep = ""))
+                                   plot(xlim = dic.lim, ylim = y.post.lim,xlab = "dic(M)", ylab="Pr(MID)",statistics1[,3],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -3768,9 +3797,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(crit$mlik)
                                {
 
-                                 jpeg(file=paste(workdir,template,"_mlik-Pr(M.D).jpg",sep = ""))
+                                 jpeg(file=paste(workdir,template,"_mlik-Pr(MID).jpg",sep = ""))
                                  capture.output({withRestarts(tryCatch(capture.output({
-                                   plot(xlim = mlik.lim,ylim = y.post.lim, xlab = "MLIK", ylab="Pr(M.D)",statistics1[,1],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   plot(xlim = mlik.lim,ylim = y.post.lim, xlab = "MLIK", ylab="Pr(MID)",statistics1[,1],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/statistics1[,3]*3 +1,0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/statistics1[,4]*3 +1,0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/statistics1[,4]*3 +1,0))
@@ -3877,10 +3906,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(crit$mlik)
                                  {
 
-                                   if(printable.opt)print(paste("drawing ",workdir,template,"_distance-Pr(M.D).jpg",sep = ""))
+                                   if(printable.opt)print(paste("drawing ",workdir,template,"_distance-Pr(MID).jpg",sep = ""))
                                    capture.output({withRestarts(tryCatch(capture.output({
-                                     jpeg(file=paste(workdir,template,"_distance-Pr(M.D).jpg",sep = ""))
-                                     plot(xlab = "x = |M* - M| = distance from the main mode",ylim = y.post.lim, ylab="Pr(M.D)",y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                     jpeg(file=paste(workdir,template,"_distance-Pr(MID).jpg",sep = ""))
+                                     plot(xlab = "x = |M* - M| = distance from the main mode",ylim = y.post.lim, ylab="Pr(MID)",y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=2,  col = ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,2,0),cex= ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,c(statistics1[moddee,10],statistics1[-moddee,10])/norm+1,0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=3,  col = ifelse(c(statistics1[moddee,11],statistics1[-moddee,11])>0,3,0),cex= ifelse(c(statistics1[moddee,11],statistics1[-moddee,11])>0,c(statistics1[moddee,11],statistics1[-moddee,11])/norm+1,0))
@@ -3895,7 +3924,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                if(crit$mlik)
                                {
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(M.D).jpg",sep = ""))
+                                 if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(MID).jpg",sep = ""))
                                  if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    # further address subset of the set of the best solution of cardinality 1024
@@ -4068,6 +4097,17 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                bias.pi <- bias.pi/n
                                rmse.pi <- rmse.pi/n
                                return(list(bias.pi = bias.pi, rmse.pi = rmse.pi))
+                             },
+                             foreast=function(covariates,nvars,link.g)
+                             {
+                                ids<-which(!is.na(statistics1[,15]))
+                                res<-0
+                                for(i in ids)
+                                {
+                                 res<-res + statistics1[i,15]*link.g(sum(statistics1[i,16:nvars]*covariates,na.rm = T))
+                                }
+                                return(list(forecast=res))
+
                              }
 
                            )
