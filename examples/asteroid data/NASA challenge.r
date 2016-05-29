@@ -37,7 +37,7 @@ simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJ
 simy <-  read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NotNeas8%2B.txt"),sep = ",",header = T,fill=TRUE)
 simx$neo<-1
 simy$neo<-0
-data.example <- as.data.frame(t(cbind(t(simy[sample.int(size = 200,n = 6621,replace = T),]),t(simx[sample.int(size = 300,n = 14099,replace = T),]))),stringsAsFactors = F)
+data.example <- as.data.frame(t(cbind(t(simy[sample.int(size = 400,n = 6621,replace = T),]),t(simx[sample.int(size = 600,n = 14099,replace = T),]))),stringsAsFactors = F)
 #data.example$epoch<-factor(data.example$epoch,labels = c(0,1))
 
 
@@ -48,27 +48,9 @@ simx$neo<-1
 simy$neo<-0
 
 
-
-
 data.example <- as.data.frame(t(cbind(t(simy),t(simx))),stringsAsFactors = F)
-#data.example$epoch<-factor(data.example$epoch,labels = c(0,1))
-#data.example$Polarization<-factor(data.example$Polarization,labels = c(0,1))
 
-
-data.example$orbit1<-0
-data.example$orbit2<-0
-data.example$orbit3<-0
-data.example$orbit4<-0
-data.example$orbit5<-0
-data.example$orbit6<-0
-data.example$orbit1[which(data.example$ref1==0)]<-1
-data.example$orbit2[which(data.example$ref1==1)]<-1
-data.example$orbit3[which(data.example$ref1==2)]<-1
-data.example$orbit4[which(data.example$ref1==3)]<-1
-data.example$orbit5[which(data.example$ref1==4)]<-1
-data.example$orbit6[which(data.example$ref1>=5)]<-1
-
-transform<-colnames(data.example)[-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]
+transform<-colnames(data.example)[-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25)]
 
 for(i in 1:length(transform))
 {
@@ -77,141 +59,34 @@ for(i in 1:length(transform))
 }
 
 
+
+data.example$esuar<-data.example$eccentricity^2
+data.example$asuar<-data.example$absolute_magnitude^2
+data.example$rsuar<-data.example$semi_major_axis^2
+data.example$rcube<-data.example$semi_major_axis^3
+data.example$anoml<-data.example$mean_anomaly*data.example$semi_major_axis
+data.example$anoms<-data.example$mean_anomaly*data.example$semi_major_axis^2
+data.example$anomv<-data.example$mean_anomaly*data.example$semi_major_axis^3
+data.example$perihell<-data.example$argument_of_perihelion*data.example$semi_major_axis
+data.example$perihels<-data.example$argument_of_perihelion*data.example$semi_major_axis^2
+data.example$perihelv<-data.example$argument_of_perihelion*data.example$semi_major_axis^3
+data.example$longitudel<-data.example$longitude_of_the_ascending.node*data.example$semi_major_axis
+data.example$longitudes<-data.example$longitude_of_the_ascending.node*data.example$semi_major_axis^2
+data.example$longitudev<-data.example$longitude_of_the_ascending.node*data.example$semi_major_axis^3
+
+
 data.example1<-data.example
 data.example2<-data.example
 data.example<-data.example2
 
 #fparam <- c("Const",colnames(data)[-1])
-fparam.example <- colnames(data.example)[-c(1,2,3,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]
+fparam.example <- colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]
 fobserved.example <- colnames(data.example)[1]
 
 
-View(cor(data.example[,-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)],use = "complete.obs"))
+View(cor(data.example[,-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25)],use = "complete.obs"))
 
 
-hashStat <- hash()
-#create MySearch object with default parameters
-mySearch = EMJMCMC2016()
-# load functions for MLIK estimation
-mySearch$estimator = estimate.bas.glm
-mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64))
-
-remove(hashStat)
-
-
-mySearch$printable.opt=F
-mySearch$max.cpu = as.integer(4)
-mySearch$locstop.nd=FALSE
-mySearch$max.cpu.glob = as.integer(4)
-mySearch$max.N.glob=as.integer(10)
-mySearch$min.N.glob=as.integer(5)
-mySearch$max.N=as.integer(2)
-mySearch$min.N=as.integer(1)
-mySearch$recalc.margin = (500000)
-distrib_of_proposals = c(76.91870,71.25264,87.68184,90.55921,17812.39852)
-distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,12.964227,13.048343,7.165434,
-                                           0.9936905,15.942490,11.040131,3.200394,15.349051,15.466632,4.676458,
-                                           1.5184551,9.285762,6.125034,3.627547,13.343413,12.923767,5.318774,
-                                           14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,2.455602,
-                                           26.0826035,12.453729,14.340435,14.863495,10.028312,12.685017,13.806295),dim = c(7,5)))
-mySearch$hash.length<-as.integer(20)
-mySearch$double.hashing<-F
-
-
-
-Niter <- 1
-thining<-1
-system.time({
-
-  mliklist<-array(data = 0, dim = c(2^mySearch$hash.length, Niter))
-  vect <-array(data = 0,dim = c(length(fparam.example),Niter))
-  vect.mc <-array(data = 0,dim = c(length(fparam.example),Niter))
-  inits <-array(data = 0,dim = Niter)
-  freqs <-array(data = 100,dim = c(5,Niter))
-  freqs.p <-array(data = 100,dim = c(5,7,Niter))
-  masses <- array(data = 0,dim = Niter)
-  iterats <- array(data = 0,dim = c(2,Niter))
-
-  for(i in 1:Niter)
-  {
-    #statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
-    #statistics <- describe(statistics1)
-
-
-    hashStat <- hash()
-
-
-    mySearch$g.results[1,1]<--Inf
-    mySearch$g.results[1,2]<-1
-    mySearch$g.results[4,1]<-0
-    mySearch$g.results[4,2]<-0
-    mySearch$p.add = array(data = 0.5,dim = length(fparam.example))
-    #distrib_of_neighbourhoods=array(data = runif(n = 5*7,min = 0, max = 20),dim = c(5,7))
-    #distrib_of_proposals = runif(n = 5,min = 0, max = 100)
-    #distrib_of_proposals[5]=sum(distrib_of_proposals[1:4])*runif(n = 1,min = 50, max = 150)
-    print("BEGIN ITERATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print(i)
-    set.seed(10*i)
-    initsol=rbinom(n =  length(fparam.example),size = 1,prob = 0.5)
-    inits[i] <- mySearch$bittodec(initsol)
-    freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=NULL,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000000001, trit = 2^15, trest = 2^15, burnin = 100, max.time = 24*60*6, maxit = 2^20, print.freq = 100
-    ))
-    vect[,i]<-resm$bayes.results$p.post
-    vect.mc[,i]<-resm$p.post
-    masses[i]<-resm$bayes.results$s.mass
-    print(masses[i])
-    freqs.p[,,i] <- distrib_of_neighbourhoods
-    iterats[1,i]<-mySearch$g.results[4,1]
-    iterats[2,i]<-mySearch$g.results[4,2]
-    print("COMPLETE ITERATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! with")
-    print(iterats[2,i])
-    lHash<-length(hashStat)
-    mliks <- values(hashStat)[which((1:(lHash * 3)) %%3 == 1)]
-    mliklist[,i]<-mliks[1:2^mySearch$hash.length]
-
-
-    lHash<-length(hashStat)
-    mliks <- values(hashStat)[which((1:(lHash * 3)) %%3 == 1)]
-    sum(exp(mliks))
-    smilks100000<-sort(mliks,decreasing = T)
-    boxplot(smilks100000,xaxt="n",ylab="log(Marginal Likelihood)",xlab="Replicates",horizontal=FALSE,pch=".",cex.lab=1.7,cex.axis=1.5,omd=c(0,0.7,0,0.7))
-
-    write(mliklist[,i], file = paste("mliks",i,".csv"),
-          ncolumns = 1,
-          append = FALSE, sep = " ")
-    write(vect[,i], file = paste("pp",i,".rs.csv"),
-          ncolumns = 1,
-          append = FALSE, sep = " ")
-    write(vect.mc[,i], file = paste("pp",i,".mc.csv"),
-          ncolumns = 1,
-          append = FALSE, sep = " ")
-
-    remove(hashStat)
-    #clear(hashStat)
-    #remove(hashStat)
-    #remove(statistics1)
-    #remove(statistics)
-  }
-}
-)
-
-
-
-
-print("model coverages")
-mean(masses)
-median(masses)
-print("mean # of iterations")# even smaller on average than in BAS
-mean(iterats[1,])
-print("mean # of estimations")# even smaller on average than in BAS
-mean(iterats[2,])
-
-
-
-
-barplot(vect[,1],density = 46,border="black",main = "Marginal Inclusion (RM)",xlab = "Covariates",ylab="Probability")
-barplot(vect.mc[,1],density = 46,border="black",main = "Marginal Inclusion (MC)",xlab = "Covariates",ylab="Probability")
 
 
 
@@ -230,13 +105,9 @@ statistics <- describe(statistics1)
 mySearch = EMJMCMC2016()
 # load functions for MLIK estimation
 mySearch$estimator = estimate.bas.glm
-mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(10000))
+mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64))
 mySearch$save.beta=T
 
-
-xxx<-mySearch$estimator(formula = neo~1+rms_residual,family = binomial(),prior = aic.prior(),logn = log(64),data = data.example)
-xxx$summary.fixed$mean
-length(xxx$summary.fixed$mean)
 
 #estimate.bas.glm(formula = y~V1+V2+V3,data = data.example,family = binomial(),prior =aic.prior(),logn = log(64))
 #play around with various methods in order to get used to them and see how they work
@@ -253,32 +124,43 @@ g<-function(x)
   return((x = 1/(1+exp(-x))))
 }
 
-mySearch$foreast(covariates = rep(1,11),nvars = 26,link.g = g)
+mySearch$foreast(covariates = rep(1,11),nvars = 36,link.g = g)
 
+system.time({
 tot.er<-0
 fp<-0
 fn<-0
-test.size<-100
+test.size<-20720
 ids<-sample.int(size = test.size,n = 20720,replace = F)
+ns<-0
+ps<-0
 for(i in ids)
 {
-  X<-c(1,as.numeric(data.example1[i,-c(1,2,5,13,14,15,16,17,19,20,21,22,23,24,25,26,27,28,29,30,31)]))
+  X<-c(1,as.numeric(data.example1[i,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]))
   #print(X)
-  y.hat<-round(mySearch$foreast(covariates = X,nvars = 24,link.g = g)$forecast)
+  y.hat<-round(mySearch$foreast(covariates = X,nvars = 36,link.g = g)$forecast)
   error<-as.numeric(data.example1[i,1])-y.hat
   if(error == 1)
     fn<-fn+1
   else
     if(error == -1)
       fp<-fp+1
+  if(as.numeric(data.example1[i,1])==1)
+    ps<-ps+1
+  else
+    ns<-ns+1
   print(paste(i," ",y.hat," ",(as.numeric(data.example1[i,1])-y.hat)))
 }
 tot.er<-(fp+fn)
-print(tot.er/test.size)
-print(fp/test.size)
-print(fn/test.size)
+print(100*tot.er/test.size)
+print((1-print(tot.er/test.size))*100)
+print(fp*100/ps)
+print(fn*100/ns)
+})
 
 write.big.matrix(x = statistics1,filename = "cosmoneo.csv")
+
+
 # completed in   7889  for 1048576 models whilst BAS took 6954.101 seonds and thus now advantage of using C versus R is clearly seen as neglectible  (14688.209 user seconds)
 # BAS completed the same job in
 
@@ -286,15 +168,17 @@ write.big.matrix(x = statistics1,filename = "cosmoneo.csv")
 idn<-which(is.na(statistics1[,1]))
 length(idn)
 # check that all models are enumerated during the full search procedure
-idn<-which(is.na(statistics1[,16]))
+idn<-which(!is.na(statistics1[,16]))
 length(idn)
 
 xxxx<-statistics1[,15]
+max(statistics1[,15],na.rm = T)
 
 which(statistics1[,15]==max(statistics1[,15],na.rm = T))
 
+statistics1[which(statistics1[,15]<0.01),]<-NA
 statistics1[,15]<-NA
-statistics1[2^8,15]<-1
+statistics1[524289,15]<-1
 
 
 template = "test"
@@ -310,6 +194,11 @@ fake500 <- sum(exp(x = (sort(statistics1[,1],decreasing = T)[1:2^20] + 1)),na.rm
 print("pi truth")
 sprintf("%.10f",truth[ordering$ix])
 sprintf(fparam.example[ordering$ix])
+
+par(mar = c(10,4,4,2) + 4.1)
+barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg =fparam.example,las=2)
+barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg =fparam.example,las=2)
+
 
 #estimate best performance ever
 min(statistics1[,1],na.rm = T)
@@ -368,9 +257,9 @@ mySearch$max.cpu.glob = as.integer(4)
 mySearch$switch.type=as.integer(1)
 mySearch$switch.type.glob=as.integer(1)
 #mySearch$printable.opt = TRUE
-mySearch$max.N.glob=as.integer(5)
-mySearch$min.N.glob=as.integer(3)
-mySearch$max.N=as.integer(1)
+mySearch$max.N.glob=as.integer(10)
+mySearch$min.N.glob=as.integer(5)
+mySearch$max.N=as.integer(2)
 mySearch$min.N=as.integer(1)
 mySearch$recalc.margin = as.integer(2^20)
 distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852)
@@ -382,7 +271,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
                                            6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5)))
 
 # proceed with the search
-Niter <- 5
+Niter <- 1
 thining<-1
 system.time({
 
@@ -400,7 +289,7 @@ system.time({
 
   for(i in 1:Niter)
   {
-    statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 26,init = NA, type = "double")
+    statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 36,init = NA, type = "double")
     statistics <- describe(statistics1)
     mySearch$g.results[4,1]<-0
     mySearch$g.results[4,2]<-0
@@ -411,7 +300,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 100, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 10000, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob
@@ -429,11 +318,14 @@ system.time({
     iterats[2,i]<-mySearch$g.results[4,2]
     print("COMPLETE ITERATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! with")
     print(iterats[2,i])
-    remove(statistics1)
-    remove(statistics)
+    #remove(statistics1)
+    #remove(statistics)
   }
 }
 )
+
+barplot(vect[,1],density = 46,border="black",main = "Marginal Inclusion (RM)",xlab = "Covariates",ylab="Probability")
+barplot(vect.mc[,1],density = 46,border="black",main = "Marginal Inclusion (MC)",xlab = "Covariates",ylab="Probability")
 
 
 Nlim <- 1
