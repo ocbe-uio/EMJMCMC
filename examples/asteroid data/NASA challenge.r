@@ -15,7 +15,7 @@ install.packages("copula")
 
 library(hash)
 library(RCurl)
-#library(EMJMCMC) bulid the sourse file https://github.com/aliaksah/EMJMCMC2016/blob/master/R/the_mode_jumping_package2.r instead, since the latest publiched build doen not have classification
+#library(EMJMCMC) bulid the sourse file https://github.com/aliaksah/EMJMCMC2016/blob/master/R/the_mode_jumping_package2.r instead, since the latest published build EMJMCMC_1.2.tar.gz doen not have prediction functionality (coming in the package soon with other cookies ;) ) available
 library(sp)
 library(INLA)
 library(parallel)
@@ -101,6 +101,7 @@ data.example$longitudev<-data.example$longitude_of_the_ascending.node*data.examp
 fparam.example <- colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]
 fobserved.example <- colnames(data.example)[1]
 # view the correlation structure
+
 View(cor(data.example[,-c(2,4,5,13,14,15,16,17,19,20,21,22,23,24,25)],use = "complete.obs"))
 
 
@@ -133,7 +134,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
                                            6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5)))
 #carry the search (training out)
-statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 36,init = NA, type = "double")
+statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 16+length(fparam.example),init = NA, type = "double")
 statistics <- describe(statistics1)
 mySearch$g.results[4,1]<-0
 mySearch$g.results[4,2]<-0
@@ -146,7 +147,6 @@ write.big.matrix(x = statistics1,filename = "cosmoneo.csv")
 
 
 #post proceed data and visualize it (if needed)
-
 
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
 truth = ppp$p.post # make sure it is equal to Truth column from the article
@@ -164,14 +164,36 @@ barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)"
 template = "test"
 # n/b visualization iisues on Windows! To be fixed!
 #mySearch$visualize_results(statistics1, "test", 2^10-1, crit=list(mlik = T, waic = T, dic = T),draw_dist =F)
-# once full search is completed, get the truth for the experiment
+
+
+# check how many models were visited
+idn<-which(!is.na(statistics1[,1]))
+length(idn)
+
+# filter some models out (if needed!!!!), improves prediction speed but can also induce additional errors
+statistics1[which(statistics1[,15]<0.001),]<-NA
+
+# check how many models were visited
+idn<-which(!is.na(statistics1[,1]))
+length(idn)
+
+# check the filtering effect (if required)
+ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
+truth = ppp$p.post # make sure it is equal to Truth column from the article
+truth.m = ppp$m.post
+truth.prob = ppp$s.mass
+ordering = sort(ppp$p.post,index.return=T)
+print("pi truth")
+sprintf("%.10f",truth[ordering$ix])
+sprintf(fparam.example[ordering$ix])
+
+par(mar = c(10,4,4,2) + 4.1)
+barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg =fparam.example,las=2)
+barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg =fparam.example,las=2)
 
 # check how many models were visited
 idn<-which(is.na(statistics1[,1]))
 length(idn)
-
-# filter some models out (if needed!!!!)
-statistics1[which(statistics1[,15]<0.00001),]<-NA
 
 
 # carry classification out and estimate the errors
@@ -211,9 +233,9 @@ print(100*tot.er/test.size)
 # precision
 print((1-(tot.er/test.size))*100)
 # false positive rate
-print(fp*100/ps)
+print(fp*100/ns)
 # false negative rate
-print(fn*100/ns)
+print(fn*100/ps)
 })
 
 
