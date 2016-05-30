@@ -183,7 +183,7 @@ statistics1[524289,15]<-1
 
 template = "test"
 # n/b visualization iisues on Windows! To be fixed!
-mySearch$visualize_results(statistics1, "test", 2^10-1, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
+mySearch$visualize_results(statistics1, "test", 2^10-1, crit=list(mlik = T, waic = T, dic = T),draw_dist = T)
 # once full search is completed, get the truth for the experiment
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
 truth = ppp$p.post # make sure it is equal to Truth column from the article
