@@ -233,9 +233,9 @@ print(100*tot.er/test.size)
 # precision
 print((1-(tot.er/test.size))*100)
 # false positive rate
-print(fp*100/ns)
+print(fp*100/(ns+fp))
 # false negative rate
-print(fn*100/ps)
+print(fn*100/(ps+fn))
 })
 
 
