@@ -140,7 +140,7 @@ mySearch$g.results[4,1]<-0
 mySearch$g.results[4,2]<-0
 mySearch$p.add = array(data = 0.5,dim = length(fparam.example))
 initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
-resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 10000, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
+resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 20000, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
 
 # save the results (if needed)
 write.big.matrix(x = statistics1,filename = "cosmoneo.csv")
@@ -171,7 +171,7 @@ idn<-which(!is.na(statistics1[,1]))
 length(idn)
 
 # filter some models out (if needed!!!!), improves prediction speed but can also induce additional errors
-statistics1[which(statistics1[,15]<0.001),]<-NA
+statistics1[which(statistics1[,15]<0.0001),]<-NA
 
 # check how many models were visited
 idn<-which(!is.na(statistics1[,1]))
@@ -194,6 +194,7 @@ barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)"
 # check how many models were visited
 idn<-which(is.na(statistics1[,1]))
 length(idn)
+
 
 
 # carry classification out and estimate the errors
@@ -238,4 +239,14 @@ print(fp*100/(ns+fp))
 print(fn*100/(ps+fn))
 })
 
+data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)][(is.na(data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]))]<-0
+#vectorized classification (much faster)
+res<-mySearch$foreast.matrix(nvars = 20,ncases = 20720,link.g = g,covariates = data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)])$forecast
+res<-as.integer(res>=0.5)
+length(which(res>=0.5))
+length(which(res<0.5))
+length(res)
+length(which(data.example1$neo==1))
+
+(1-sum(abs(res-data.example1$neo),na.rm = T)/20720)
 

@@ -82,6 +82,34 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 
 }
 
+
+estimate.glm <- function(formula, data, family, prior, n, g = 0)
+{
+
+  out <- glm(formula = formula, family = family, data = data)
+  # 1 for aic, 2 bic prior, else g.prior
+
+  p <- out$rank
+  if(prior == 1)
+  {
+
+    logmarglik <- -AIC(out)
+  }
+  else if(prior ==2)
+  {
+    logmarglik <- -BIC(out)
+  }
+  else
+  {
+    Rsquare <- summary(out)$r.squared
+    #logmarglik =  .5*(log(1.0 + g) * (n - p -1)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+    logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+  }
+
+  # use dic and aic as bic and aic correspondinly
+  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+
+}
 # covariates are thus
 # 1) A constant +1
 # 2) Base structures (CHG, CGH, CHH) +2
@@ -4107,6 +4135,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  res<-res + statistics1[i,15]*link.g(sum(statistics1[i,16:nvars]*covariates,na.rm = T))
                                 }
                                 return(list(forecast=res))
+
+                             },
+                             foreast.matrix=function(covariates,ncases,nvars,link.g)
+                             {
+                               ids<-which(!is.na(statistics1[,15]))
+                               lids<-length(ids)
+                               statistics1[ids,(17:(nvars+16))][which(is.na(statistics1[ids,(17:(nvars+16))]))]<-0
+                               res<-t(statistics1[ids,15])%*%g(matrix(rep(statistics1[ids,16],ncases),nrow = lids,ncol = ncases)+ statistics1[ids,(17:(nvars+16))]%*%t(covariates))
+
+                               return(list(forecast=res))
 
                              }
 
