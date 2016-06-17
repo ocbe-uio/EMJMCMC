@@ -105,7 +105,7 @@ Generalized linear mixed models (GLMM) are addressed for inference and predictio
 
 \section*{Introduction}
 
-In this study we address variable selection in GLMM addressed in the Bayesian setting. GLMM allow to carry out detailed modeling in terms of both linking reasonably chosen responses and explanatory variables via a proper link function and incorporating the unexplained variability and dependence structure between the observations via random effects. Being one of the most powerful modeling tools in modern statistical science GLMM models have proven to be efficient in numerous applications from banking to astrophysics and genetics \cite{Hubin2016}. The posterior distribution of the models  can be viewed as a  relevant measure for the model evidence, based on the observed data. The number of models to select from is exponential in the number of candidate variables, moreover the search space in this context is sparse and non-concave. Hence efficient search algorithms have to be adopted for evaluating the posterior distribution of models within a reasonable amount of time. We introduce efficient mode jumping MCMC algorithm for calculating and maximizing posterior probabilities of the GLMM models. 
+In this study we address variable selection in GLMM addressed in the Bayesian setting. GLMM models allow to carry out detailed modeling in terms of both linking reasonably chosen responses and explanatory variables via a proper link function and incorporating the unexplained variability and dependence structure between the observations via random effects. Being one of the most powerful modeling tools in modern statistical science GLMM models have proven to be efficient in numerous applications from banking to astrophysics and genetics \cite{Hubin2016}. The posterior distribution of the models  can be viewed as a  relevant measure for the model evidence, based on the observed data. The number of models to select from is exponential in the number of candidate variables, moreover the search space in this context is sparse and non-concave. Hence efficient search algorithms have to be adopted for evaluating the posterior distribution of models within a reasonable amount of time. We introduce efficient mode jumping MCMC algorithm for calculating and maximizing posterior probabilities of the GLMM models. 
 
 %----------------------------------------------------------------------------------------
 %	OBJECTIVES
@@ -191,7 +191,7 @@ Bayesian linear regression with a \textit{g-prior} $T = 96$ observations and $P 
 \end{center}\vspace{0.2cm}
 
 
-BAS with both uniform and eplogp initial sampling probabilities perform rather poorly in comparison to other methods, whilst BAS combined with RM approximations from RST as well as MJMCMC show the most promising results. BAS with RM initial sampling probabilities usually manages to find models with the highest MLIK, however MJMCMC in general captures by far higher posterior mass within the same amount of unique models addressed.
+BAS with both uniform and eplogp initial sampling probabilities perform rather poorly in comparison to other methods, whilst BAS combined with approximations from RST as well as MJMCMC show the most promising results. BAS with RM initial sampling probabilities usually manages to find models with the highest MLIK, however MJMCMC in general captures by far higher posterior mass within the same amount of unique models addressed.
 %----------------------------------------------------------------------------------------
 %	CONCLUSIONS
 %----------------------------------------------------------------------------------------
@@ -201,10 +201,10 @@ BAS with both uniform and eplogp initial sampling probabilities perform rather p
 \section*{Conclusions}
 \begin{itemize}
 \item Novel MJMCMC approach for estimating posterior model probabilities and Bayesian model averaging within GLMM and selection is introduced. 
-\item   MJMCMC incorporates the ideas of MCMC with possibility of large jumps combined with local optimizers to generate smart proposals in the discrete space of models
-\item \textit{EMJMCMC} R-package is developed and available from the GitHub repository: \url{http://aliaksah.github.io/EMJMCMC2016} -- simply scan the QR code on the top of the poster
-\item  The developed package gives a user high flexibility in the choice of methods to obtain marginal likelihoods and model selection criteria within GLMM
-\item   Extensive parallel computing for both MCMC moves and local optimizers is available within the developed package
+\item   MJMCMC incorporates the ideas of MCMC with possibility of large jumps combined with local optimizers to generate smart proposals in the discrete space of models.
+\item \textit{EMJMCMC} R-package is developed and available from the GitHub repository: \url{http://aliaksah.github.io/EMJMCMC2016} -- simply scan the QR code on the top of the poster.
+\item  The developed package gives a user high flexibility in the choice of methods to obtain marginal likelihoods and model selection criteria within GLMM.
+\item   Extensive parallel computing for both MCMC moves and local optimizers is available within the developed package.
 \item Based on the obtained results, MJMCMC can be claimed as a rather competitive novel algorithm in terms of the search quality.
 \end{itemize}
 
