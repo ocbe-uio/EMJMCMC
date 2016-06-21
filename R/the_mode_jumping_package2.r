@@ -53,28 +53,36 @@ parallelize<-function(X,FUN)
   return(res.par)
 }
 
-estimate.bas.lm <- function(formula, data, prior, n, g = 0)
+estimate.glm <- function(formula, data, family, prior, logn)
 {
 
-  out <- lm(formula = formula,data = data)
+  #only poisson and binomial families are currently adopted
+  X <- model.matrix(object = formula,data = data)
+  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
+  # use dic and aic as bic and aic correspondinly
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank), summary.fixed =list(mean = out$coefficients)))
+
+}
+
+estimate.glm <- function(formula, data, prior, family,observ=NULL)
+{
+
+  if(!is.null(observ))
+  {
+    formula = as.formula(paste(observ,"~",paste(formula,sep = "~")[3]))
+  }
+  out <- glm(formula = formula,data = data, family = family)
   # 1 for aic, 2 bic prior, else g.prior
 
-  p <- out$rank
+
   if(prior == 1)
   {
-    ss<-sum(out$residuals^2)
-    logmarglik <- -0.5*(log(ss)+2*p)
-  }
-  else if(prior ==2)
-  {
-    ss<-sum(out$residuals^2)
-    logmarglik <- -0.5*(log(ss)+log(n)*p)
+
+    logmarglik <- -AIC(out)
   }
   else
   {
-    Rsquare <- summary(out)$r.squared
-    #logmarglik =  .5*(log(1.0 + g) * (n - p -1)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
-    logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+    logmarglik <- -BIC(out)
   }
 
   # use dic and aic as bic and aic correspondinly
