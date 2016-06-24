@@ -17,7 +17,21 @@ getPlusStrand<-function(chromseq,start.p,stop.p)
 {
   return(substr(chromseq,start.p+1, stop.p+1))
 }
-
+getPlus3bp<-function(start.p)
+{
+  return(substr(CH1Seq,start.p+1, start.p+3))
+}
+getMinus3bp<-function(start.p)
+{
+  ca<-strsplit(x = substr(CH1Seq,start.p-1, start.p+1),split = "")[[1]]
+  l.ca<-length(ca)
+  res<-character(length = l.ca)
+  for(i in 1:l.ca)
+  {
+    res[l.ca-i+1]<-ifelse(test = ca[i]=="G","C",ifelse(ca[i]=="C","G",ifelse(ca[i]=="A","T","A")))
+  }
+  return(paste(res,collapse = ""))
+}
 getMinusStrand<-function(chromseq,start.p,stop.p)
 {
   ca<-strsplit(x = substr(chromseq,start.p-1, stop.p-1),split = "")[[1]]
@@ -48,10 +62,6 @@ getPlusStrand(CH1Seq,106,108)
 substr(CH1Seq,32, 34)# 75 ok
 getMinusStrand(CH1Seq,33,35)
 
-getPlusStrand(CH1Seq,122,124)
-
-getMinusStrand(CH1Seq,187,189)
-
 
 getMinusStrand(CH1Seq,1564692,1564694)
 # seems to work well
@@ -71,7 +81,7 @@ X.ch1$strand[(length(c.ids.pls)+1):(length(c.ids.pls)+length(c.ids.min))]<-"-"
 row.names(X.ch1)<-(1):(length(c.ids.pls)+length(c.ids.min))
 X.ch1$mc_class<-NA
 X.ch1$mc_class[(length(c.ids.pls)+1):(length(c.ids.pls)+length(c.ids.min))]<-getMinusStrand(chromseq =  CH1Seq,start.p = c.ids.min,c.ids.min+2)
-X.ch1$mc_class[(1):(length(c.ids.pls))]<-getPlusStrand(chromseq =  CH1Seq,start.p = c.ids.pls,stop.p = c.ids.pls+2)
+X.ch1$mc_class[(1):(length(c.ids.pls))]<-mclapply(X=c.ids.pls,FUN = getPlus3bp)
 
 getPlusStrand(chromseq =  CH1Seq,start.p =c(1,3,5),stop.p =c(3,5,7))
 
