@@ -70,19 +70,20 @@ fobserved.example <- colnames(data.example2)[5]
 # now apply logistic regression
 #create MySearch object with default parameters. N/B default estimator is INLA!
 mySearch = EMJMCMC2016()
-mySearch$parallelize = lapply
+#mySearch$parallelize = lapply
 
 
 
 # specify some INLA realted parameters
-mySearch$estimator = inla
-args<-list(family = "binomial",data = data.example, Ntrials = data.example$total_bases)
-args$control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)
-mySearch$latent.formula  = ""; "+f(data.example$pos,model=\"ar1\")"
+mySearch$estimator = estimate.inla.ar1
+args<-list(args = list(family = "binomial",data = data.example, Ntrials = data.example$total_bases))
+args$args$control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)
+mySearch$latent.formula  = "+f(data.example$pos,model=\"ar1\")"
 mySearch$estimator.args = args
 mySearch$printable.opt = F
 mySearch$save.beta=T
 
+estimate.inla.ar1(formula = formula2,args)
 
 
 # set parameters of the search and stuff
@@ -152,10 +153,11 @@ barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)"
 dev.off()
 
 # n/b visualization iisues on Windows! To be fixed!
-mySearch$visualize_results(statistics1, template, 200, crit=list(mlik = T, waic = T, dic = T),draw_dist =T)
+#mySearch$visualize_results(statistics1, template, 200, crit=list(mlik = T, waic = T, dic = T),draw_dist =T)
 View(statistics1[,])
 
 best<-fparam.example[which(!is.na(statistics1[which(statistics1[,15]==max(statistics1[,15],na.rm = T))[1],17:(16+length(fparam.example))]))]
+#best<-fparam.example[-c(1,3,5,6,7,8,9,15)]
 
 # condiotion on posterior mode in  the model space for now
 data.example3<-data.example2
@@ -167,6 +169,10 @@ formula2 <- as.formula(paste0("methylated_bases ~  1 +",paste(best,collapse = "+
 args<-list(family = "binomial",data = data.example3, Ntrials = data.example3$total_bases)
 fm4<-do.call(inla, c(args,formula = formula2))
 summary(fm4)
+
+fm4$summary.hyperpar$mean[1]
+coef<-fm4$summary.fixed$mode
+coef[1]<-coef[1]+fm4$summary.hyperpar$mean[1]
 
 # carry out glm BIC prior selection
 mySearch$parallelize = mclapply
@@ -180,7 +186,7 @@ mySearch$g.results[4,1]<-0
 mySearch$g.results[4,2]<-0
 mySearch$p.add = array(data = 0.5,dim = length(fparam.example))
 initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
-resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 1000, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
+resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 10000, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
 
 #analyze the results from the search
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
@@ -198,12 +204,13 @@ barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)"
 
 template = "test"
 # n/b visualization iisues on Windows! To be fixed!
-mySearch$visualize_results(statistics1, "test", 200, crit=list(mlik = T, waic = T, dic = T),draw_dist =T)
+#mySearch$visualize_results(statistics1, "test", 200, crit=list(mlik = T, waic = T, dic = T),draw_dist =T)
 best<-fparam.example[which(!is.na(statistics1[which(statistics1[,15]==max(statistics1[,15],na.rm = T))[1],17:(16+length(fparam.example))]))]
+
 
 #now check the glm results
 formula3 <- as.formula(paste0("cbind(methylated_bases,unmethylated_bases)~ 1 +",paste(best,collapse = "+")))
-fit1 <- glm( formula = formula3,family=binomial,data=data.example3)
+fit1 <- glm( formula = formula3,family=binomial,data=data.example)
 summary(fit1)
 
 
@@ -214,7 +221,8 @@ g<-function(x)
 
 #classify the unknown
 
-res1<-mySearch$foreast.matrix(nvars = 13,ncases = 552,link.g = g,covariates = data.example1[1:552,c(8:10,12:17,21,23,26,30)])$forecast
+res1<-mySearch$foreast.matrix(nvars = 16,ncases = 552,link.g = g,covariates = data.example1[1:552,c(8:10,12:17,21,23,26,30,31,32,33)])$forecast
+
 res<-as.integer(res1>=0.5)
 length(which(res>=0.5))
 length(which(res<0.5))
@@ -236,7 +244,7 @@ lines(10*g(fm4$summary.random[[1]]$mode[idtest])-11,col =1,lwd=4)
 lines(10*g(fm4$summary.random[[1]]$mean[idtest])-11,col =7,lwd=2)
 dev.off()
 #classify the known
-res1<-mySearch$foreast.matrix(nvars = 13,ncases = 950,link.g = g,covariates = data.example[1:950,c(8:10,12:17,21,23,26,30)])$forecast
+res1<-mySearch$foreast.matrix(nvars = 16,ncases = 950,link.g = g,covariates = data.example[1:950,c(8:10,12:17,21,23,26,30,31,32,33)])$forecast
 res<-as.integer(res1>=0.5)
 length(which(res>=0.5))
 length(which(res<0.5))

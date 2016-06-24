@@ -1,4 +1,4 @@
-#rm(list = ls(all = TRUE))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          #rm(list = ls(all = TRUE))
 
 #install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
 #install.packages("bigmemory")
@@ -34,7 +34,33 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
   X <- model.matrix(object = formula,data = data)
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank), summary.fixed =list(mean = out$coefficients)))
+  return(list(mlik = out$mlik,waic = out$waic , dic = out$dic, summary.fixed =list(mean =coef)))
+}
+
+estimate.inla.iid <- function(formula, args)
+{
+
+  out <- do.call(inla, c(args,formula = formula))
+  # use dic and aic as bic and aic correspondinly
+  coef<-out$summary.fixed$mode
+  coef[1]<-coef[1]+out$summary.hyperpar$mode[1]
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank), summary.fixed =list(mean = coef)))
+
+}
+
+estimate.inla.ar1 <- function(formula, args)
+{
+
+  out<-NULL
+  capture.output({withRestarts(tryCatch(capture.output({out <- do.call(inla, c(args,formula = formula)) })), abort = function(){onerr<-TRUE;out<-NULL})})
+  if(is.null(out))
+  {
+    return(list(mlik = -10000,waic =10000, dic =10000, summary.fixed = 0))
+  }
+  # use dic and aic as bic and aic correspondinly
+  coef<-out$summary.fixed$mode
+  coef[1]<-coef[1]+out$summary.hyperpar$mode[1]/(1-out$summary.hyperpar$mode[2])
+  return(list(mlik = out$mlik[1],waic = out$waic[1] , dic = out$dic[1], summary.fixed =list(mean =coef)))
 
 }
 
@@ -53,16 +79,6 @@ parallelize<-function(X,FUN)
   return(res.par)
 }
 
-estimate.glm <- function(formula, data, family, prior, logn)
-{
-
-  #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
-  # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank), summary.fixed =list(mean = out$coefficients)))
-
-}
 
 estimate.glm <- function(formula, data, prior, family,observ=NULL)
 {
@@ -91,7 +107,7 @@ estimate.glm <- function(formula, data, prior, family,observ=NULL)
 }
 
 
-estimate.glm <- function(formula, data, family, prior, n, g = 0)
+estimate.glm.alt <- function(formula, data, family, prior, n, g = 0)
 {
 
   out <- glm(formula = formula, family = family, data = data)
