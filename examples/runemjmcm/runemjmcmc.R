@@ -26,7 +26,7 @@ system.time({
 
 formula1 = as.formula(paste(colnames(data.example)[89],"~ 1 +",paste0(colnames(data.example)[-89],collapse = "+")))
 
-res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = F,n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = T,create.hash = F,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
+res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = F,n.models = 20000,unique = T,max.cpu = 10,max.cpu.glob = 10,create.table = T,create.hash = F,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
                                                                                                                                                                                                                                                                                                                max.N.glob=as.integer(20),
                                                                                                                                                                                                                                                                                                                min.N.glob=as.integer(5),
                                                                                                                                                                                                                                                                                                                max.N=as.integer(3),
