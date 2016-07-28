@@ -13,7 +13,7 @@ rm(list = ls(all = TRUE))
 
 library(hash)
 library(RCurl)
-library(EMJMCMC)
+#library(EMJMCMC)
 library(sp)
 library(INLA)
 library(parallel)
@@ -21,7 +21,7 @@ library(bigmemory)
 library(snow)
 library(MASS)
 library(ade4)
-library(copula)
+#library(copula)
 library(compiler)
 library(BAS)
 require(stats)
@@ -44,6 +44,21 @@ for(i in 1:length(fparam.example))
 {
   fparam.example[i]=paste("I(V",i,")",sep = "")
 }
+
+system.time({
+
+formula1 = as.formula(paste(colnames(data.example)[89],"~ 1 +",paste0(colnames(data.example)[-89],collapse = "+")))
+
+res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = F,n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = T,create.hash = F,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
+                                                                                                                                                                                                                                                                                                               max.N.glob=as.integer(20),
+                                                                                                                                                                                                                                                                                                               min.N.glob=as.integer(5),
+                                                                                                                                                                                                                                                                                                               max.N=as.integer(3),
+                                                                                                                                                                                                                                                                                                               min.N=as.integer(1),
+                                                                                                                                                                                                                                                                                                               printable = F))
+})
+
+View(statistics1[1:1000,])
+
 
 # create either a standard hash table (default for now)
 hashStat <- hash()
@@ -96,7 +111,7 @@ distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.8394
                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,2.455602,
                                            26.0826035,12.453729,14.340435,14.863495,10.028312,12.685017,13.806295),dim = c(7,5)))
 mySearch$hash.length<-as.integer(20)
-mySearch$double.hashing<-F
+mySearch$double.hashing<-T
 
 #Proceed for the predefined number of iterations
 

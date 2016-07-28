@@ -97,6 +97,9 @@ data.example$longitudel<-data.example$longitude_of_the_ascending.node*data.examp
 data.example$longitudes<-data.example$longitude_of_the_ascending.node*data.example$semi_major_axis^2
 data.example$longitudev<-data.example$longitude_of_the_ascending.node*data.example$semi_major_axis^3
 
+#formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0( colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
+#runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64)),save.beta = T,n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = T,create.hash = F,burn.in = 100,print.freq = 100)
+
 #define the covariates and theobservations
 fparam.example <- colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]
 fobserved.example <- colnames(data.example)[1]
@@ -140,6 +143,7 @@ mySearch$g.results[4,1]<-0
 mySearch$g.results[4,2]<-0
 mySearch$p.add = array(data = 0.5,dim = length(fparam.example))
 initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
+
 resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 999000, trest = 20000, burnin = 3, max.time = 30, maxit = 100000, print.freq =50))
 
 # save the results (if needed)
@@ -215,7 +219,7 @@ ps<-0
 for(i in ids)
 {
   X<-c(1,as.numeric(data.example1[i,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]))
-  y.hat<-round(mySearch$foreast(covariates = X,nvars = 36,link.g = g)$forecast)
+  y.hat<-round(mySearch$forecast(covariates = X,nvars = 36,link.g = g)$forecast)
   error<-as.numeric(data.example1[i,1])-y.hat
   if(error == 1)
     fn<-fn+1
@@ -241,7 +245,7 @@ print(fn*100/(ps+fn))
 
 data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)][(is.na(data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]))]<-0
 #vectorized classification (much faster)
-res<-mySearch$foreast.matrix(nvars = 20,ncases = 20720,link.g = g,covariates = data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)])$forecast
+res<-mySearch$forecast.matrix(nvars = 20,ncases = 20720,link.g = g,covariates = data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)])$forecast
 res<-as.integer(res>=0.5)
 length(which(res>=0.5))
 length(which(res<0.5))

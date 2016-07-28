@@ -19,13 +19,12 @@ library(bigmemory)
 library(snow)
 library(MASS)
 library(ade4)
-library(copula)
+#library(copula)
 #library(compiler)
 library(BAS)
 library(stringi)
 require(stats)
 #compile INLA
-
 
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
@@ -34,7 +33,37 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
   X <- model.matrix(object = formula,data = data)
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$mlik,waic = out$waic , dic = out$dic, summary.fixed =list(mean =coef)))
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank)))
+
+}
+
+estimate.bas.lm <- function(formula, data, prior, n, g = 0)
+{
+
+  out <- lm(formula = formula,data = data)
+  # 1 for aic, 2 bic prior, else g.prior
+
+  p <- out$rank
+  if(prior == 1)
+  {
+    ss<-sum(out$residuals^2)
+    logmarglik <- -0.5*(log(ss)+2*p)
+  }
+  else if(prior ==2)
+  {
+    ss<-sum(out$residuals^2)
+    logmarglik <- -0.5*(log(ss)+log(n)*p)
+  }
+  else
+  {
+    Rsquare <- summary(out)$r.squared
+    #logmarglik =  .5*(log(1.0 + g) * (n - p -1)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+    logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+  }
+
+  # use dic and aic as bic and aic correspondinly
+  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out)))
+
 }
 
 estimate.inla.iid <- function(formula, args)
@@ -144,6 +173,129 @@ estimate.glm.alt <- function(formula, data, family, prior, n, g = 0)
 # 7) A tranposone factor +1
 # 8) combinations (if reasonable)
 #closeAllConnections()
+simplify.formula<-function(fmla,names)
+{
+  fmla.proc<-as.character(fmla)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <- names[which(names %in% stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]] )]
+  return(list(fparam = fparam,fobserved = fobserved))
+}
+
+# a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
+runemjmcmc<-function(formula, data,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20,pseudo.paral = F, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+                                                                                                                                                                                                                                                                    0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
+                                                                                                                                                                                                                                                                    1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
+                                                                                                                                                                                                                                                                    14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
+                                                                                                                                                                                                                                                                    6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),  distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852))
+{
+  #first create the object
+
+  assign("data.example",data, envir=globalenv())
+
+  variables <- simplify.formula(formula,names(data.example))
+  assign("fparam.example",variables$fparam, envir=globalenv())
+  assign("fobserved.example",variables$fobserved, envir=globalenv())
+
+  assign("mySearch",EMJMCMC2016(), envir=globalenv())
+  mySearch$estimator <<- estimator
+  mySearch$estimator.args <<- estimator.args
+  mySearch$latent.formula <<- latent
+  mySearch$save.beta <<- save.beta
+  mySearch$recalc.margin <<- as.integer(2^15)
+  mySearch$max.cpu <<- as.integer(max.cpu)
+  mySearch$locstop.nd <<- FALSE
+  mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
+  if(!is.null(advanced.param))
+  {
+    mySearch$max.N.glob<<-as.integer(advanced.param$max.N.glob)
+    mySearch$min.N.glob<<-as.integer(advanced.param$min.N.glob)
+    mySearch$max.N<<-as.integer(advanced.param$max.N)
+    mySearch$min.N<<-as.integer(advanced.param$min.N)
+    mySearch$printable.opt<<-advanced.param$printable
+  }
+
+
+  #distrib_of_proposals = с(0,0,0,0,10)
+  if(exists("hashStat"))
+  {
+    remove(hashStat,envir=globalenv())
+  }
+  if(exists("statistics1"))
+  {
+    remove(statistics,envir=globalenv() )
+    remove(statistics1,envir=globalenv())
+  }
+  if(exists("hash.keys1"))
+  {
+    remove(hash.keys,envir=globalenv())
+    remove(hash.keys1,envir=globalenv())
+  }
+
+  if(create.table)
+  {
+    if(pseudo.paral)
+      mySearch$parallelize <<- lapply
+    #carry the search (training out)
+    assign("statistics1",big.matrix(nrow = 2 ^min((length(fparam.example)),hash.length)+1, ncol =  16+length(fparam.example)*save.beta,init = NA, type = "double"), envir=globalenv())
+    assign("statistics",describe(statistics1), envir=globalenv())
+
+    mySearch$g.results[4,1]<<-0
+    mySearch$g.results[4,2]<<-0
+    mySearch$p.add <<- array(data = 0.5,dim = length(fparam.example))
+    if((length(fparam.example))>20)
+    {
+      mySearch$hash.length<<-as.integer(hash.length)
+      mySearch$double.hashing<<-T
+      hash.keys1 <<- big.matrix(nrow = 2 ^(hash.length)+1, ncol = length(fparam.example),init = 0, type = "char")
+      hash.keys <<- describe(hash.keys1)
+    }
+
+  }else if(create.hash)
+  {
+    assign("hashStat",hash(), envir=globalenv())
+    mySearch$parallelize <<- lapply
+    mySearch$hash.length<<-as.integer(20)
+    mySearch$double.hashing<<-F
+  }
+  # now as the object is created run the algorithm
+  initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
+  if(unique)
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = Inf, maxit = Inf, print.freq = print.freq))
+  else
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = Inf, maxit = Inf, print.freq = print.freq))
+  ppp<-1
+  if(create.table)
+  {
+    ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
+    truth = ppp$p.post # make sure it is equal to Truth column from the article
+    truth.m = ppp$m.post
+    truth.prob = ppp$s.mass
+    ordering = sort(ppp$p.post,index.return=T)
+    print("pi truth")
+    sprintf("%.10f",truth[ordering$ix])
+    sprintf(fparam.example[ordering$ix])
+  }
+  else if(create.hash)
+  {
+    ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+    truth = ppp$p.post # make sure it is equal to Truth column from the article
+    truth.m = ppp$m.post
+    truth.prob = ppp$s.mass
+    ordering = sort(ppp$p.post,index.return=T)
+    print("pi truth")
+    sprintf("%.10f",truth[ordering$ix])
+    sprintf(fparam.example[ordering$ix])
+  }
+
+  par(mar = c(10,4,4,2) + 4.1)
+  barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg =fparam.example,las=2)
+  barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg =fparam.example,las=2)
+  return(ppp)
+}
+# add plot(ppp), summary(ppp), print(ppp), ppp as a class itself, coef(ppp)
 
 EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                            fields = list(estimator.args = "list",
@@ -370,7 +522,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    hash.level<-0
                                    dec<- hashing(bit)+1
                                    #print(dec)
-                                   sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -7:Nvars])*Nvars
+                                   sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -7:Nvars+1])*Nvars
                                    jjj<-1
                                   while(!add.key(dec,bit,sum.one,T))
                                   {
@@ -387,7 +539,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    hash.level<-0
                                    dec<- hashing(bit)+1
-                                   sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -4:Nvars])*Nvars
+                                   sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -7:Nvars +1])*Nvars
                                    while(!add.key(dec,bit,sum.one,F))
                                    {
                                      hash.level<-hash.level+1
@@ -460,7 +612,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  return((i-1)==lb)
                                }
                              },
-                             hashing = function(bit)
+                             hashing = function(bit)# a hash function to find where to place the key in the hash
                              {
                                  n<-length(bit)
                                  if(n<hash.length)
@@ -523,7 +675,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              #transform decimal numbers to binary
                              dectobit = function(dec) #transform a natural number into a binary vector to correspond between vector of solutions and storage array
                              {
-                               if(!double.hashing || dec < 2^hash.length){
+                               if(!double.hashing){
                                  if(dec == 0)
                                    return(0)
                                  q<-dec
@@ -537,7 +689,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  return(bin)
                                }
 
-                              return(dehash(dec))
+                              return(dehash(dec+1))
 
 
                              },
@@ -3583,7 +3735,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                if(printable.opt)print(paste("posterior distribution ofproposals is",  distrib_of_proposals))
 
-                               id<-bittodec(varglob)+1
 
                                if(exists("statistics1"))
                                {
@@ -4150,7 +4301,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                rmse.pi <- rmse.pi/n
                                return(list(bias.pi = bias.pi, rmse.pi = rmse.pi))
                              },
-                             foreast=function(covariates,nvars,link.g)
+                             forecast=function(covariates,nvars,link.g)
                              {
                                 ids<-which(!is.na(statistics1[,15]))
                                 res<-0
@@ -4161,7 +4312,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                 return(list(forecast=res))
 
                              },
-                             foreast.matrix=function(covariates,ncases,nvars,link.g)
+                             forecast.matrix=function(covariates,ncases,nvars,link.g)
                              {
                                ids<-which(!is.na(statistics1[,15]))
                                lids<-length(ids)

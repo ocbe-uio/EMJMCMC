@@ -221,7 +221,7 @@ g<-function(x)
 
 #classify the unknown
 
-res1<-mySearch$foreast.matrix(nvars = 16,ncases = 552,link.g = g,covariates = data.example1[1:552,c(8:10,12:17,21,23,26,30,31,32,33)])$forecast
+res1<-mySearch$forecast.matrix(nvars = 16,ncases = 552,link.g = g,covariates = data.example1[1:552,c(8:10,12:17,21,23,26,30,31,32,33)])$forecast
 
 res<-as.integer(res1>=0.5)
 length(which(res>=0.5))
@@ -244,7 +244,7 @@ lines(10*g(fm4$summary.random[[1]]$mode[idtest])-11,col =1,lwd=4)
 lines(10*g(fm4$summary.random[[1]]$mean[idtest])-11,col =7,lwd=2)
 dev.off()
 #classify the known
-res1<-mySearch$foreast.matrix(nvars = 16,ncases = 950,link.g = g,covariates = data.example[1:950,c(8:10,12:17,21,23,26,30,31,32,33)])$forecast
+res1<-mySearch$forecast.matrix(nvars = 16,ncases = 950,link.g = g,covariates = data.example[1:950,c(8:10,12:17,21,23,26,30,31,32,33)])$forecast
 res<-as.integer(res1>=0.5)
 length(which(res>=0.5))
 length(which(res<0.5))
