@@ -5,7 +5,8 @@ library(bigmemory)
 library(snow)
 library(MASS)
 library(ade4)
-#library(copula)
+library(hash)
+library(RCurl)
 library(compiler)
 library(BAS)
 require(stats)
@@ -20,14 +21,6 @@ data.example <- as.data.frame(simx)
 names(data.example)[89]="Y"
 
 
-#fparam <- c("Const",colnames(data)[-1])
-fparam.example <- colnames(data.example)[-89]
-fobserved.example <- colnames(data.example)[89]
-
-for(i in 1:length(fparam.example))
-{
-  fparam.example[i]=paste("I(V",i,")",sep = "")
-}
 
 system.time({
 
