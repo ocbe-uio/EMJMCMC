@@ -20,13 +20,11 @@ simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJ
 data.example <- as.data.frame(simx)
 names(data.example)[89]="Y"
 
-
-
 system.time({
 
 formula1 = as.formula(paste(colnames(data.example)[89],"~ 1 +",paste0(colnames(data.example)[-89],collapse = "+")))
 
-res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = F,n.models = 20000,unique = T,max.cpu = 10,max.cpu.glob = 10,create.table = T,create.hash = F,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
+res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = F,ineract = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 10000, Nvars.max = 110,p.allow.replace=0.8,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 200000,unique = T,max.cpu = 10,max.cpu.glob = 10,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
                                                                                                                                                                                                                                                                                                                max.N.glob=as.integer(20),
                                                                                                                                                                                                                                                                                                                min.N.glob=as.integer(5),
                                                                                                                                                                                                                                                                                                                max.N=as.integer(3),

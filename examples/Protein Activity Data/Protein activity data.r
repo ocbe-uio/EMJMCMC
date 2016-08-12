@@ -35,7 +35,6 @@ simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJ
 data.example <- as.data.frame(simx)
 names(data.example)[89]="Y"
 
-
 #fparam <- c("Const",colnames(data)[-1])
 fparam.example <- colnames(data.example)[-89]
 fobserved.example <- colnames(data.example)[89]

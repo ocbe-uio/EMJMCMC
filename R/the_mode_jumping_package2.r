@@ -37,12 +37,24 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
 }
 
+sigmoid<- function(x)
+{
+  return(1/(1+(exp(-x))))
+}
+erf <- function(x)
+{
+  return(2 * pnorm(x * sqrt(2)) - 1)
+}
 estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 {
 
-  out <- lm(formula = formula,data = data)
+  out<-NULL
+  capture.output({withRestarts(tryCatch(capture.output({out <- lm(formula = formula,data = data)})), abort = function(){onerr<-TRUE;out<-NULL})})
   # 1 for aic, 2 bic prior, else g.prior
-
+  if(is.null(out))
+  {
+    return(list(mlik = -10000,waic =10000, dic =10000, summary.fixed = 0))
+  }
   p <- out$rank
   if(prior == 1)
   {
@@ -163,16 +175,7 @@ estimate.glm.alt <- function(formula, data, family, prior, n, g = 0)
   return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
 
 }
-# covariates are thus
-# 1) A constant +1
-# 2) Base structures (CHG, CGH, CHH) +2
-# 3) Gene class (5 classes) +4
-# 4) Position within a gene (4 positions including promoters, after coding parts, intrones, exones) +3
-# 5) Gene expression (continious) +1
-# 6) A CpG island factor +1
-# 7) A tranposone factor +1
-# 8) combinations (if reasonable)
-#closeAllConnections()
+
 simplify.formula<-function(fmla,names)
 {
   fmla.proc<-as.character(fmla)[2:3]
@@ -185,20 +188,24 @@ simplify.formula<-function(fmla,names)
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data,
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20,pseudo.paral = F, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20,pseudo.paral = F,ineract = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), create.hash=F,interact.order=1,burn.in=1, print.freq = 100,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                     14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
                                                                                                                                                                                                                                                                     6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),  distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852))
 {
-  #first create the object
 
+  #first create the object
   assign("data.example",data, envir=globalenv())
 
   variables <- simplify.formula(formula,names(data.example))
   assign("fparam.example",variables$fparam, envir=globalenv())
   assign("fobserved.example",variables$fobserved, envir=globalenv())
 
+  for(i in 1:length(fparam.example))
+  {
+    fparam.example[i]<<-paste("I(V",i,")",sep = "")
+  }
   assign("mySearch",EMJMCMC2016(), envir=globalenv())
   mySearch$estimator <<- estimator
   mySearch$estimator.args <<- estimator.args
@@ -208,6 +215,20 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   mySearch$max.cpu <<- as.integer(max.cpu)
   mySearch$locstop.nd <<- FALSE
   mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
+  if(ineract)
+  {
+    mySearch$allow_offsprings <<- as.integer(interact.param$allow_offsprings)
+    mySearch$mutation_rate <<- as.integer(interact.param$mutation_rate)
+    mySearch$Nvars.max <<- as.integer(interact.param$Nvars.max)
+    mySearch$max.tree.size <<- as.integer(interact.param$max.tree.size)
+    mySearch$p.allow.replace <<-  interact.param$p.allow.replace
+    mySearch$p.allow.tree <<-  interact.param$p.allow.tree
+    mySearch$sigmas<<-relations
+    mySearch$sigmas.prob<<-relations.prob
+    p.nor <<- interact.param$p.nor
+    p.and <<- interact.param$p.and
+  }
+
   if(!is.null(advanced.param))
   {
     mySearch$max.N.glob<<-as.integer(advanced.param$max.N.glob)
@@ -339,6 +360,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          p.allow.tree = "numeric",
                                          p.nor = "numeric",
                                          p.and = "numeric",
+                                         sigmas.prob ="numeric",
+                                         sigmas = "vector",
                                          p.allow.replace = "numeric",
                                          max.tree.size = "integer",
                                          double.hashing = "logical",
@@ -401,6 +424,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
                                  p.allow.replace <<- 0.3
+                                 sigmas<<-c("","sin","cos","sigmoid","tanh","atan","erf")
+                                 sigmas.prob<<-c(0.4,0.1,0.1,0.1,0.1,0.1,0.1)
+                                 p.nor <<- 0.3
+                                 p.and <<- 0.7
                                  max.tree.size<<- as.integer(15)
                                  Nvars.max <<- as.integer(Nvars+10)
                                  Nvars.init <<- as.integer(Nvars)
@@ -421,8 +448,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  isobsbinary <<- as.array(0:(length(fparam.example)-1))
                                  fparam <<- fparam.example
                                  p.add <<- array(data = 0.5,dim = Nvars)
-                                 p.nor <<- 0.3
-                                 p.and <<- 0.7
                                  if(exists("statistics"))
                                  {
                                    recalc.margin <<- 2^Nvars
@@ -482,6 +507,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  p.allow.replace <<- search.args.list$p.allow.replace
                                  p.nor <<- search.args.list$p.nor
                                  p.and <<- search.args.list$p.and
+                                 sigmas<<-search.args.list$sigmas
+                                 sigmas.prob<<-search.args.list$sigmas.prob
                                  double.hashing <<- search.args.list$double.hashing
                                  hash.length <<- as.integer(search.args.list$hash.length)
                                }
@@ -2981,7 +3008,71 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  if(j%%100==0)
                                    seed = runif(n = 1,min = 0,max = 100000)
+                                 # the small part of the code to be upgraded at least slightly
+                                 if(allow_offsprings > 0  && j%%mutation_rate == 0)
+                                 {
+                                   idmut<-which(p.post > p.allow.tree)
+                                   lidmut<-length(idmut)
+                                   if(lidmut>0){
 
+                                     imut<-idmut[round(runif(n = 1, min = 1, max =  lidmut))]
+                                     ltreem<-stri_length(fparam[imut])
+                                     if(ltreem<=max.tree.size)
+                                     {
+                                       crossid<-runif(n = 1,min = 1, max = lidmut)
+                                       ltreef<-stri_length(fparam[idmut[crossid]])
+                                       if(ltreef+ltreem-4<=max.tree.size)
+                                       {
+                                         if(allow_offsprings==1)
+                                           proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(1-"),stri_sub(fparam[imut],from=2, to = ltreem),sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(","(1-"),stri_sub(fparam[idmut[crossid]],from=2, to = ltreef),"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
+                                         else
+                                         {
+                                           proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),stri_sub(fparam[imut],from=2, to = ltreem),sep = ""),paste("(",stri_sub(fparam[idmut[crossid]],from=2, to = ltreef),"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
+                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                         }
+                                         #maybe check correlations here
+                                         if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
+                                         {
+                                           #if(cor())
+                                           fparam<<-c(fparam,proposal)
+                                           Nvars<<-as.integer(Nvars+1)
+                                           print(paste("mutation happended ",proposal," tree  added"))
+                                         }
+                                         else if(!(proposal %in% fparam))
+                                         {
+                                           to.del<-(which(p.post[(Nvars.init+1):Nvars]<= p.allow.replace) + Nvars.init)
+                                           lto.del<-length(x = to.del)
+                                           if(lto.del>0)
+                                           {
+                                             id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                             print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                             fparam[id.replace]<<-proposal
+                                             keysarr <- as.array(keys(hashStat))
+                                             p.post<-array(data = 0.05,dim = Nvars)
+                                             for(jjj in 1:length(keysarr))
+                                             {
+                                               if(substring(keysarr[jjj],first = id.replace, last = id.replace)=="1")
+                                               {
+                                                 del(x = keysarr[jjj],hash = hashStat)
+                                               }
+
+                                             }
+
+                                           }
+
+
+
+                                         }
+                                       }
+                                     }
+                                   }
+                                   varcurb<-c(varcurb,array(0,dim = (Nvars -length(varcurb))))
+                                   varcand<-c(varcand,array(0,dim = (Nvars -length(varcand))))
+                                   varglob<-c(varglob,array(0,dim = (Nvars -length(varglob))))
+                                   p.post<-c(p.post,array(0,dim = (Nvars -length(p.post))))
+                                   p1 = c(p1,array(0,dim = (Nvars -length(p1))))
+                                   p2 = c(p1,array(0,dim = (Nvars -length(p1))))
+                                 }
                                  #withRestarts(tryCatch({
 
                                  varcur<-varcurb
@@ -3262,66 +3353,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
                                        p.post<- (p.post + varcurb)
 
-                                       if(allow_offsprings > 0  && acc_moves%%mutation_rate == 0)
-                                       {
-                                         idmut<-which(varcurb == 1 & p.post > p.allow.tree)
-                                         lidmut<-length(idmut)
-                                         if(lidmut>0){
-
-                                             imut<-idmut[round(runif(n = 1, min = 1, max =  lidmut))]
-                                             ltreem<-stri_length(fparam[imut])
-                                             if(ltreem<=max.tree.size)
-                                             {
-                                               crossid<-runif(n = 1,min = 1, max = lidmut)
-                                               ltreef<-stri_length(fparam[idmut[crossid]])
-                                               if(ltreef+ltreem-4<=max.tree.size)
-                                               {
-                                                 if(allow_offsprings==1)
-                                                  proposal<-paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(1-"),substring(fparam[imut],first=2, last = ltreem),sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(","(1-"),substring(fparam[idmut[crossid]],first=2, last = ltreef),"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
-                                                 else
-                                                  proposal<-paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),substring(fparam[imut],first=2, last = ltreem),sep = ""),paste("(",substring(fparam[idmut[crossid]],first=2, last = ltreef),"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
-                                                 #maybe check correlations here
-                                                 if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
-                                                 {
-                                                   fparam<<-c(fparam,proposal)
-                                                   Nvars<<-as.integer(Nvars+1)
-                                                   print(paste("mutation happended ",proposal," tree  added"))
-                                                 }
-                                                 else if(!(proposal %in% fparam))
-                                                 {
-                                                   to.del<-(which(p.post[(Nvars.init+1):Nvars]<= p.allow.replace) + Nvars.init)
-                                                   lto.del<-length(x = to.del)
-                                                   if(lto.del>0)
-                                                   {
-                                                     id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
-                                                     print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
-                                                     fparam[id.replace]<<-proposal
-                                                     keysarr <- as.array(keys(hashStat))
-                                                     p.post<-array(data = 0.05,dim = Nvars)
-                                                     for(jjj in 1:length(keysarr))
-                                                     {
-                                                       if(substring(keysarr[jjj],first = id.replace, last = id.replace)=="1")
-                                                       {
-                                                         del(x = keysarr[jjj],hash = hashStat)
-                                                       }
-
-                                                     }
-
-                                                   }
-
-
-
-                                                 }
-                                               }
-                                             }
-                                         }
-                                         varcurb<-c(varcurb,array(0,dim = (Nvars -length(varcurb))))
-                                         varcand<-c(varcand,array(0,dim = (Nvars -length(varcand))))
-                                         varglob<-c(varglob,array(0,dim = (Nvars -length(varglob))))
-                                         p.post<-c(p.post,array(0,dim = (Nvars -length(p.post))))
-                                         p1 = c(p1,array(0,dim = (Nvars -length(p1))))
-                                         p2 = c(p1,array(0,dim = (Nvars -length(p1))))
-                                       }
 
                                      }
                                    }else if(j<glob.model$burnin && distrib_of_proposals[5]>0)
@@ -3679,6 +3710,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }
 
                                    }
+
 
                                  }
 
