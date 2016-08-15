@@ -9,6 +9,8 @@
 #install.packages("BAS")
 #install.packages("hash")
 #install.packages("stringi")
+#install.packages("irlba")
+#install.packages("bigalgebra")
 
 
 library(hash)
@@ -26,6 +28,7 @@ library(stringi)
 require(stats)
 #compile INLA
 
+
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
 
@@ -33,7 +36,7 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
   X <- model.matrix(object = formula,data = data)
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank)))
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
 
 }
 
@@ -48,13 +51,9 @@ erf <- function(x)
 estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 {
 
-  out<-NULL
-  capture.output({withRestarts(tryCatch(capture.output({out <- lm(formula = formula,data = data)})), abort = function(){onerr<-TRUE;out<-NULL})})
+  out <- lm(formula = formula,data = data)
   # 1 for aic, 2 bic prior, else g.prior
-  if(is.null(out))
-  {
-    return(list(mlik = -10000,waic =10000, dic =10000, summary.fixed = 0))
-  }
+
   p <- out$rank
   if(prior == 1)
   {
@@ -74,7 +73,7 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
   }
 
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out)))
+  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
 
 }
 
@@ -204,7 +203,7 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
 
   for(i in 1:length(fparam.example))
   {
-    fparam.example[i]<<-paste("I(V",i,")",sep = "")
+    fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
   }
   assign("mySearch",EMJMCMC2016(), envir=globalenv())
   mySearch$estimator <<- estimator
@@ -312,8 +311,8 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   }
 
   par(mar = c(10,4,4,2) + 4.1)
-  barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg =fparam.example,las=2)
-  barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg =fparam.example,las=2)
+  barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg = mySearch$fparam,las=2)
+  barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg = mySearch$fparam,las=2)
   return(ppp)
 }
 # add plot(ppp), summary(ppp), print(ppp), ppp as a class itself, coef(ppp)
@@ -1236,9 +1235,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      #if(printable.opt)print("Invoked from EMJMCMC hash table environment")
                                      onerr<-FALSE
                                      #if(printable.opt)print("INLA internal error")
-                                     hashBuf<-array(data = 0,dim = 3)
-                                     hashBuf[c(2,3)]<-100000
-                                     hashBuf[1]<- -100000
+
                                      #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
 
                                      #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
@@ -1247,6 +1244,39 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 
+                                     if(!save.beta)
+                                     {
+                                       hashBuf<-array(data = NA,dim = 3)
+                                     }else
+                                     {
+                                       if(allow_offsprings==0)
+                                       {
+                                         if(fparam[1]=="Const")
+                                         {
+                                            linx<-Nvars
+                                            inxx<-which(model$varcur==1)
+                                         }else
+                                         {
+                                            linx<-Nvars + 1
+                                            inxx<-c(0,which(model$varcur==1))
+                                         }
+                                       }else
+                                       {
+                                         if(fparam[1]=="Const")
+                                         {
+                                           linx<-Nvars.max
+                                           inxx<-which(model$varcur==1)
+                                         }else
+                                         {
+                                           linx<-Nvars.max + 1
+                                           inxx<-c(0,which(model$varcur==1))
+                                         }
+                                       }
+
+                                       hashBuf<-array(data = NA,dim = 3 + linx)
+                                     }
+                                     hashBuf[c(2,3)]<-100000
+                                     hashBuf[1]<- -100000
 
 
                                      if(!is.null(fm))
@@ -1254,6 +1284,25 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        hashBuf[2]<-fm$waic[[1]]
                                        hashBuf[1]<-fm$mlik[[1]]
                                        hashBuf[3]<-fm$dic[[1]]
+
+                                       if(save.beta)
+                                       {
+
+
+                                         if(fparam[1]=="Const")
+                                         {
+
+                                           if(length(inxx)==length(fm$summary.fixed$mean))
+                                             hashBuf[3+inxx]<-fm$summary.fixed$mean
+                                         }else
+                                         {
+
+                                           if(length(inxx)==length(fm$summary.fixed$mean))
+                                             hashBuf[4+inxx]<-fm$summary.fixed$mean
+                                         }
+
+
+                                       }
 
                                        hashStat[idd] <- hashBuf
                                        #                                                          if(id>1)
@@ -4278,9 +4327,36 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              },
                              post_proceed_results_hash = function(hashStat)
                              {
+                               if(save.beta)
+                               {
+                                 if(allow_offsprings==0)
+                                 {
+                                   if(fparam[1]=="Const")
+                                   {
+                                     linx<-Nvars + 3
+
+                                   }else
+                                   {
+                                     linx<-Nvars + 1 + 3
+                                   }
+                                 }else
+                                 {
+                                   if(fparam[1]=="Const")
+                                   {
+                                     linx<-Nvars.max + 3
+
+                                   }else
+                                   {
+                                     linx<-Nvars.max + 1 + 3
+                                   }
+                                 }
+                               }else
+                               {
+                                 linx <- 3
+                               }
 
                                lHash<-length(hashStat)
-                               mliks <- values(hashStat)[which((1:(lHash * 3)) %%3 == 1)]
+                               mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
                                xyz<-which(mliks!=-10000)
                                g.results[4,2] <- lHash
                                moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
@@ -4317,6 +4393,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  p.post <- array(data = 0.5,dim = Nvars)
                                }
+                               #values(hashStat)[which((1:(lHash * linx)) %%linx == 4)]<-zyx
 
                                return(list(p.post = p.post, m.post = zyx, s.mass = sum(exp(mliks),na.rm = TRUE)))
                              },
@@ -4344,12 +4421,82 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                 return(list(forecast=res))
 
                              },
-                             forecast.matrix=function(covariates,ncases,nvars,link.g)
+                             forecast.matrix=function(covariates,link.g)
                              {
-                               ids<-which(!is.na(statistics1[,15]))
-                               lids<-length(ids)
-                               statistics1[ids,(17:(nvars+16))][which(is.na(statistics1[ids,(17:(nvars+16))]))]<-0
-                               res<-t(statistics1[ids,15])%*%g(matrix(rep(statistics1[ids,16],ncases),nrow = lids,ncol = ncases)+ statistics1[ids,(17:(nvars+16))]%*%t(covariates))
+                               res<-NULL
+                               ncases <- dim(covariates)[1]
+                               formula.cur<-as.formula(paste(fparam[1],"/2 ~",paste0(fparam,collapse = "+")))
+                               nvars <- Nvars
+                               if(save.beta)
+                               {
+
+                                 if(exists("statistics1"))
+                                 {
+                                   ids<-which(!is.na(statistics1[,15]))
+                                   lids<-length(ids)
+                                   statistics1[ids,(17:(nvars+16))][which(is.na(statistics1[ids,(17:(nvars+16))]))]<-0
+                                   res<-t(statistics1[ids,15])%*%g(statistics1[ids,(16:(nvars+16))]%*%t(model.matrix(object = formula.cur,data = covariates)))
+                                 }else if(exists("hashStat"))
+                                 {
+
+                                   if(allow_offsprings==0)
+                                   {
+                                     if(fparam[1]=="Const")
+                                     {
+                                       linx<-Nvars + 3
+
+                                     }else
+                                     {
+                                       linx<-Nvars + 1 + 3
+                                     }
+                                   }else
+                                   {
+                                     if(fparam[1]=="Const")
+                                     {
+                                       linx<-Nvars.max + 3
+
+                                     }else
+                                     {
+                                       linx<-Nvars.max + 1 + 3
+                                     }
+                                   }
+
+                                   lHash<-length(hashStat)
+                                   mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+                                   betas <- values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
+                                   for(i in 1:(Nvars-1))
+                                   {
+                                     betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
+                                   }
+                                   betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
+                                   betas[which(is.na(betas))]<-0
+                                   xyz<-which(mliks!=-10000)
+                                   g.results[4,2] <- lHash
+                                   moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                   zyx<-array(data = NA,dim = lHash)
+                                   nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+
+                                   if( nconsum > 0)
+                                   {
+                                     zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                   }else{
+
+                                     diff<-0-mliks[moddee]
+                                     mliks<-mliks+diff
+                                     nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                     zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                   }
+
+
+                                   res<-t(zyx)%*%g(betas%*%t(model.matrix(object = formula.cur,data = covariates)))
+
+                                 }
+                               }else
+                               {
+                                 warning("No betas were saved. Prediction is impossible. Please change the search parameters and run the search again.")
+                               }
 
                                return(list(forecast=res))
 
