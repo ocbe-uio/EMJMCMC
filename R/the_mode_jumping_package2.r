@@ -187,7 +187,7 @@ simplify.formula<-function(fmla,names)
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data,
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20,pseudo.paral = F,ineract = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), create.hash=F,interact.order=1,burn.in=1, print.freq = 100,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                     14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -210,11 +210,11 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   mySearch$estimator.args <<- estimator.args
   mySearch$latent.formula <<- latent
   mySearch$save.beta <<- save.beta
-  mySearch$recalc.margin <<- as.integer(2^15)
+  mySearch$recalc.margin <<- as.integer(recalc_margin)
   mySearch$max.cpu <<- as.integer(max.cpu)
   mySearch$locstop.nd <<- FALSE
   mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
-  if(ineract)
+  if(interact)
   {
     mySearch$allow_offsprings <<- as.integer(interact.param$allow_offsprings)
     mySearch$mutation_rate <<- as.integer(interact.param$mutation_rate)
@@ -3060,7 +3060,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  # the small part of the code to be upgraded at least slightly
                                  if(allow_offsprings > 0  && j%%mutation_rate == 0)
                                  {
-                                   idmut<-which(p.post > p.allow.tree)
+                                   idmut<-which(p.add > p.allow.tree)
                                    lidmut<-length(idmut)
                                    if(lidmut>0){
 
@@ -3085,11 +3085,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            #if(cor())
                                            fparam<<-c(fparam,proposal)
                                            Nvars<<-as.integer(Nvars+1)
+                                           p.add<<-array(data = 0.5,dim = Nvars)
                                            print(paste("mutation happended ",proposal," tree  added"))
                                          }
                                          else if(!(proposal %in% fparam))
                                          {
-                                           to.del<-(which(p.post[(Nvars.init+1):Nvars]<= p.allow.replace) + Nvars.init)
+                                           to.del<-(which(p.add[(Nvars.init+1):Nvars]<= p.allow.replace) + Nvars.init)
                                            lto.del<-length(x = to.del)
                                            if(lto.del>0)
                                            {
@@ -3098,6 +3099,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              fparam[id.replace]<<-proposal
                                              keysarr <- as.array(keys(hashStat))
                                              p.post<-array(data = 0.05,dim = Nvars)
+                                             p.add<<-array(data = 0.5,dim = Nvars)
                                              for(jjj in 1:length(keysarr))
                                              {
                                                if(substring(keysarr[jjj],first = id.replace, last = id.replace)=="1")
@@ -3119,8 +3121,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    varcand<-c(varcand,array(0,dim = (Nvars -length(varcand))))
                                    varglob<-c(varglob,array(0,dim = (Nvars -length(varglob))))
                                    p.post<-c(p.post,array(0,dim = (Nvars -length(p.post))))
-                                   p1 = c(p1,array(0,dim = (Nvars -length(p1))))
-                                   p2 = c(p1,array(0,dim = (Nvars -length(p1))))
+                                   p1 = c(p1,array(0.1,dim = (Nvars -length(p1))))
+                                   p2 = c(p1,array(0.1,dim = (Nvars -length(p1))))
                                  }
                                  #withRestarts(tryCatch({
 
@@ -3789,7 +3791,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  p2<-p.post/acc_moves
                                  if(j>glob.model$burnin && recalc.margin == 2^Nvars && sum(p2)!=0)
                                  {
-                                   p.add <<- p2
+                                   p.add <<- as.array(p2)
 
                                  }
                                  eps.emp<-normprob(p1,p2)
