@@ -11,8 +11,10 @@
 #install.packages("stringi")
 #install.packages("irlba")
 #install.packages("bigalgebra")
+#install.packages("speedglm")
+#install.packages("biglm")
 
-
+library(biglm)
 library(hash)
 library(sp)
 library(INLA)
@@ -25,6 +27,7 @@ library(ade4)
 #library(compiler)
 library(BAS)
 library(stringi)
+#library(speedglm)
 require(stats)
 #compile INLA
 
@@ -34,6 +37,39 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
   #only poisson and binomial families are currently adopted
   X <- model.matrix(object = formula,data = data)
+  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
+  # use dic and aic as bic and aic correspondinly
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+
+}
+
+
+# use dic and aic as bic and aic correspondinly
+estimate.speedglm <- function(formula, data, family, prior) # weird behaviour, bad control of singularity
+{
+  X <- model.matrix(object = formula,data = data)
+  out <- speedglm.wfit(y = data[,1], X = X, intercept=FALSE, family=family,eigendec = T, method = "Cholesky")
+  if(prior == "AIC")
+    return(list(mlik = -out$aic ,waic = -(out$deviance + 2*out$rank) , dic =  -(out$RSS),summary.fixed =list(mean = out$coefficients)))
+  if(prior=="RSS")
+    return(list(mlik = -out$RSS ,waic = -(out$deviance + 2*out$rank) , dic =  -(out$RSS),summary.fixed =list(mean = out$coefficients)))
+}
+
+estimate.bigm <- function(formula, data, family, prior, maxit = 2,chunksize = 1000000) # nice behaviour
+{
+
+  out <- bigglm(data = data, family=family,formula = formula, sandwich = F,maxit = maxit, chunksize = chunksize)
+  if(prior == "AIC")
+    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = 2),summary.fixed =list(mean = coef(out))))
+  if(prior=="RSS")
+    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = 2),summary.fixed =list(mean = coef(out))))
+}
+
+estimate.bas.glm.bagging <- function(formula, data, family, prior, logn, bag.size)
+{
+
+  #only poisson and binomial families are currently adopted
+  X <- model.matrix(object = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
   return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
@@ -52,6 +88,35 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 {
 
   out <- lm(formula = formula,data = data)
+  # 1 for aic, 2 bic prior, else g.prior
+
+  p <- out$rank
+  if(prior == 1)
+  {
+    ss<-sum(out$residuals^2)
+    logmarglik <- -0.5*(log(ss)+2*p)
+  }
+  else if(prior ==2)
+  {
+    ss<-sum(out$residuals^2)
+    logmarglik <- -0.5*(log(ss)+log(n)*p)
+  }
+  else
+  {
+    Rsquare <- summary(out)$r.squared
+    #logmarglik =  .5*(log(1.0 + g) * (n - p -1)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+    logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
+  }
+
+  # use dic and aic as bic and aic correspondinly
+  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+
+}
+
+estimate.bas.lm.bagging <- function(formula, data, prior, n, g = 0, bag.size)
+{
+
+  out <- lm(formula = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
   # 1 for aic, 2 bic prior, else g.prior
 
   p <- out$rank
@@ -120,13 +185,9 @@ parallelize<-function(X,FUN)
 }
 
 
-estimate.glm <- function(formula, data, prior, family,observ=NULL)
+estimate.glm <- function(formula, data, prior, family)
 {
 
-  if(!is.null(observ))
-  {
-    formula = as.formula(paste(observ,"~",paste(formula,sep = "~")[3]))
-  }
   out <- glm(formula = formula,data = data, family = family)
   # 1 for aic, 2 bic prior, else g.prior
 
@@ -287,8 +348,10 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   else
     resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = Inf, maxit = Inf, print.freq = print.freq))
   ppp<-1
+  print("MJMCMC is completed")
   if(create.table)
   {
+    print("Post Proceed Results")
     ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
     truth = ppp$p.post # make sure it is equal to Truth column from the article
     truth.m = ppp$m.post
@@ -300,6 +363,7 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   }
   else if(create.hash)
   {
+    print("Post Proceed Results")
     ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
     truth = ppp$p.post # make sure it is equal to Truth column from the article
     truth.m = ppp$m.post
@@ -428,7 +492,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  p.nor <<- 0.3
                                  p.and <<- 0.7
                                  max.tree.size<<- as.integer(15)
-                                 Nvars.max <<- as.integer(Nvars+10)
+                                 Nvars.max <<- as.integer(Nvars)
                                  Nvars.init <<- as.integer(Nvars)
                                  allow_offsprings <<- as.integer(0)
                                  mutation_rate <<- as.integer(100)
@@ -802,8 +866,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                for(cpu in 1:(max.cpu))
                                {
                                  set.seed(runif(1,1,10000), kind = NULL, normal.kind = NULL)
-                                 if(!is.null(varcur.old))
+                                 if(!is.null(varcur.old)&&length(varcur.old==Nvars))
                                  {
+                                   varcur.old[which(is.na(varcur.old))]<-1
                                    varcur<-varcur.old
                                  }else
                                  {
@@ -1229,7 +1294,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    return(list(mlik=statistics[id,1],waic=statistics[id,2],dic=statistics[id,3]))
 
                                  }else if(exists("hashStat")){
-                                   idd<- as.character(paste(model$varcur,collapse = ""))
+                                   idd<- as.character(paste(c(model$varcur,array(0,Nvars.max-Nvars)),collapse = ""))
                                    if(!has.key(key = idd,hash = hashStat))
                                    {
                                      #if(printable.opt)print("Invoked from EMJMCMC hash table environment")
@@ -1329,18 +1394,22 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
 
                                        g.results[4,2] <- g.results[4,2]+1
-                                       if(g.results[4,2]%%recalc.margin == 0)
-                                       {
-                                         proceeeded <- post_proceed_results_hash(hashStat)
-                                         p.add <<- as.array(proceeeded$p.post)
-                                         #g.results[4,2] <-
-                                       }
+                                       
                                      }
 
 
                                    }
                                    g.results[4,1] <- g.results[4,1]+1
-                                   hasRes<- values(hashStat[idd])
+                                   if(has.key(hash = hashStat,key=idd))
+                                    hasRes<- values(hashStat[idd])
+                                   else
+                                     hasRes<-c(-10000,10000,10000)
+                                   if(g.results[4,2]%%recalc.margin == 0)
+                                   {
+                                     proceeeded <- post_proceed_results_hash(hashStat)
+                                     p.add <<- as.array(proceeeded$p.post)
+                                     #g.results[4,2] <-
+                                   }
                                    return(list(mlik=hasRes[1],waic=hasRes[2],dic=hasRes[3]))
 
                                  }else
@@ -3117,16 +3186,31 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
                                      }
                                    }
-                                   varcurb<-c(varcurb,array(0,dim = (Nvars -length(varcurb))))
-                                   varcand<-c(varcand,array(0,dim = (Nvars -length(varcand))))
-                                   varglob<-c(varglob,array(0,dim = (Nvars -length(varglob))))
+                                   varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
+                                   varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
+                                   varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
                                    p.post<-c(p.post,array(0,dim = (Nvars -length(p.post))))
                                    p1 = c(p1,array(0.1,dim = (Nvars -length(p1))))
                                    p2 = c(p1,array(0.1,dim = (Nvars -length(p1))))
+                                   if(length(which(is.na(varcurb)))>0)
+                                     varcurb<-array(1,dim = (Nvars))
+                                   if(length(which(is.na(varcand)))>0)
+                                     varcand<-array(1,dim = (Nvars))
+                                   if(length(which(is.na(varglob)))>0)
+                                     varglob<-array(1,dim = (Nvars))
+                                   if(length(which(is.na(p.post)))>0)
+                                     p.post<-array(0.5,dim = (Nvars))
+                                   if(length(which(is.na(p1)))>0)
+                                     p1 <-array(0.1,dim = (Nvars))
+                                   if(length(which(is.na(p2)))>0)
+                                     p2 <-array(0.1,dim = (Nvars))
                                  }
                                  #withRestarts(tryCatch({
 
                                  varcur<-varcurb
+
+
+
                                  if(LocImprove<=3)
                                  {
                                    vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = 4 + LocImprove,min.N = min.N.glob,max.N = max.N.glob,switch.type = switch.type.glob.buf)
@@ -3510,8 +3594,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      if(LocImprove == 0)
                                      {
-
-                                       if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - SA.forw$log.prob.cur + SA.forw$log.prob.fix + SA.back$log.prob.cur - SA.back$log.prob.fix))
+                                       thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,SA.back$log.prob.cur, - SA.back$log.prob.fix,na.rm=T)
+                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -3547,7 +3631,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      }else
                                      {
-                                       if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - SA.forw$log.prob.cur + SA.forw$log.prob.fix + vect[[mod_id]]$log.mod.switchback.prob - vect[[mod_id]]$log.mod.switch.prob))
+                                       thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,vect[[mod_id]]$log.mod.switchback.prob, - vect[[mod_id]]$log.mod.switch.prob,na.rm=T)
+                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -3617,8 +3702,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      ratcand<-MTMCMC.forw$mlikcur
 
 
-                                     if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
-                                     {
+                                     #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
+                                     thact<-sum(ratcand, - ratcur, - MTMCMC.forw$log.prob.cur,MTMCMC.forw$log.prob.fix,MTMCMC.back$log.prob.cur,- MTMCMC.back$log.prob.fix,na.rm=T)
+                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
                                        #if(printable.opt)print(paste("update ratcur through MTMCMC = ", ratcur))
@@ -3716,7 +3803,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
 
-                                     if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
+                                     #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
+                                     thact<-sum(ratcand, - ratcur, - GREEDY.forw$log.prob.cur,GREEDY.forw$log.prob.fix,GREEDY.back$log.prob.cur,-GREEDY.back$log.prob.fix,na.rm=T)
+                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
@@ -4320,7 +4409,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                }
 
-                               if(sum(p.post)==0 || sum(p.post)>Nvars)
+                               if(!exists("p.post")||is.null(p.post)||sum(p.post,na.rm = T)==0 || sum(p.post,na.rm = T)>Nvars)
                                {
                                  p.post <- array(data = 0.5,dim = Nvars)
                                }
@@ -4331,6 +4420,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              {
                                if(save.beta)
                                {
+
                                  if(allow_offsprings==0)
                                  {
                                    if(fparam[1]=="Const")
@@ -4352,6 +4442,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      linx<-Nvars.max + 1 + 3
                                    }
                                  }
+
                                }else
                                {
                                  linx <- 3
@@ -4384,14 +4475,25 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                for(i in 1:lHash)
                                {
                                  if(is.na(zyx[i]))
+                                 {
+                                   del(x = keysarr[i],hash = hashStat)
                                    next
+                                 }
                                  #vec<-dectobit(strtoi(keysarr[i], base = 0L)-1) # we will have to write some function that would handle laaaaargeee integers!
                                  varcur<- as.integer(strsplit(keysarr[i],split = "")[[1]])
+                                 if(length(which(is.na(varcur)))>0)
+                                 {
+                                   del(x = keysarr[i],hash = hashStat)
+                                   next
+                                 }
+                                 if(length(varcur)>Nvars)
+                                   varcur<-varcur[1:Nvars]
+
                                  p.post <- (p.post + varcur*zyx[i])
 
                                }
 
-                               if(sum(p.post)==0 || sum(p.post)>Nvars)
+                               if(!exists("p.post") || is.null(p.post) || sum(p.post,na.rm = T)==0 || sum(p.post,na.rm = T)>Nvars)
                                {
                                  p.post <- array(data = 0.5,dim = Nvars)
                                }
@@ -4440,6 +4542,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    res<-t(statistics1[ids,15])%*%g(statistics1[ids,(16:(nvars+16))]%*%t(model.matrix(object = formula.cur,data = covariates)))
                                  }else if(exists("hashStat"))
                                  {
+
 
                                    if(allow_offsprings==0)
                                    {
@@ -4502,7 +4605,261 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                return(list(forecast=res))
 
+                             },
+                             forecast.matrix.na=function(covariates,link.g,betas,mliks.in)
+                             {
+
+                               formula2<-as.formula(paste(fparam[1],"/2 ~ -1+",paste0(fparam,collapse = "+")))
+                               current.na.action <- options('na.action')
+                               options(na.action='na.pass')
+                               covariates<- as.data.frame(model.matrix(object = formula2,data = covariates,na.action=na.include))
+                               options('na.action'=  current.na.action$na.action)
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "I",replacement = "Z")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "(",replacement = "o")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = ")",replacement = "c")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "+",replacement = "p")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "-",replacement = "m")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "*",replacement = "M")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = " ",replacement = "")
+                               fparam.tmp<-stri_replace_all(str = fparam,fixed = "I",replacement = "Z")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "(",replacement = "o")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = ")",replacement = "c")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "+",replacement = "p")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "-",replacement = "m")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "*",replacement = "M")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = " ",replacement = "")
+                               formula.cur<-as.formula(paste(fparam.tmp[1],"/2 ~",paste0(fparam.tmp,collapse = "+")))
+                               na.ids<-matrix(data = 0,nrow = dim(covariates)[1],ncol = dim(covariates)[2])
+                               na.ids[which(is.na(covariates))]<-1
+                               na.bc<-colSums(na.ids)
+                               ids.betas<-NULL
+                               res.na<-array(NA, dim(covariates)[1])
+                               for(i in which(na.bc>0))
+                               {
+                                 if(((names(covariates)[i] %in% fparam.tmp)||(paste0("I(",names(covariates)[i],")",collapse = "")%in%fparam.tmp)))
+                                 {
+                                   ids.betas<-c(ids.betas,which(fparam.tmp==names(covariates)[i] | fparam.tmp == paste0("I(",names(covariates)[i],")",collapse = "")))
+                                   next
+                                 }
+                                 else
+                                 {
+                                   na.ids[which(is.na(covariates[,i])),i]<-0
+                                   na.bc[i]<-0
+                                 }
+                               }
+                               na.br<-rowSums(na.ids)
+                               lv.br<-sort(unique(na.br))
+                               if(lv.br[1]==0)
+                               {
+                                 ids<-which(na.br==0)
+                                 mliks<-mliks.in
+                                 xyz<-which(mliks!=-10000)
+                                 moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                 zyx<-array(data = NA,dim = length(mliks))
+                                 nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                 betas1<-betas
+                                 betas1[which(is.na(betas1))]<-0
+                                 if( nconsum > 0)
+                                 {
+                                   zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                 }else{
+
+                                   diff<-0-mliks[moddee]
+                                   mliks<-mliks+diff
+                                   nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                   zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                 }
+
+                                 covariates1<- covariates[ids,]
+                                 res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = as.formula(formula.cur),data = covariates1)))
+                                 res.na[ids]<-res
+                                 rm(mliks)
+                                 rm(res)
+                                 rm(zyx)
+                                 rm(xyz)
+                                 rm(covariates1)
+                                 rm(betas1)
+                               }
+
+
+
+
+                               k.b<-0
+                               for(i in which(na.bc>0))
+                               {
+                                 k.b<-k.b+1
+                                 w.ids<-which(!is.na(betas[,(ids.betas[k.b]+1)]))
+
+                                 for(j in lv.br)
+                                 {
+                                   if(j==0)
+                                     next
+                                   ids<-((which(na.ids[,i]==1 & na.br==j & is.na(res.na))))
+                                   if(length(ids)==0)
+                                     next
+                                   var.del <- NULL
+                                   for(iii in which(na.bc>0))
+                                   {
+                                     if(iii==i)
+                                       next
+                                     if(sum(na.ids[ids,iii])>0)
+                                     {
+                                       var.del<-(which(fparam.tmp==names(covariates)[iii] | fparam.tmp == paste0("I(",names(covariates)[iii],")",collapse = "")))
+                                       if(length(var.del>0))
+                                       {
+                                         w.ids<-union(w.ids,which(!is.na(betas[,(var.del+1)])))
+                                       }
+                                     }
+                                   }
+                                   mliks<-mliks.in[-w.ids]
+                                   if(length(mliks)==0)
+                                   {
+                                     warning("not enough models for bagging in prediction. please train the model longer!")
+                                     return(-1)
+                                   }
+                                   xyz<-which(mliks!=-10000)
+                                   moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                   zyx<-array(data = NA,dim = length(mliks))
+                                   nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                   betas1<-betas[-w.ids,]
+                                   betas1[which(is.na(betas1))]<-0
+                                   if( nconsum > 0)
+                                   {
+                                     zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                   }else{
+
+                                     diff<-0-mliks[moddee]
+                                     mliks<-mliks+diff
+                                     nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                     zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                   }
+                                   covariates1<- as.matrix(covariates[ids,])
+                                   covariates1[which(is.na(covariates1))]<-0
+                                   covariates1<-as.data.frame(covariates1)
+                                   res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = formula.cur,data = covariates1)))
+                                   res.na[ids]<-res
+                                   rm(mliks)
+                                   rm(zyx)
+                                   rm(xyz)
+                                   rm(res)
+                                   rm(covariates1)
+                                 }
+                               }
+                               return(list(forecast = res.na))
+                             },
+
+                             forecast.matrix.na.fast=function(covariates,link.g,betas,mliks.in)
+                             {
+                               formula.cur<-as.formula(paste(fparam[1],"/2 ~",paste0(fparam,collapse = "+")))
+                               na.ids<-matrix(data = 0,nrow = dim(covariates)[1],ncol = dim(covariates)[2])
+                               na.ids[which(is.na(covariates))]<-1
+                               na.bc<-colSums(na.ids)
+                               ids.betas<-NULL
+                               res.na<-array(NA, dim(covariates)[1])
+                               for(i in which(na.bc>0))
+                               {
+                                 if(((names(covariates)[i] %in% fparam)||(paste0("I(",names(covariates)[i],")",collapse = "")%in%fparam)))
+                                 {
+                                   ids.betas<-c(ids.betas,which(fparam==names(covariates)[i] | fparam == paste0("I(",names(covariates)[i],")",collapse = "")))
+                                   next
+                                 }
+                                 else
+                                 {
+                                   na.ids[which(is.na(covariates[,i])),i]<-0
+                                   na.bc[i]<-0
+                                 }
+                               }
+                               na.br<-rowSums(na.ids)
+                               lv.br<-sort(unique(na.br))
+                               if(lv.br[1]==0)
+                               {
+                                 ids<-which(na.br==0)
+                                 mliks<-mliks.in
+                                 xyz<-which(mliks!=-10000)
+                                 moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                 zyx<-array(data = NA,dim = lHash)
+                                 nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                 betas1<-betas
+                                 betas1[which(is.na(betas1))]<-0
+                                 if( nconsum > 0)
+                                 {
+                                   zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                 }else{
+
+                                   diff<-0-mliks[moddee]
+                                   mliks<-mliks+diff
+                                   nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                   zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                                 }
+
+                                 covariates1<- covariates[ids,]
+                                 res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = formula.cur,data = covariates1)))
+                                 res.na[ids]<-res
+                                 rm(mliks)
+                                 rm(res)
+                                 rm(zyx)
+                                 rm(xyz)
+                                 rm(covariates1)
+                                 rm(betas1)
+                               }
+                               ids<-(which(is.na(res.na)))
+                               for(iii in which(na.bc>0))
+                               {
+                                 if(sum(na.ids[ids,iii])>0)
+                                 {
+                                   var.del<-(which(fparam==names(covariates)[iii] | fparam == paste0("I(",names(covariates)[iii],")",collapse = "")))
+                                   if(length(var.del>0))
+                                   {
+                                     w.ids<-union(w.ids,which(!is.na(betas[,(var.del+1)])))
+                                   }
+                                 }
+                               }
+                               mliks<-mliks.in[-w.ids]
+                               if(length(mliks)==0)
+                               {
+                                 warning("not enough models for bagging in prediction. please train the model longer!")
+                                 return(-1)
+                               }
+                               xyz<-which(mliks!=-10000)
+                               moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                               zyx<-array(data = NA,dim = length(mliks))
+                               nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                               betas1<-betas[-w.ids,]
+                               betas1[which(is.na(betas1))]<-0
+                               if( nconsum > 0)
+                               {
+                                 zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                               }else{
+
+                                 diff<-0-mliks[moddee]
+                                 mliks<-mliks+diff
+                                 nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
+                                 zyx[xyz]<-exp(mliks[xyz]- mliks[moddee])/nconsum
+
+                               }
+                               covariates1<- as.matrix(covariates[ids,])
+                               covariates1[which(is.na(covariates1))]<-0
+                               covariates1<-as.data.frame(covariates1)
+                               res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = formula.cur,data = covariates1)))
+                               res.na[ids]<-res
+                               rm(mliks)
+                               rm(zyx)
+                               rm(xyz)
+                               rm(res)
+                               rm(covariates1)
+
+
+                               return(list(forecast = res.na))
                              }
+
+
 
                            )
 

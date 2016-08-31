@@ -26,8 +26,7 @@ formula1 = as.formula(paste(colnames(data.example)[89],"~ 1 +",paste0(colnames(d
 res = runemjmcmc(formula = formula1,data = data.example,recalc_margin = 2^10,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = T,interact = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 95,p.allow.replace=0.9,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 50000,unique = T,max.cpu = 10,max.cpu.glob = 10,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
                                                                                                                                                                                                                                                                                                                max.N.glob=as.integer(20),
                                                                                                                                                                                                                                                                                                                min.N.glob=as.integer(5),
-                                                                                                                                                                                                                                                                                                               max.N=as.integer(3),
-                                                                                                                                                                                                                                                                                                               min.N=as.integer(1),
+                                                                                                                                                                                                                                                                                                               max.N=as.integer(3),                                                                                                                                                                                                                                                                                                      min.N=as.integer(1),
                                                                                                                                                                                                                                                                                                                printable = F))
 })
 
@@ -111,7 +110,7 @@ system.time({
 
   formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
 
-  res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64)),save.beta = T,interact = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(2.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate =500, max.tree.size = 200000, Nvars.max = 25,p.allow.replace=0.95,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 200000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+  res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64)),recalc_margin = 50, save.beta = T,interact = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 200, max.tree.size = 200000, Nvars.max = 30,p.allow.replace=0.10,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -119,24 +118,66 @@ system.time({
     printable = F))
 })
 
-data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)][(is.na(data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]))]<-0
+
+ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+ppp$p.post
+
+mySearch$g.results[,]
+mySearch$fparam
+
 g<-function(x)
 {
   return((x = 1/(1+exp(-x))))
 }
 
 
+Nvars<-mySearch$Nvars.max
+linx <-mySearch$Nvars.max+4
+lHash<-length(hashStat)
+mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+betas <- values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
+for(i in 1:(Nvars-1))
+{
+  betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
+}
+betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
+
+
+# create 5 of na for all data columns in the test data
+
+for(c in names(data.example1)[2:38])
+{
+  idna<-sample.int(n = 20720, size = 0.02*20720,replace = F)
+  data.example1[[c]][idna]<-NA
+}
+
+is.na<-matrix(0,nrow = dim(data.example1)[1],ncol =  dim(data.example1)[2])
+is.na[which(is.na(data.example1))]<-1
+length(which(rowSums(is.na)>0))
+
 system.time({
 
-res<-mySearch$forecast.matrix(link.g = g,covariates = (data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]))$forecast
+  res<-mySearch$forecast.matrix.na(link.g = g,covariates = (data.example1[1:20720,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]),betas = betas,mliks.in = mliks)$forecast
 
 })
 
+summary(res)
+
+length(res)
 res<-as.integer(res>=0.5)
 length(which(res>=0.5))
 length(which(res<0.5))
 length(res)
 length(which(data.example1$neo==1))
 
-(1-sum(abs(res-data.example1$neo),na.rm = T)/20720)
+(1-sum(abs(res-data.example1$neo),na.rm = T)/20720)*100
+
+
+#FNR
+ps<-which(data.example1$neo==1)
+sum(abs(res[ps]-data.example1$neo[ps]))/(sum(abs(res[ps]-data.example1$neo[ps]))+length(ps))*100
+
+#FPR
+ns<-which(data.example1$neo==0)
+sum(abs(res[ns]-data.example1$neo[ns]))/(sum(abs(res[ns]-data.example1$neo[ns]))+length(ns))*100
 
