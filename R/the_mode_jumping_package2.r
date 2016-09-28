@@ -43,6 +43,17 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
 }
 
+#estimate elastic nets
+
+estimate.elnet <- function(formula,response, data, family,alpha)
+{
+  X <- model.matrix(object = formula,data = data)
+  if(dim(X)[2]<=2)
+    return(list(mlik =  -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = array(0,dim=dim(X)[2]))))
+  out <- glmnet(x=X[,-1], y = data[[response]], family=family, a=alpha)
+  dout<- as.numeric(-deviance(out)[[out$dim[2]]])
+  return(list(mlik = dout,waic = -dout , dic =  -dout,summary.fixed =list(mean = coef(out)[,out$dim[2]])))
+}
 
 # use dic and aic as bic and aic correspondinly
 estimate.speedglm <- function(formula, data, family, prior) # weird behaviour, bad control of singularity
@@ -4621,6 +4632,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "-",replacement = "m")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "*",replacement = "M")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = " ",replacement = "")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "\n",replacement = "")
                                fparam.tmp<-stri_replace_all(str = fparam,fixed = "I",replacement = "Z")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "(",replacement = "o")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = ")",replacement = "c")
@@ -4628,6 +4640,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "-",replacement = "m")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "*",replacement = "M")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = " ",replacement = "")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "\n",replacement = "")
                                formula.cur<-as.formula(paste(fparam.tmp[1],"/2 ~",paste0(fparam.tmp,collapse = "+")))
                                na.ids<-matrix(data = 0,nrow = dim(covariates)[1],ncol = dim(covariates)[2])
                                na.ids[which(is.na(covariates))]<-1
