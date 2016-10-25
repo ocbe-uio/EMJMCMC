@@ -1,0 +1,269 @@
+#scenario 1
+
+
+
+M=10
+resa<-array(data = 0,dim = c(16,M*3))
+
+hashes<-NULL
+post.popul <- array(0,M)
+set.seed(040590)
+X1<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+Y1<-rnorm(n = 1000,mean = 1+0.7*(X1$V1*X1$V4) + 0.8896846*(X1$V8*X1$V11)+1.434573*(X1$V5*X1$V9),sd = 1)
+X1$Y1<-Y1
+for(ii in 1:M)
+{  
+  set.seed(ii)
+  
+  #GMJMCMC
+  system.time({
+  
+    formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(51)],collapse = "+")))
+  
+    res = runemjmcmc(formula = formula1,data = X1,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 5000, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+      max.N.glob=as.integer(10),
+      min.N.glob=as.integer(5),
+      max.N=as.integer(3),
+      min.N=as.integer(1),
+      printable = F))
+  })
+  
+
+  if(ii==1){
+    cterm<-max(values(hashStat)[1,]) 
+  }
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  mySearch$g.results[,]
+  post.popul[ii]<-sum(exp(values(hashStat)[1,]-cterm))
+  resa[,ii*3-2]<-c(mySearch$fparam,"Post.Gen.Mass")
+  resa[,ii*3-1]<-c(ppp$p.post,post.popul[ii])
+  resa[,ii*3]<-rep(post.popul[ii],length(ppp$p.post)+1)
+  gc()
+
+}
+
+post.popul<-post.popul-max(post.popul)
+p.gen.post<-exp(post.popul)/sum(exp(post.popul))
+hfinal<-hash()
+for(ii in 1:M)
+{
+  resa[,ii*3]<-p.gen.post[ii]*as.numeric(resa[,ii*3-1])
+  resa[length(resa[,ii*3]),ii*3]<-p.gen.post[ii]
+  if(p.gen.post[ii]>0)
+  {
+    for(jj in 1:(length(resa[,ii*3])-1))
+    {
+      if(resa[jj,ii*3]>0)
+      {
+        if(!has.key(hash = hfinal,key =resa[jj,ii*3-2]))
+        {
+          hfinal[[resa[jj,ii*3-2]]]<-resa[jj,ii*3]
+        }else
+        {
+          hfinal[[resa[jj,ii*3-2]]]<-hfinal[[resa[jj,ii*3-2]]]+resa[jj,ii*3]
+        }
+      }
+      
+    }
+  }
+}
+values(hfinal)
+clear(hfinal)
+rm(hfinal)
+write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim1.csv")
+
+#scenario 2
+M=10
+resa<-array(data = 0,dim = c(15,M*2))
+for(ii in 1:M)
+{  
+  set.seed(ii)
+  
+  X2<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+  Y2<-rnorm(n = 1000,mean = 1+3.5*(X2$V1*X2$V4) + 6.6*(X2$V8*X2$V11)+ 8.9*(X2$V5*X2$V9),sd = 1)
+  X2$Y2<-Y2
+  #GMJMCMC
+  system.time({
+    
+    formula1 = as.formula(paste(colnames(X2)[51],"~ 1 +",paste0(colnames(X2)[-c(51)],collapse = "+")))
+    
+    res = runemjmcmc(formula = formula1,data = X2,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 5000, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+      max.N.glob=as.integer(10),
+      min.N.glob=as.integer(5),
+      max.N=as.integer(3),
+      min.N=as.integer(1),
+      printable = F))
+  })
+  
+  
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  mySearch$g.results[,]
+  
+  
+  resa[,ii*2-1]<-mySearch$fparam
+  resa[,ii*2]<-ppp$p.post
+  rm(X2)
+  rm(Y2)
+  gc()
+
+}
+write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim2.csv")
+
+
+#scenario 3
+
+M=10
+resa<-array(data = 0,dim = c(21,M*3))
+
+hashes<-NULL
+post.popul <- array(0,M)
+set.seed(040590)
+X3<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+Y3<-rnorm(n = 1000,mean = 1+7*(X3$V4*X3$V17*X3$V30*X3$V10) + 9*(X3$V7*X3$V20*X3$V12)+ 3.5*(X3$V9*X3$V2)+1.5*X3$V37,sd = 1)
+X3$Y3<-Y3
+
+for(ii in 1:M)
+{  
+  set.seed(ii)
+  
+system.time({
+  
+  formula1 = as.formula(paste(colnames(X3)[51],"~ 1 +",paste0(colnames(X3)[-c(51)],collapse = "+")))
+  
+  res = runemjmcmc(formula = formula1,data = X3,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50, r = 1),recalc_margin = 298, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 10000, max.tree.size = 3, Nvars.max =20,p.allow.replace=0.9999999,p.allow.tree=0.9,p.nor=0,p.and = 0.8),n.models = 30000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 2000,advanced.param = list(
+    max.N.glob=as.integer(10),
+    min.N.glob=as.integer(5),
+    max.N=as.integer(3),
+    min.N=as.integer(1),
+    printable = F),
+    distrib_of_neighbourhoods=t(array(data = c(3,10,10,10,5,2,1,
+                                               3,10,10,10,5,2,1,
+                                               3,10,10,10,5,2,1,
+                                               3,10,10,10,5,2,1,
+                                               3,10,10,10,5,2,1),dim = c(7,5))),distrib_of_proposals = c(50,50,80,50,10000)
+                                      )
+  
+})
+
+
+if(ii==1){
+  cterm<-max(values(hashStat)[1,]) 
+}
+ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+mySearch$g.results[,]
+post.popul[ii]<-sum(exp(values(hashStat)[1,]-cterm),na.rm = T)
+resa[,ii*3-2]<-c(mySearch$fparam,"Post.Gen.Mass")
+resa[,ii*3-1]<-c(ppp$p.post,post.popul[ii])
+resa[,ii*3]<-rep(post.popul[ii],length(ppp$p.post)+1)
+gc()
+
+}
+
+post.popul<-post.popul-max(post.popul)
+p.gen.post<-exp(post.popul)/sum(exp(post.popul))
+hfinal<-hash()
+for(ii in 1:M)
+{
+  resa[,ii*3]<-p.gen.post[ii]*as.numeric(resa[,ii*3-1])
+  resa[length(resa[,ii*3]),ii*3]<-p.gen.post[ii]
+  if(p.gen.post[ii]>0)
+  {
+    for(jj in 1:(length(resa[,ii*3])-1))
+    {
+      if(resa[jj,ii*3]>0)
+      {
+        print(paste0(ii,"  and ",jj))
+        if(as.integer(has.key(hash = hfinal,key =resa[jj,ii*3-2]))==0)
+        {
+          hfinal[[resa[jj,ii*3-2]]]<-as.numeric(resa[jj,ii*3])
+        }else
+        {
+          hfinal[[resa[jj,ii*3-2]]]<-hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
+        }
+      }
+      
+    }
+  }
+}
+write.csv(x = values(hfinal),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim3post.csv")
+clear(hfinal)
+rm(hfinal)
+options(scipen=10)
+write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim3.csv",)
+options(scipen=0)
+
+resa<-array(data = 0,dim = c(25,M*2))
+for(ii in 1:M)
+{  
+  set.seed(ii)
+
+  X4<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+  Y4<-rnorm(n = 1000,mean = 1+7*(X4$V4*X4$V17*X4$V30*X4$V10)+7*(as.integer((X4$V50*X4$V19+X4$V13*X4$V11)/2)) + 9*(X4$V37*X4$V20*X4$V12)+ 7*(X4$V1*X4$V27*X4$V3)
+  +3.5*(X4$V9*X4$V2) + 6.6*(X4$V21*X4$V18) + 1.5*X4$V7 + 1.5*X4$V8,sd = 1)
+  X4$Y4<-Y4
+
+  system.time({
+    
+    formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
+    
+    res = runemjmcmc(formula = formula1,data = X4,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 10000, max.tree.size = 4, Nvars.max =25,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+      max.N.glob=as.integer(10),
+      min.N.glob=as.integer(5),
+      max.N=as.integer(3),
+      min.N=as.integer(1),
+      printable = F))
+  })
+  
+  
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  mySearch$g.results[,]
+  
+  
+  resa[,ii*2-1]<-mySearch$fparam
+  resa[,ii*2]<-ppp$p.post
+  rm(X4)
+  rm(Y4)
+  gc()
+  
+}
+
+
+#scenario 5
+resa<-array(data = 0,dim = c(30,M*2))
+for(ii in 1:M)
+{  
+  set.seed(ii)
+  X5<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+  Y5<-rnorm(n = 1000,mean = 1+7*(X5$V20*X5$V19*X5$V16*X5$V13)+9.8*(X5$V12*X5$V8*X5$V5) + 9*(X5$V2*X5$V28*X5$V22)+ 8.9*(X5$V10*X5$V30)
+            +3.5*(X5$V48*X5$V1) + 6.6*(X5$V50*X5$V3) + 1.5*X5$V32 + 1.5*X5$V7 + 1.5*X5$V24 + 1.5*X5$V11 + 1.5*X5$V4,sd = 1)
+  X5$Y5<-Y5
+  
+  
+  system.time({
+    
+    formula1 = as.formula(paste(colnames(X5)[51],"~ 1 +",paste0(colnames(X5)[-c(51)],collapse = "+")))
+    
+    res = runemjmcmc(formula = formula1,data = X5,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 12500, max.tree.size = 4, Nvars.max =30,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+      max.N.glob=as.integer(10),
+      min.N.glob=as.integer(5),
+      max.N=as.integer(3),
+      min.N=as.integer(1),
+      printable = F))
+  })
+  
+  
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  mySearch$g.results[,]
+  
+  
+  resa[,ii*2-1]<-mySearch$fparam
+  resa[,ii*2]<-ppp$p.post
+  rm(X5)
+  rm(Y5)
+  gc()
+
+}
+
+write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim5.csv")
+
+

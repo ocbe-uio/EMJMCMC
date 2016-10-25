@@ -110,7 +110,7 @@ system.time({
 
   formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
 
-  res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64)),recalc_margin = 50, save.beta = T,interact = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 200, max.tree.size = 200000, Nvars.max = 30,p.allow.replace=0.10,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+  res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64)),recalc_margin = 50, save.beta = T,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 200, max.tree.size = 200000, Nvars.max = 30,p.allow.replace=0.10,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -181,3 +181,65 @@ sum(abs(res[ps]-data.example1$neo[ps]))/(sum(abs(res[ps]-data.example1$neo[ps]))
 ns<-which(data.example1$neo==0)
 sum(abs(res[ns]-data.example1$neo[ns]))/(sum(abs(res[ns]-data.example1$neo[ns]))+length(ns))*100
 
+
+classify <- read.table("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/classify/unlabled.txt",fill=TRUE)
+
+names(classify)<-names(data.example)[2:25]
+View(head(classify))
+
+transform<-colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25)][1:9]
+for(i in 1:length(transform))
+{
+  print(i)
+  classify[[transform[i]]]<-as.numeric(as.character(classify[[transform[i]]]))
+}
+
+classify$esuar<-classify$eccentricity^2
+classify$asuar<-classify$absolute_magnitude^2
+classify$rsuar<-classify$semi_major_axis^2
+classify$rcube<-classify$semi_major_axis^3
+classify$anoml<-classify$mean_anomaly*classify$semi_major_axis
+classify$anoms<-classify$mean_anomaly*classify$semi_major_axis^2
+classify$anomv<-classify$mean_anomaly*classify$semi_major_axis^3
+classify$perihell<-classify$argument_of_perihelion*classify$semi_major_axis
+classify$perihels<-classify$argument_of_perihelion*classify$semi_major_axis^2
+classify$perihelv<-classify$argument_of_perihelion*classify$semi_major_axis^3
+classify$longitudel<-classify$longitude_of_the_ascending.node*classify$semi_major_axis
+classify$longitudes<-classify$longitude_of_the_ascending.node*classify$semi_major_axis^2
+classify$longitudev<-classify$longitude_of_the_ascending.node*classify$semi_major_axis^3
+
+View(head(classify))
+
+
+
+system.time({
+  res<-NULL
+  for(i in 1:24)
+  {
+    print(i)
+    res<-c(res,as.array(mySearch$forecast.matrix(link.g = g,covariates = classify[((i-1)*50000+1):(i*50000),])$forecast))
+  }
+  
+})
+res<-c(res,as.array(mySearch$forecast.matrix(link.g = g,covariates = classify[((i)*50000+1):(1201528),])$forecast))
+
+
+length(res)
+length(which(res>0.5))
+
+clasi<-NULL
+clasi<-c(clasi,length(which(res>0.01))/length(res)*100)
+         clasi<-c(clasi,length(which(res>0.10))/length(res)*100)
+                  clasi<-c(clasi,length(which(res>0.20))/length(res)*100)
+                           clasi<-c(clasi,length(which(res>0.30))/length(res)*100)
+                                    clasi<-c(clasi,length(which(res>0.40))/length(res)*100)
+                                             clasi<-c(clasi,length(which(res>0.50))/length(res)*100)
+                                                      clasi<-c(clasi,length(which(res>0.60))/length(res)*100)
+                                                               clasi<-c(clasi,length(which(res>0.70))/length(res)*100)
+                                                                        clasi<-c(clasi,length(which(res>0.80))/length(res)*100)
+                                                                                 clasi<-c(clasi,length(which(res>0.90))/length(res)*100)
+                                                                                          clasi<-c(clasi,length(which(res>0.99))/length(res)*100)
+print(clasi)
+                                                                                          
+                                                                                          
+length(which(data.example1$neo>0.5))/length(data.example1$neo)
