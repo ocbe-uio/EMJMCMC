@@ -46,7 +46,7 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
 estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
 {
-  
+
   #only poisson and binomial families are currently adopted
   X <- model.matrix(object = formula,data = data)
   out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
@@ -59,9 +59,9 @@ estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
   Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
   tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  
+
   return(list(mlik = (out$logmarglik+2*log(Jprior) + 2*tn*log(r)),waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
-  
+
 }
 
 
@@ -150,8 +150,6 @@ estimate.logic.lm <- function(formula, data, n, m, r = 1)
 {
   out <- lm(formula = formula,data = data)
   p <- out$rank
-  Rsquare <- summary(out)$r.squared
-
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
@@ -160,9 +158,9 @@ estimate.logic.lm <- function(formula, data, n, m, r = 1)
   sj<-(stri_count_fixed(str = fparam, pattern = "&"))
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
   Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  
-  return(list(mlik = (-BIC(out)+2*log(Jprior) + 2*tn*log(r)),waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+
+  return(list(mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)),waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
 }
 
 
@@ -391,7 +389,7 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
 
   }else if(create.hash)
   {
-    
+
     assign("hashStat",hash(), envir=globalenv())
     mySearch$parallelize <<- lapply
     mySearch$hash.length<<-as.integer(20)
@@ -1175,10 +1173,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    # formula <- NULL
                                    # formula <- as.formula(ifelse(length(covobs)>0,(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst,"+", stri_flatten(covobs, collapse=" + "), latent.formula)),(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst, latent.formula))))
-                                   # 
+                                   #
                                    # if(is.null(formula)){
                                    #   formula <- as.formula(ifelse(length(covobs)>0,(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst,"+", stri_flatten(covobs, collapse=" + "))),(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst))))
-                                   # 
+                                   #
                                    # }
                                     formula <- NULL
                                     capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})}) ## not considered currently in RJMCMC, is only valid for model selection
@@ -1186,7 +1184,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                       formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
 
                                    }
-                                   
+
                                  }else
                                  {
                                    formula <- NULL
@@ -1367,7 +1365,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                     idd<- as.character(paste(c(model$varcur,array(0,Nvars.max-Nvars)),collapse = ""))
                                    else
                                     idd<- as.character(paste(c(model$varcur),collapse = ""))
-                                   
+
                                    if(!has.key(key = idd,hash = hashStat))
                                    {
                                      #if(printable.opt)print("Invoked from EMJMCMC hash table environment")
@@ -3208,7 +3206,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  # the small part of the code to be upgraded at least slightly
                                  if(allow_offsprings > 0  && j%%mutation_rate == 0 && j<=last.mutation)
                                  {
-                                   
+
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
                                      #do the stuff here
@@ -3228,7 +3226,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #     }
                                        #     else
                                        #     {
-                                       #       
+                                       #
                                        #     }
                                        #   }
                                        # }
@@ -3265,38 +3263,38 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                       {
                                         p.del<-(lidmut - sum(p.add[idmut]))/lidmut
                                         lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
-                                      }  
+                                      }
                                      }else
                                      {
                                        idmut<-(Nvars+1):Nvars.max
                                        lidmut<-Nvars.max-Nvars
                                      }
-       
+
                                      for(idel in 1:lidmut){
-                                       
+
                                        p.del<-1-(sum(p.add))/Nvars
                                        mother<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)],fparam[runif(n = 1,min = 1,max=Nvars.init)])
                                        ltreem<-stri_length(mother)
                                        mother<-stri_sub(mother,from=2, to = ltreem)
-                                       
+
                                        if(allow_offsprings==1)
                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("&","|")))
                                        else
                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
-                                       
+
                                        if(sjm<=max.tree.size)
                                        {
-                                      
+
                                          #p.del<-1-(sum(p.add))/Nvars
                                          father<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam.pool[runif(n = 1,min = 1,max=length(fparam.pool))],fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)])
                                          ltreef<-stri_length(father)
                                          father<-stri_sub(father,from=2, to = ltreef)
-                                         
+
                                          if(allow_offsprings==1)
                                            sjf<-sum(stri_count_fixed(str = father, pattern = c("&","|")))
                                          else
                                            sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-                                         
+
                                          if(sjm+sjf+1<=max.tree.size)
                                          {
                                            if(allow_offsprings==1)
@@ -3305,7 +3303,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              {
                                                proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(1-","I("),mother,sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
                                              }
-                                             else 
+                                             else
                                              {
                                                if(max(sjm,sjf)>1)
                                                {
@@ -3319,7 +3317,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                                    loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
                                                    proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
                                                  }
-                                                 
+
                                                  diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
                                                  if(diffs>0)
                                                    proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
@@ -3343,7 +3341,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                          else
                                          {
-                                           
+
                                            t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
                                            if(sjm>=sjf)
                                            {
@@ -3354,7 +3352,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
                                              proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
                                            }
-                                           
+
                                            diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
                                            if(diffs>0)
                                              proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
@@ -3371,7 +3369,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            Nvars<<-as.integer(Nvars+1)
                                            p.add<<-as.array(c(p.add,p.allow.replace))
                                            p.post<-as.array(c(p.post,1))
-                                           print(paste("mutation happended ",proposal," tree  added"))
+                                           if(printable.opt)
+                                            print(paste("mutation happended ",proposal," tree  added"))
                                          }
                                          else if(!(proposal %in% fparam))
                                          {
@@ -3380,7 +3379,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            if(lto.del>0)
                                            {
                                              id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
-                                             print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                             if(printable.opt)
+                                              print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                              fparam[id.replace]<<-proposal
                                              keysarr <- as.array(keys(hashStat))
                                              p.add[id.replace]<<-p.allow.replace
@@ -3396,11 +3396,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            }
 
                                          }
-                                         
-                                        
+
+
                                        }
                                      }
-                                  
+
                                    varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
                                    varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
                                    varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
@@ -3409,8 +3409,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    p2 = c(p1,array(1,dim = (Nvars -length(p1))))
                                    acc_moves<-1
                                    j.a<-1
-                                
+
                                    }
+                                 }
+                                 else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
+                                 {
+                                   recalc.margin = 2^Nvars
                                  }
                                  #withRestarts(tryCatch({
 

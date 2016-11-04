@@ -85,6 +85,12 @@ M2 <- inla(formula = formula2,data=data.example,family="Gaussian",control.predic
 )
 res[3,6,2]<-M2$mlik[1]
 
+#time related stuff
+system.time({
+  i=13
+m1C <- MCMCregress(formula1,seed = seed,burnin=100,b0=meanp,data=data.example,B0=precp,c0 = 2, d0 = 2,marginal.likelihood="Chib95",mcmc=100*2^i,verbose=0)
+BF1 <- BayesFactor(m1C)
+})
 
 # now for a fixed prior precision let us discover the concergence
 meanp<-1
@@ -102,7 +108,7 @@ for(i in 1:10)
     m1C <- MCMCregress(formula1,seed = seed,burnin=100,b0=meanp,data=data.example,B0=precp,c0 = 2, d0 = 2,marginal.likelihood="Chib95",mcmc=100*2^i,verbose=0)
     BF <- BayesFactor(m1C)
     res[i,j,1]<-BF$BF.logmarglike
-    res[i,j,2]<-1000*2^i
+    res[i,j,2]<-100*2^i
   }
 }
 M1 <- inla(formula = formula1,data=data.example,family="Gaussian",control.predictor=list(compute=T),control.family=list(hyper = list(prec = list(prior="loggamma",param=c(1, 1)))),
@@ -113,11 +119,17 @@ M2 <- inla(formula = formula1,data=data.example,family="Gaussian",control.predic
            control.fixed=list(mean=c(default=meanp),mean.intercept=meanp,prec.intercept=precp,prec=c(default=precp))
 )
 
+
 plot(y = res[,,1],x = res[,,2], type = "p",col = 2,ylim = c(min(min(res[,,1]),M1$mlik[1]),max(max(res[,,1]),M1$mlik[1])),
-     xlab = "number of MCMC iterations",
-     ylab = "mlik")
-abline(a = M1$mlik[1], b = 0,col = 5)
+     xlab = "",
+     ylab = "",yaxt="n",xaxt="n")
+mtext("MLIK", side=2, line=2.7, cex=1.7)
+mtext("Number of MCMC iterations", side=1, line=3.5, cex=1.7)
+axis(2,cex.axis=1.5)
+axis(1,cex.axis=1.5)
+abline(a = M1$mlik[1], b = 0,col = 6)
 abline(a = M2$mlik[1], b = 0,col = 4)
+
 
 # now for a fixed prior precision let us discover the concergence
 meanp<-50
@@ -132,10 +144,10 @@ for(i in 1:10)
   {  
     seed = i+i*j + j*runif(n = 1,min = 0,max = 1000)
     print(paste(i," and ",j))
-    m1C <- MCMCregress(formula1,burnin=100,seed = seed,b0=meanp,data=data.example,B0=precp,c0 = 2, d0 = 2,marginal.likelihood="Chib95",mcmc=100*2^i,verbose=0)
+    m1C <- MCMCregress(formula1,burnin=100,seed = seed,b0=meanp,data=data.example,B0=precp,c0 = 2, d0 = 2,marginal.likelihood="Chib95",mcmc=1000*2^i,verbose=0)
     BF <- BayesFactor(m1C)
     res[i,j,1]<-BF$BF.logmarglike
-    res[i,j,2]<-1000*2^i
+    res[i,j,2]<-100*2^i
   }
 }
 
