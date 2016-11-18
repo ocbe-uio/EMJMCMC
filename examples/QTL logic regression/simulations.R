@@ -9,6 +9,7 @@ set.seed(040590)
 X1<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
 Y1<-rnorm(n = 1000,mean = 1+0.7*(X1$V1*X1$V4) + 0.8896846*(X1$V8*X1$V11)+1.434573*(X1$V5*X1$V9),sd = 1)
 X1$Y1<-Y1
+
 for(ii in 1:M)
 {
   set.seed(ii)
@@ -71,8 +72,56 @@ write.csv(x = values(hfinal),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/p
 clear(hfinal)
 rm(hfinal)
 write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim1.csv")
+write.csv(x =X1,file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/X1.csv")
 
 
+library(LogicReg)
+
+system.time({
+lmod <- logreg(
+  resp=X1$Y1,bin=X1[,-51], 
+  type=2, select = 7, 
+  ntrees=5,
+  nleaves =5*5,
+  mc.control=logreg.mc.control(nburn=500, niter=2500000, hyperpars=log(2),output = 3,update = -1),
+  tree.control=logreg.tree.control(treesize=5
+                                   ,opers=2)
+  )
+})
+
+lmod$size
+iter<-sum(lmod$size[,2])
+# marginal posteriors of covariates in a tree
+lmod$single[1]/iter
+lmod$single[4]/iter
+lmod$single[8]/iter
+lmod$single[11]/iter
+lmod$single[5]/iter
+lmod$single[9]/iter
+max(lmod$single)/iter
+min(lmod$single)/iter
+which(lmod$single == max(lmod$single))
+order(lmod$single)
+plot(lmod$single/iter)
+# pairwise probability of the pairs of covariates in a tree
+lmod$double[4,1]/iter 
+lmod$double[11,8]/iter 
+lmod$double[9,5]/iter
+max(lmod$double)/iter
+min(lmod$double)/iter
+plot(y = lmod$double/iter)
+which(lmod$double == max(lmod$double))
+#lmod$triple # tupples of them
+max(lmod$triple)/iter
+
+lmod.select <- logreg(
+  resp=X1$Y1,bin=X1[,-51], 
+  type=2, select = 6, ntrees=5,
+  nleaves =5*5,
+ oldfit = lmod)
+lmod.select$nmodels
+lmod.select$allscores
+lmod.select$alltrees
 #scenario 2
 
 M=100
@@ -147,6 +196,7 @@ write.csv(x = values(hfinal),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/p
 clear(hfinal)
 rm(hfinal)
 write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim2.csv")
+write.csv(x =X2,file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/X2.csv")
 
 
 #scenario 3
@@ -225,6 +275,7 @@ write.csv(x = values(hfinal),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/p
 clear(hfinal)
 rm(hfinal)
 write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim3.csv")
+write.csv(x =X3,file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/X3.csv")
 
 #scenario 4
 M=100
@@ -300,6 +351,7 @@ write.csv(x = values(hfinal),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/p
 clear(hfinal)
 rm(hfinal)
 write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim4.csv")
+write.csv(x =X4,file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/X4.csv")
 
 
 
@@ -327,7 +379,7 @@ for(ii in 1:M)
     
     formula1 = as.formula(paste(colnames(X5)[51],"~ 1 +",paste0(colnames(X5)[-c(51)],collapse = "+")))
     
-    res = runemjmcmc(formula = formula1,data = X5,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 10000, max.tree.size = 4, Nvars.max =30,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = X5,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 10000, max.tree.size = 4, Nvars.max =30,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 12500,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -381,4 +433,5 @@ clear(hfinal)
 rm(hfinal)
 write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/sim5.csv")
 
+write.csv(x =X5,file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/X5.csv")
 

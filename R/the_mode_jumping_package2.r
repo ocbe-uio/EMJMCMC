@@ -3497,7 +3497,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if((mlikcand>mlikglob)) #update the parameter of interest
                                      {
                                        if(printable.opt)print(paste("GlobMTMCMC update waic.glob = ", waiccand))
-                                       if(printable.opt)print(paste("GlobMTMCMC update waic.glob.mlik = ",  mlikglob))
+                                       if(printable.opt)print(paste("GlobMTMCMC update mlik.glob = ",  mlikglob))
                                        mlikglob<-mlikcand
                                        waicglob<-waiccand
                                        varglob<-varcand
@@ -3629,7 +3629,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if((mlikcand.b>mlikglob))
                                        {
                                          if(printable.opt)print(paste("GlobMTMCMC update waic.glob = ", waiccand.b))
-                                         if(printable.opt)print(paste("GlobMTMCMC update waic.glob.mlik = ", mlikcand.b))
+                                         if(printable.opt)print(paste("GlobMTMCMC update mlik.glob = ", mlikcand.b))
                                          mlikglob<-mlikcand.b
                                          waicglob<-waiccand.b
                                          varglob<-varcand.b

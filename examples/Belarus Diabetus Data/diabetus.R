@@ -73,3 +73,16 @@ gm=T #if true then GMJMCMC (Genetically modified MJMCMC) is addressed otherwise 
       printable = F))
   })
   
+  # all model probabilities
+  model.prob<-mySearch$post_proceed_results_hash(hashStat)$m.post
+  plot(x = 1:length(model.prob),y = model.prob)
+  # the highest posterior probability of some combination of genes
+  max.prob = max(model.prob)
+  print(max.prob)
+  # it corresponds to the mlik of 
+  print(max(values(hashStat)[1,]))
+  # which corresponds to the model based on the following covariates 
+  best.com = keys(hashStat)[which(values(hashStat)[1,]==max(values(hashStat)[1,]))]
+  print(mySearch$fparam[gregexpr('1', best.com)[[1]][1:length(gregexpr('1', best.com)[[1]])]])
+  
+  
