@@ -26,47 +26,62 @@ library(compiler)
 library(BAS)
 require(stats)
 
-#define your working directory, where the data files are stored
+#define the working directory
+
 workdir<-""
 
-#prepare data
-simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Simulated%20Logistic%20Data%20With%20Multiple%20Modes%20%28Example%203%29/sim3-X.txt"),sep = ",")
-simy <-  read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Simulated%20Logistic%20Data%20With%20Multiple%20Modes%20%28Example%203%29/sim3-Y.txt"),sep = ",")
-data.example <- cbind(simy,simx)
-names(data.example)[1]="Y1"
+# get the data
+M<-5
+size<-1
+
+data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
+workdir = ""
 
 
-data.example$V2<-(data.example$V10+data.example$V14)*data.example$V9
-data.example$V5<-(data.example$V11+data.example$V15)*data.example$V12
-#fparam <- c("Const",colnames(data)[-1])
-fparam.example <- colnames(data.example)[-1]
-fobserved.example <- colnames(data.example)[1]
 
-SparseM::image(cor(data.example)[20:1,],axes = FALSE, col = grey(seq(1, 0, length = 256)))
+fparam.example <- colnames(data.example )[c(8:10,12:17,21:24,29)]
+fobserved.example <- colnames(data.example)[5]
+data.example<-data.example[,c(5,6,8:10,12:17,21,23,24,29)]
+#create MySearch object with default parameters. N/B default estimator is INLA!
+mySearch = EMJMCMC2016()
+mySearch$parallelize = lapply
 
-#dataframe for results; n/b +1 is required for the summary statistics
+SparseM::image(cor(data.example)[14:1,],axes = FALSE, col = grey(seq(1, 0, length = 256)))
+
+# specify some INLA realted parameters
+mySearch$estimator = inla
+args<-list(family = "poisson",data = data.example)
+args$control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)
+mySearch$latent.formula  = ""; "+f(data.example$pos,model=\"ar1\")"
+mySearch$estimator.args = args
+mySearch$printable.opt = F
+
+#example of the underlying model within INLA
+formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +f(data.example$pos,model=\"ar1\")")
+fm4<-do.call(inla, c(args,formula = formula2))
+summary(fm4)
+
+
+
+#end defining the precalculated results
+
+# create a big memory object to store the results
+
 statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
 statistics <- describe(statistics1)
 
-#create MySearch object with default parameters
-mySearch = EMJMCMC2016()
-# load functions for MLIK estimation
-mySearch$estimator = estimate.bas.glm
-mySearch$estimator.args = list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(2000))
-
-
-# carry out full enumeration (it is still feasible)
+# carry out full enumeration to learn about the truth. This one MUST be completed before moving to the experiments in this example!
 system.time(
-  FFF<-mySearch$full_selection(list(statid=6, totalit =2^20+1, ub = 36*20,mlikcur=-Inf,waiccur =100000))
+  FFF<-mySearch$full_selection(list(statid=6, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =Inf))
 )
-# completed in   7889  for 1048576 models whilst BAS took 6954.101 seonds and thus now advantage of using C versus R is clearly seen
-# to be almost neglectible
+
 
 # check that all models are enumerated during the full search procedure
-idn<-which(is.na(statistics1[,1]))
+idn<-which(!is.na(statistics1[,1]))
 length(idn)
 
-#mySearch$visualize_results(statistics1, "test", 1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = FALSE)
+# draw the model space and get other graphical output
+mySearch$visualize_results(statistics1, "test",1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
 
 # once full search is completed, get the truth for the experiment
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
@@ -74,79 +89,60 @@ truth = ppp$p.post # make sure it is equal to Truth column from the article
 truth.m = ppp$m.post
 truth.prob = ppp$s.mass
 ordering = sort(ppp$p.post,index.return=T)
-fake500 <- sum(exp(x = (sort(statistics1[,1],decreasing = T)[1:2^20] + 1)),na.rm = TRUE)/truth.prob
+fake500 <- sum(exp(x = (sort(statistics1[,1],decreasing = T)[1:2])),na.rm = TRUE)/truth.prob
 print("pi truth")
 sprintf("%.10f",truth[ordering$ix])
 
-#estimate best performance ever
-min(statistics1[,1],na.rm = T)
-idn<-which(is.na(statistics1[,1]))
-2^20-length(idn)
-statistics1[idn,1]<- -100000
+# get the best performance results for a given number of iterations
 iddx <- sort(statistics1[,1],decreasing = T,index.return=T,na.last = NA)$ix
-# check that all models are enumerated during the full search procedure
+statistics1[as.numeric(iddx[376:2^14]),1:15]<-NA
 
-
-# see the obtained maximum and minimum
-
-min(statistics1[,1],na.rm = TRUE)
-max(statistics1[,1],na.rm = TRUE)
-
-# look at the best possible performance for a given number of iterations
-statistics1[as.numeric(iddx[5001:2^20]),1:15]<-NA
 ppp.best<-mySearch$post_proceed_results(statistics1 = statistics1)
 best = ppp.best$p.post # make sure it is equal to Truth column from the article
 bset.m = ppp.best$m.post
 best.prob = ppp.best$s.mass/truth.prob
 print("pi best")
 sprintf("%.10f",best[ordering$ix])
-# notice some interesting details on the posterior mass and number of models visited
-# 50000 best models contain 100.0000% of mass 100.0000%
-# 48300 best models contain 99.99995% of mass 100.0000%
-# 48086 best models contain 99.99995% of mass 100.0000%
-# 10000 best models contain 99.99990% of mass 99.99991%
-# 5000  best models contain 93.83923% of mass 94.72895%
-# 3500  best models contain 85.77979% of mass 87.90333%
-# 1500  best models contain 63.33376% of mass 67.71380%
-# 1000  best models contain 53.47534% of mass 57.91971%
-# 500   best models contain 37.72771% of mass 42.62869%
-# 100   best models contain 14.76030% of mass 17.71082%
-# 50    best models contain 14.76030% of mass 11.36970%
-# 10    best models contain 14.76030% of mass 3.911063%
-# 5     best models contain 14.76030% of mass 2.351454%
-# 1     best models contain 14.76030% of mass 0.595301%
 
 best.bias.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
 best.rmse.m<-sqrt(mean((bset.m - truth.m)^2,na.rm = TRUE))*100000
 
 best.bias<- best - truth
 best.rmse<- abs(best - truth)
-# view results for the best possible performance model
-View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*100))
+
+# view the "unbeatible" results
+View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*10000))
 
 
-# set parameters of the search
-#mySearch$max.cpu=as.integer(4)
-mySearch$switch.type=as.integer(1)
-mySearch$switch.type.glob=as.integer(1)
+
+# mySearch$save_results_csv(statistics1, "important results") save the results to avoid recalculating (if required)
+
+
+
+# define parameters of the search
+
+#mySearch$printable.opt=T
+
 #mySearch$printable.opt = TRUE
-mySearch$max.N.glob=as.integer(5)
-mySearch$min.N.glob=as.integer(3)
+mySearch$max.cpu = as.integer(1)
+mySearch$locstop.nd=FALSE
+mySearch$max.cpu.glob = as.integer(1)
+mySearch$max.N.glob=as.integer(4)
+mySearch$min.N.glob=as.integer(4)
 mySearch$max.N=as.integer(1)
 mySearch$min.N=as.integer(1)
-mySearch$recalc.margin = as.integer(2^20)
-distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852)
-#distrib_of_proposals = с(0,0,0,0,10)
+mySearch$recalc.margin = as.integer(2^13)
+
+
+distrib_of_proposals = c(10,0,0,0,1000)
+
 distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                            0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                            1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
-                                           6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5)))
-distrib_of_neighbourhoods[7]=distrib_of_neighbourhoods[7]/100
-distrib_of_neighbourhoods = array(data = 0, dim = c(5,7))
-distrib_of_neighbourhoods[,3]=10
+                                           1,1,1,1,1,1,1),dim = c(7,5)))
+# carry out the experiment (notice that result may vary depending on the part of genome addressed)
 
-# proceed with the experiment
 Niter <- 100
 thining<-1
 system.time({
@@ -176,7 +172,7 @@ system.time({
     initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
     inits[i] <- mySearch$bittodec(initsol)
     freqs[,i]<- distrib_of_proposals
-    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 5000, trest = 100000, burnin = 3, max.time = 30, maxit = 100000, print.freq =1000))
+    resm<-mySearch$modejumping_mcmc(list(varcur=initsol,statid=-1, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = 0.000000001, trit = 37500, trest = 375, burnin = 3, max.time = 30, maxit = 100000, print.freq =500))
     vect[,i]<-resm$bayes.results$p.post
     vect.mc[,i]<-resm$p.post
     masses[i]<-resm$bayes.results$s.mass/truth.prob
@@ -196,10 +192,10 @@ system.time({
     print(iterats[2,i])
     remove(statistics1)
     remove(statistics)
+
   }
 }
 )
-
 
 
 Nlim <- 1
@@ -255,5 +251,5 @@ sprintf("%.10f",bias.avg.mc[ordering$ix]*100)
 print("pi rmse mc")
 sprintf("%.10f",rmse.avg.mc[ordering$ix]*100)
 
-# view the final results
-View((cbind(bias.avg.rm[ordering$ix],rmse.avg.rm[ordering$ix],bias.avg.mc[ordering$ix],rmse.avg.mc[ordering$ix])*100))
+# View the results
+View((cbind(ordering$ix/100,truth[ordering$ix]/100,bias.avg.rm[ordering$ix],rmse.avg.rm[ordering$ix],bias.avg.mc[ordering$ix],rmse.avg.mc[ordering$ix])*100))

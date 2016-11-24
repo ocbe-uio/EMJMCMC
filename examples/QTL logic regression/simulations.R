@@ -75,6 +75,8 @@ write.csv(x = (resa),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/E
 write.csv(x =X1,file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/QTL logic regression/X1.csv")
 
 
+# now trying out the logic regression
+
 library(LogicReg)
 
 system.time({
@@ -83,7 +85,7 @@ lmod <- logreg(
   type=2, select = 7, 
   ntrees=5,
   nleaves =5*5,
-  mc.control=logreg.mc.control(nburn=500, niter=2500000, hyperpars=log(2),output = 3,update = -1),
+  mc.control=logreg.mc.control(nburn=500, niter=25000, hyperpars=log(2),output = 3,update = -1),
   tree.control=logreg.tree.control(treesize=5
                                    ,opers=2)
   )
@@ -114,14 +116,6 @@ which(lmod$double == max(lmod$double))
 #lmod$triple # tupples of them
 max(lmod$triple)/iter
 
-lmod.select <- logreg(
-  resp=X1$Y1,bin=X1[,-51], 
-  type=2, select = 6, ntrees=5,
-  nleaves =5*5,
- oldfit = lmod)
-lmod.select$nmodels
-lmod.select$allscores
-lmod.select$alltrees
 #scenario 2
 
 M=100
