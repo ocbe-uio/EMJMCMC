@@ -137,7 +137,7 @@ esimator<-function(formula, crits)
       vec[iid]<-1
   }
   id<-bittodec(vec)+1
-  return(list(mlik = crits[id,1],waic = crits[id,2] , dic =  crits[id,3]))
+  return(list(mlik = crits[id,1]+2000,waic = crits[id,2] , dic =  crits[id,3]))
 }
 
 # try the estimator function based on precalculated values out
