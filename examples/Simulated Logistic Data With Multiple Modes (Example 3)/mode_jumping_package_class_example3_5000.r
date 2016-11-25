@@ -42,7 +42,9 @@ data.example$V5<-(data.example$V11+data.example$V15)*data.example$V12
 fparam.example <- colnames(data.example)[-1]
 fobserved.example <- colnames(data.example)[1]
 
-SparseM::image(cor(data.example)[20:1,],axes = FALSE, col = grey(seq(1, 0, length = 256)))
+SparseM::image(cor(data.example)[20:1,],axes = FALSE, col = grey(seq(1, 0, length = 256)),axes = FALSE)
+
+#image.plot(cor(data.example)[20:1,],col = grey(seq(1, 0, length = 256)))
 
 #dataframe for results; n/b +1 is required for the summary statistics
 statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")

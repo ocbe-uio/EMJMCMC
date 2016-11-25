@@ -37,31 +37,35 @@ size<-1
 data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
 workdir = ""
 
+data.example<-data.example[,c(2,5,6,8:10,12:17,21,23,24,29)]
+data.example$eg3000<-data.example$express_noisy>3000
+data.example$eg10000<-data.example$express_noisy>10000
+data.example$express_noisy<-NULL
+
+fparam.example <- colnames(data.example )[-c(1,2,3)]
+fobserved.example <- colnames(data.example)[2]
 
 
-fparam.example <- colnames(data.example )[c(8:10,12:17,21:24,29)]
-fobserved.example <- colnames(data.example)[5]
-data.example<-data.example[,c(5,6,8:10,12:17,21,23,24,29)]
 #create MySearch object with default parameters. N/B default estimator is INLA!
 mySearch = EMJMCMC2016()
 mySearch$parallelize = lapply
 
-SparseM::image(cor(data.example)[14:1,],axes = FALSE, col = grey(seq(1, 0, length = 256)))
+SparseM::image(cor(data.example)[16:1,],axes = FALSE, col = grey(seq(1, 0, length = 256)))
 
 # specify some INLA realted parameters
 mySearch$estimator = inla
 args<-list(family = "poisson",data = data.example)
 args$control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)
-mySearch$latent.formula  = ""; "+f(data.example$pos,model=\"ar1\")"
+mySearch$latent.formula  = ""; "+offset(log(total_bases))+f(data.example$pos,model=\"ar1\")"
 mySearch$estimator.args = args
 mySearch$printable.opt = F
 
 #example of the underlying model within INLA
-formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +f(data.example$pos,model=\"ar1\")")
+formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +offset(log(total_bases))+f(data.example$pos,model=\"ar1\")")
 fm4<-do.call(inla, c(args,formula = formula2))
 summary(fm4)
 
-
+#estimate.inla.ar1(formula = formula2,args)
 
 #end defining the precalculated results
 
@@ -75,13 +79,16 @@ system.time(
   FFF<-mySearch$full_selection(list(statid=6, totalit =2^14+1, ub = 10,mlikcur=-Inf,waiccur =Inf))
 )
 
+write.big.matrix(statistics1, "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/submitted/aliaksah-EMJMCMC2016-04a333b/examples/Epigenetic Data/precalculated.csv", row.names = FALSE, col.names = FALSE,
+                 sep = ",")
 
 # check that all models are enumerated during the full search procedure
 idn<-which(!is.na(statistics1[,1]))
 length(idn)
 
 # draw the model space and get other graphical output
-mySearch$visualize_results(statistics1, "test",1024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
+mySearch$visualize_results(statistics1, "test",5024, crit=list(mlik = T, waic = T, dic = T),draw_dist = TRUE)
+
 
 # once full search is completed, get the truth for the experiment
 ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
@@ -113,6 +120,39 @@ best.rmse<- abs(best - truth)
 # view the "unbeatible" results
 View((cbind(best.bias[ordering$ix],best.rmse[ordering$ix])*10000))
 
+
+# use the precalculated results to save time (if available). This should not get addressed if the data set is analysed for the first time!
+crits<-as.big.matrix(read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/precalculated.csv"),sep = ",")[,1:3,15])
+Nvars<-mySearch$Nvars
+bittodec<-mySearch$bittodec
+# estimator based on precalculated and saved into crit data
+esimator<-function(formula, crits)
+{
+  values <- strsplit(as.character(formula)[3],split = " + ",fixed = T)
+  vec<-array(0,dim = Nvars)
+  for(i in 2:(length(values[[1]])))
+  {
+    iid <- which(fparam.example == values[[1]][i])
+    if(length(iid)>0)
+      vec[iid]<-1
+  }
+  id<-bittodec(vec)+1
+  return(list(mlik = crits[id,1],waic = crits[id,2] , dic =  crits[id,3]))
+}
+
+# try the estimator function based on precalculated values out
+esimator(formula = formula2, crits = crits)
+
+# specify that one uses precalculated values, if required
+mySearch$estimator = esimator
+mySearch$estimator.args = list(crits = crits)
+
+#end defining the precalculated results
+
+# create a big memory object to store the results
+
+statistics1 <- big.matrix(nrow = 2 ^(length(fparam.example))+1, ncol = 15,init = NA, type = "double")
+statistics <- describe(statistics1)
 
 
 # mySearch$save_results_csv(statistics1, "important results") save the results to avoid recalculating (if required)

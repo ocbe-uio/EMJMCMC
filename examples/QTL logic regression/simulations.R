@@ -85,7 +85,7 @@ lmod <- logreg(
   type=2, select = 7, 
   ntrees=5,
   nleaves =5*5,
-  mc.control=logreg.mc.control(nburn=500, niter=25000, hyperpars=log(2),output = 3,update = -1),
+  mc.control=logreg.mc.control(nburn=500, niter=250000, hyperpars=log(2),output = 3,update = -1),
   tree.control=logreg.tree.control(treesize=5
                                    ,opers=2)
   )
