@@ -45,6 +45,7 @@ data.example$express_noisy<-NULL
 fparam.example <- colnames(data.example )[-c(1,2,3)]
 fobserved.example <- colnames(data.example)[2]
 
+#image.plot(cor(data.example[,-c(1,2,3)])[14:1,],col = grey(seq(1, 0, length = 256)))
 
 #create MySearch object with default parameters. N/B default estimator is INLA!
 mySearch = EMJMCMC2016()
