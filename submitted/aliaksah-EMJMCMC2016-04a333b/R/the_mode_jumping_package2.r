@@ -2646,7 +2646,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                return(list(varcur = varcur, waiccur = waiccur, mlikcur = mlikcur, log.prob.cur = model.prob,log.prob.fix = model.prob.fix, varglob = varglob, waicglob = waicglob, mlikglob = mlikglob, modglob = modglob))
                              },
                              #global emjmcmc procedure for model selection (hyper heuristic logic in terms of COP)
-                             modejumping_mcmc=function(glob.model)
+                             modejumping_mcmc=function(glob.model,fwb=T)
                              {
                                
                                stm <- proc.time()
@@ -2659,9 +2659,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                # do the search and simulations accross the modes
                                g.results[4,1]<- 0
                                g.results[4,2]<- 0
-                               forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
-                               backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
                                
+                               if(fwb)
+                               {
+                                forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+                                backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+                               }
                                
                                if(exists("statistics1")&&recalc.margin != 2^Nvars)
                                {
@@ -3005,7 +3008,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
                                    
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if((log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )||j==1)
                                    {
                                      mlikcur<-mlikcand
                                      ratcur<-mlikcand
@@ -3962,7 +3965,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=7,pch = 19,cex= 0.4)
+                                   #points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=7,pch = 19,cex= 0.4)
                                    points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=1,pch = 19,cex= 0.01)
                                    dev.off() 
                                  })), abort = function(){onerr<-TRUE})})
