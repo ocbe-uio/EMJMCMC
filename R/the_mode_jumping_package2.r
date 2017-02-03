@@ -157,13 +157,14 @@ estimate.logic.lm <- function(formula, data, n, m, r = 1)
   fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
   sj<-(stri_count_fixed(str = fparam, pattern = "&"))
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
-  Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
+  Jprior <- prod(factorial(sj)/((m^sj)*2^(3*sj-2)))
   #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
   mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
   if(mlik==-Inf)
     mlik = -10000
   return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
 }
+
 
 estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
 {
