@@ -159,12 +159,31 @@ estimate.logic.lm <- function(formula, data, n, m, r = 1)
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
   Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
   #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)
+  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
   if(mlik==-Inf)
     mlik = -10000
   return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
 }
 
+estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
+{
+  X <- model.matrix(object = formula,data = data)
+  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=aic.prior())
+  p <- out$rank
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
+  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  mlik = (out$logmarglik + 4*p - log(n)*p +2*log(Jprior) + 2*p*log(r)+n)
+  if(mlik==-Inf)
+    mlik = -10000
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
+}
 
 estimate.bas.lm.bagging <- function(formula, data, prior, n, g = 0, bag.size)
 {
@@ -436,7 +455,7 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   	par(mar = c(10,4,4,2) + 4.1)
   	barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg = mySearch$fparam,las=2)
   	barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg = mySearch$fparam,las=2)
-  }  
+  }
 
 return(ppp)
 }
@@ -3117,7 +3136,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                # do the search and simulations accross the modes
                                g.results[4,1]<- 0
                                g.results[4,2]<- 0
-                               
+
                                if(glob.model$presearch)
                                {
                                 forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
@@ -3313,7 +3332,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            {
                                              if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
                                              {
-                                               proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(1-","I("),mother,sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
+                                               proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(1-","I("),mother,sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,")",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
                                              }
                                              else
                                              {

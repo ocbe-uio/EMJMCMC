@@ -45,7 +45,7 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.5)
           rhash[[ress[2]]][4]<-expr
       }
     }
-    
+
   }
   res<-as.data.frame(t(values(rhash)[c(3,4),]))
   res$V1<-as.numeric(as.character(res$V1))
@@ -73,7 +73,7 @@ paral<-function(X,FUN)
 
 runpar<-function(vect)
 {
-  
+  tryCatch({
   set.seed(as.integer(vect[22]))
   do.call(runemjmcmc, vect[1:21])
   vals<-values(hashStat)
@@ -84,33 +84,40 @@ runpar<-function(vect)
   clear(hashStat)
   rm(hashStat)
   rm(vals)
-  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
+  },error = function(err){
+    print(paste0("error in thread",vect[22]))
+    return(NULL)
+  },finally = {
+
+    return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
+
+  })
 }
-  
+
 
 for(j in 1:MM)
 {
-  
+
   set.seed(j)
-  
+
   X4<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
   Y4<-rnorm(n = 1000,mean = 1+7*(X4$V4*X4$V17*X4$V30*X4$V10)+7*(as.integer((X4$V50*X4$V19+X4$V13*X4$V11)/2)) + 9*(X4$V37*X4$V20*X4$V12)+ 7*(X4$V1*X4$V27*X4$V3)
             +3.5*(X4$V9*X4$V2) + 6.6*(X4$V21*X4$V18) + 1.5*X4$V7 + 1.5*X4$V8,sd = 1)
   X4$Y4<-Y4
-  
+
   formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
   data.example = as.data.frame(X4)
-  
-  
+
+
   vect<-list(formula = formula1,data = X4,outgraphs=F,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 100, m = 50),recalc_margin = 249, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 250,last.mutation = 5000, max.tree.size = 4, Nvars.max =25,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
     min.N=as.integer(1),
     printable = F))
-  
+
   params <- list(vect)[rep(1,32)]
-  
+
   for(i in 1:M)
   {
     params[[i]]$cpu<-i
@@ -155,11 +162,11 @@ for(j in 1:MM)
           else
             hfinal[[resa[jj,ii*3-2]]]<-hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
         }
-        
+
       }
     }
   }
-  
+
   posteriors<-values(hfinal)
   clear(hfinal)
   rm(hfinal)
@@ -176,15 +183,15 @@ for(j in 1:MM)
     print("error")
     write.csv(x =posteriors,row.names = F,file = paste0("posteriors3eta_",j,".csv"))
   },finally = {
-    
+
     print(paste0("end simulation ",j))
-    
-  }) 
+
+  })
   rm(X4)
   rm(data.example)
   rm(vect)
   rm(params)
   gc()
   print(paste0("end simulation ",j))
-  
+
 }
