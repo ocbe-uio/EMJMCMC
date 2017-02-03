@@ -3332,7 +3332,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            {
                                              if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
                                              {
-                                               proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(1-","I("),mother,sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,")",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"&","|"))
+                                               proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I((1-","I(("),mother,sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,")&",")|"))
                                              }
                                              else
                                              {
