@@ -1,10 +1,12 @@
 library(hash)
 library(stringi)
-setwd("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations/simulations")
+#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations/simulations")
 
 #experiment i
-temp = list.files(pattern="post3eta_*")
+temp = list.files(pattern="postLog3etaOld_*")
+temp<-temp[which(stri_length(temp)<stri_length("post3etaOld_100.csv")|temp=="post3etaOld_100.csv")]
 myfiles = lapply(FUN = read.csv,X = temp)
+
 
 X<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
 rhash<-hash()
@@ -19,6 +21,7 @@ for(i in 1:min(100,N))
     if(myfiles[[i]]$posterior[j]>=alpha)
     {
       expr<-as.character(myfiles[[i]]$tree[j])
+      print(i)
       print(expr)
       res<-model.matrix(data=X,object = as.formula(paste0("V1~",expr)))
       res[,1]<-res[,1]-res[,2]
@@ -49,12 +52,12 @@ for(i in 1:min(100,N))
 res<-as.data.frame(t(values(rhash)[c(4,3),]))
 res$V1<-as.numeric(as.character(res$V1))
 res<-res[order(res$V1, decreasing = T),]
-clear(rhash)
-rm(rhash)
+#clear(rhash)
+#rm(rhash)
 colnames(res)<-c("posterior","tree")
 
 
-write.csv(x = values(rhash),file = "exp3.csv")
+write.csv(x = values(rhash),file = "explog3.csv",row.names = F,col.names = F)
 
 
 

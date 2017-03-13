@@ -5,14 +5,35 @@ includes <- '#include <sys/wait.h>'
 code <- 'int wstat; while (waitpid(-1, &wstat, WNOHANG) > 0) {};'
 wait <- cfunction(body=code, includes=includes, convention='.C')
 
+parall.gmj <<- mclapply
 
 MM = 1
-M = 64
+M = 2
 NM= 1000
 compmax = 26
 th<-(10)^(-5)
 thf<-0.05
 
+
+estimate.logic.lm <- function(formula, data, n, m, r = 0.001)
+{
+  r=1/m
+  out <- lm(formula = formula,data = data)
+  p <- out$rank
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  sl<-length(which(sj>0))
+  #mlik = (-(out$deviance + log(n)*(out$rank+sum(sj)-sl)))/2
+  mlik = (-BIC(out)+2*log(r)*(sum(sj)+out$rank))/2
+  if(mlik==-Inf)
+    mlik = -10000
+  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+}
 
 
 paral<-function(X,FUN)
@@ -43,17 +64,26 @@ for(j in 1:MM)
 
   set.seed(j)
 
-  X<-read.csv("qtlX")[,-1]
+  X<-read.csv("XS.csv",header = F)[,-1]
+  XL<-length(names(X))
+  names(X)[XL]<-"Y"
+  i1<-which(X[,-XL]>=0)
+  arr<-array(data = 0,dim = dim(X[,-XL])[1]*dim(X[,-XL])[2])
+  arr[i1]<-1
+  X[,-XL]<-array(data = arr,dim = c(dim(X[,-XL])[1],dim(X[,-XL])[2]))
+  
+  X<-X[-which(is.na(X$Blue)),]
+  #X$Blue<-as.numeric(as.character(X$Blue))
+  idss<-which(abs(cor(x = X,y=X$Y))>0.0)
 
-
-  idss<-which(abs(cor(x = X,y=X$Y))>0.05)
-
-  formula1 = as.formula(paste(colnames(X)[221],"~ 1 +",paste0(colnames(X)[idss][-length(idss)],collapse = "+")))
+  formula1 = as.formula(paste(colnames(X)[XL],"~ 1 +",paste0(colnames(X)[idss][-length(idss)],collapse = "+")))
   data.example = as.data.frame(X)
+
+  print(formula1)
 
   #estimate.logic.lm(formula = formula1,data = data.example,n = 2000,m = 217)$mlik
 
-  vect<-list(formula = formula1,data = X,outgraphs=F,estimator = estimate.logic.lm,locstop=F,presearch=T ,estimator.args =  list(data = data.example,n = 2000, m = length(idss)),recalc_margin = 249, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 250,last.mutation = 10000, max.tree.size = 4, Nvars.max =25,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.7),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = X,outgraphs=F,estimator = estimate.logic.lm,locstop=T,presearch=T ,estimator.args =  list(data = data.example,n = 234, m = 221),recalc_margin = 249, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 250,last.mutation = 10000, max.tree.size = 4, Nvars.max =45,p.allow.replace=0.9,p.allow.tree=0.02,p.nor=0.1,p.and = 0.7),n.models = 35000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),

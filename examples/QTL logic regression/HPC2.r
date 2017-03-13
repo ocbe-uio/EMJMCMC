@@ -1,8 +1,9 @@
 # ssh -X -Y -l aliaksah abel.uio.no
-# scp -r  /usit/abel/u1/aliaksah/simulations/scenario1  aliaksah@pittheus.uio.no://mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations
+# scp -r  /usit/abel/u1/aliaksah/simulations/  aliaksah@pittheus.uio.no://mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations
 # cat slurm-16078690.out
 # squeue -u aliaksah
-# qlogin --account=nn9244k --nodes=1 --exclusive --time 20:00:00
+# qlogin --account=nn9244k --nodes=1 --exclusive --mem-per-cpu=4000 --time 20:00:00
+# source /cluster/bin/jobsetup
 
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package2.r")
 
@@ -163,7 +164,7 @@ for(j in 3:MM)
   res1<-simplifyposteriors(X = X2,posteriors = posteriors, th,thf)
   write.csv(x =res1,row.names = F,file = paste0("post2eta_",j,".csv"))
   },error = function(err){
-    print("error")
+    print("error in writing file")
     write.csv(x =posteriors,row.names = F,file = paste0("posteriors2eta_",j,".csv"))
   },finally = {
     
