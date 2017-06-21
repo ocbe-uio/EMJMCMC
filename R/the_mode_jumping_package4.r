@@ -3246,7 +3246,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
                                      #do the stuff here
-                                       to.del <- c(filtered,which(p.add < p.allow.tree))
+                                       fparam.pool<<-c(fparam.pool,filtered)
+                                       to.del <- which(p.add < p.allow.tree)
                                        if(length(to.del)==Nvars)
                                          to.del==to.del[-1]
                                        print("Data filtered! Insignificant variables deleted!")
