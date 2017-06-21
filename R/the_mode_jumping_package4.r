@@ -321,7 +321,7 @@ simplify.formula<-function(fmla,names)
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
-runemjmcmc<-function(formula, data, secondary = NULL,
+runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
 estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
@@ -570,7 +570,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  max.cpu.glob <<- as.integer(Nvars*0.05 + 1)
                                  max.cpu.hyper <<- as.integer(2)
                                  save.beta <<- FALSE
-                                 filtered<<-NULL
+                                 filtered<<-vector(mode="character", length=0)
                                  printable.opt <<- FALSE
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
@@ -587,7 +587,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  locstop.nd <<-FALSE
                                  double.hashing <<- (Nvars > 20)
                                  hash.length <<- as.integer(25)
-                                 filtered<<-"NULL"
+                                 filtered<<-vector(mode="character", length=0)
                                  aa <<- 0.9
                                  cc <<- 0.0
                                  M.nd <<- as.integer(Nvars)
