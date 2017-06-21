@@ -336,12 +336,14 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   assign("fparam.example",variables$fparam, envir=globalenv())
   assign("fobserved.example",variables$fobserved, envir=globalenv())
 
-  for(i in 1:length(fparam.example))
-  {
-    fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
-  }
+  #for(i in 1:length(fparam.example))
+  #{
+  #  fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
+  #}
+  fparam.example<<- sapply(FUN = paste,"I(",variables$fparam,")",sep="")
   assign("mySearch",EMJMCMC2016(), envir=globalenv())
-  mySearch$filtered <<- secondary
+  if(length(secondary)>0)
+  mySearch$filtered <<- sapply(FUN = paste,"I(",secondary,")",sep="")
   mySearch$estimator <<- estimator
   mySearch$estimator.args <<- estimator.args
   mySearch$latent.formula <<- latent
