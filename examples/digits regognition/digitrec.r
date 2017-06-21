@@ -1,7 +1,7 @@
 #compare on Asteroids
 library(RCurl)
 library(caret)
-
+library("EBImage")
 
 digits <- read.table(file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/digits regognition/train.csv",sep = ",",header = T,fill=TRUE)
 
@@ -16,10 +16,29 @@ digits$Y8<-as.integer(digits$label==8)
 digits$Y9<-as.integer(digits$label==9)
 digits$Y10<-as.integer(digits$label==10)
 
-data<-runif(1,1,42000)
+
+data<-round(runif(10,1,42000))
+
+df<-NULL
+for (k in 1:42)
+{
 
 
-index <- createDataPartition(digits$label, p = 0.05, list = FALSE)
+  matrix2 <-matrix(data = digits[k,2:785],nrow = 28,ncol = 28,byrow = F)
+
+  matrix2<-normalize(matrix2)
+  #image(matrix2, axes=FALSE, col=topo.colors(12))
+  matrix2<-(matrix2>otsu(matrix2, range = c(0, 1), levels = 256))
+  matrix2<-resize(matrix2, w = 12, h = 12)
+  matrix2<-normalize(matrix2)
+  matrix2<-(matrix2>otsu(matrix2, range = c(0, 1), levels = 256))
+  df<-cbind(df,as.array(matrix2))
+}
+
+
+
+
+index <- createDataPartition(digits$label, p = 0.1, list = FALSE)
 
 test <- digits[-index, ]
 train <- digits[index, ]
@@ -96,31 +115,31 @@ for(ii in 1:100)
 
     })
     data<-runif(1,1,42000)
-    
+
     for (k in data)
     {
       row <- NULL
       for (n in 1:784)
         row[n] <- digits[k,n]
-      
+
       matrix1 <- matrix(row,28,28,byrow=FALSE)
       matrix2 <- matrix(rep(0,784),28,28)
-      
+
       for (i in 1:28)
         for (j in 1:28)
           matrix2[i,28-j+1] <- matrix1[i,j]
-      
+
       image(matrix2, axes=FALSE, col=topo.colors(12))
       matrix2[which(matrix2>10)]<-255
       matrix2[which(matrix2<10)]<-0
       image(matrix2, axes=FALSE, col=topo.colors(100))
     }
-    
+
     index <- createDataPartition(digits$label, p = 0.05, list = FALSE)
-    
+
     test <- digits[-index, ]
     train <- digits[index, ]
-    
+
     results[1,ii,5]<-t[3]
 
     summary(res)

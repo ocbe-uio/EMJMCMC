@@ -157,3 +157,8 @@ ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
 ppp$p.post
 length(ppp$m.post)
 
+
+
+
+
+
