@@ -152,7 +152,7 @@ for(j in 1:MM)
     min.N=as.integer(1),
     printable = F))
 
-  #do.call(runemjmcmc,vect[1:23])
+  #do.call(runemjmcmc,vect[1:24])
 
   #runemjmcmc(vect[1:23])
 

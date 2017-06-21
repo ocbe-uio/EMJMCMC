@@ -3242,7 +3242,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(j%%100==0)
                                    seed = runif(n = 1,min = 0,max = 100000)
                                  # the small part of the code to be upgraded at least slightly
-                                 if(allow_offsprings > 0  && j%%mutation_rate == 0 && j<=last.mutation)
+                                 if(allow_offsprings  %in% c(1,2)  && j%%mutation_rate == 0 && j<=last.mutation)
                                  {
 
                                    if(Nvars>Nvars.max || j==mutation_rate)
@@ -3451,8 +3451,241 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    j.a<-1
 
                                    }
-                                 }
-                                 else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
+                                 } else if(allow_offsprings  == 3  && j%%mutation_rate == 0 && j<=last.mutation)
+                                 {
+
+                                   # perform preliminary filtration here
+                                   if(Nvars>Nvars.max || j==mutation_rate)
+                                   {
+                                     #do the stuff here
+                                     if(j==mutation_rate)
+                                       fparam.pool<<-c(fparam.pool,filtered)
+                                     to.del <- which(p.add < p.allow.tree)
+                                     if(length(to.del)==Nvars)
+                                       to.del==to.del[-1]
+                                     print("Data filtered! Insignificant variables deleted!")
+                                     if(length(to.del)>0)
+                                     {
+                                       clear(hashStat)
+                                       rm(hashStat)
+                                       gc()
+                                       #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
+                                       hashStat<<-hash()
+                                       fparam<<-fparam[-to.del]
+                                       Nvars<<-length(fparam)
+                                       Nvars.init<<-Nvars
+                                       p.add<<-p.add[-to.del]
+                                       p.post<-array(data = 1,dim = Nvars)
+                                       #print(paste("mutation happended ",proposal," tree  added"))
+                                       varcurb<-varcurb[1:Nvars]
+                                       varcand<-varcurb[1:Nvars]
+                                       varglob<-varcurb[1:Nvars]
+                                       p1 <- array(0,dim = (Nvars))
+                                       p2 <- array(1,dim = (Nvars))
+                                       acc_moves<-1
+                                       j.a<-1
+                                     }
+                                   }
+                                   else
+                                   {
+                                     if(Nvars>=Nvars.max)
+                                     {
+                                       # delete those that are not in the active model with probability 0.5 each
+                                       idmut<-which(varcurb == 0)
+                                       lidmut<-length(idmut) #maximal number of covariates that can die out
+                                       if(lidmut>0)
+                                       {
+                                         p.del<-0.5
+                                         lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                       }
+                                     }else
+                                     {
+                                       idmut<-(Nvars+1):Nvars.max
+                                       lidmut<-Nvars.max-Nvars
+                                     }
+                                     # now having chosen the candidates to be deleted we can propose new variables
+
+                                     for(idel in 1:lidmut){
+
+                                       gen.prob<-c(1,1,1,1,1)#just uniform for now
+                                       action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
+
+
+                                       if(action.type==1)
+                                       {
+                                         # mutation (add a leave not in the search space)
+                                         proposal<<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                       }else if(action.type==2){
+                                         # crossover type of a proposal
+
+                                         # generate a mother
+                                         actvars<-which(varcurb==1)
+                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         ltreem<-stri_length(mother)
+                                         mother<-stri_sub(mother,from=2, to = ltreem)
+                                         #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                         # generate a father
+                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         ltreef<-stri_length(father)
+                                         father<-stri_sub(father,from=2, to = ltreef)
+                                         #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+                                         if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
+                                         {
+                                           proposal<-stri_paste("I(",mother,father,")",sep = "*")
+                                         }
+
+                                       }else if(action.type==3){
+                                         # modification type of a proposal of one of either currently active or all covariates
+                                         actvars<-which(varcurb==1)
+                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                       }
+                                       else if(action.type==4){
+                                         # modification type of a proposal of one of either currently active or all covariates
+                                         actvars<-which(varcurb==1)
+
+                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                       }
+
+
+                                       mother<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)],fparam[runif(n = 1,min = 1,max=Nvars.init)])
+                                       ltreef<-stri_length(father)
+                                       father<-stri_sub(father,from=2, to = ltreef)
+
+                                       if(allow_offsprings==1)
+                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("&","|")))
+                                       else
+                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+
+
+                                       if(sjm<=max.tree.size)
+                                       {
+
+                                         #p.del<-1-(sum(p.add))/Nvars
+                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam.pool[runif(n = 1,min = 1,max=length(fparam.pool))],fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)])
+                                         ltreef<-stri_length(father)
+                                         father<-stri_sub(father,from=2, to = ltreef)
+
+                                         if(allow_offsprings==1)
+                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("&","|")))
+                                         else
+                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+
+                                         if(sjm+sjf+1<=max.tree.size)
+                                         {
+                                           if(allow_offsprings==1)
+                                           {
+
+                                             else
+                                             {
+                                               if(max(sjm,sjf)>1)
+                                               {
+                                                 t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
+                                                 if(sjm>=sjf)
+                                                 {
+                                                   loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
+                                                   proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
+                                                 }else
+                                                 {
+                                                   loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
+                                                   proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
+                                                 }
+
+                                                 diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
+                                                 if(diffs>0)
+                                                   proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
+                                                 if(diffs<0)
+                                                   proposal<-stri_paste(stri_paste(rep("(",-diffs),collapse = ""),proposal,collapse = "")
+                                                 proposal<-stri_paste("I",proposal)
+                                                 #print(paste("&&&&&&",mother,"ssss",father))
+                                               }
+                                               else
+                                                 proposal<-stri_paste("I",mother)
+                                             }
+                                             #proposal<-stri_paste("I",mother)
+                                           }
+                                           else
+                                           {
+                                             proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),mother,sep = ""),paste("(",father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
+                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                             while((proposal %in% fparam))
+                                               proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                           }
+                                         }
+                                         else
+                                         {
+
+                                           t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
+                                           if(sjm>=sjf)
+                                           {
+                                             loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
+                                             proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
+                                           }else
+                                           {
+                                             loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
+                                             proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
+                                           }
+
+                                           diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
+                                           if(diffs>0)
+                                             proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
+                                           if(diffs<0)
+                                             proposal<-stri_paste(stri_paste(rep("(",-diffs),collapse = ""),proposal,collapse = "")
+                                           proposal<-stri_paste("I",proposal)
+                                           #print(paste("!!!!!",mother,"ssss",father))
+                                         }
+                                         #maybe check correlations here
+                                         if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
+                                         {
+                                           #if(cor())
+                                           fparam<<-c(fparam,proposal)
+                                           Nvars<<-as.integer(Nvars+1)
+                                           p.add<<-as.array(c(p.add,p.allow.replace))
+                                           p.post<-as.array(c(p.post,1))
+                                           if(printable.opt)
+                                             print(paste("mutation happended ",proposal," tree  added"))
+                                         }
+                                         else if(!(proposal %in% fparam))
+                                         {
+                                           to.del<-(which(p.add[(Nvars.init+1):Nvars]< p.allow.replace)+ Nvars.init)
+                                           lto.del<-length(x = to.del)
+                                           if(lto.del>0)
+                                           {
+                                             id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                             if(printable.opt)
+                                               print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                             fparam[id.replace]<<-proposal
+                                             keysarr <- as.array(keys(hashStat))
+                                             p.add[id.replace]<<-p.allow.replace
+                                             for(jjj in 1:length(keysarr))
+                                             {
+                                               if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                               {
+                                                 del(x = keysarr[jjj],hash = hashStat)
+                                               }
+
+                                             }
+
+                                           }
+
+                                         }
+
+
+                                       }
+                                     }
+
+                                     varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
+                                     varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
+                                     varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
+                                     p.post<- array(1,dim = (Nvars))
+                                     p1 = c(p1,array(0,dim = (Nvars -length(p1))))
+                                     p2 = c(p1,array(1,dim = (Nvars -length(p1))))
+                                     acc_moves<-1
+                                     j.a<-1
+
+                                   }
+                                 }else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
                                  {
                                    recalc.margin = 2^Nvars
                                  }
