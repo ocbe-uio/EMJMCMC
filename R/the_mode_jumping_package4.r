@@ -3248,7 +3248,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
                                      #do the stuff here
-                                       fparam.pool<<-c(fparam.pool,filtered)
+                                       if(j==mutation_rate)
+                                          fparam.pool<<-c(fparam.pool,filtered)
                                        to.del <- which(p.add < p.allow.tree)
                                        if(length(to.del)==Nvars)
                                          to.del==to.del[-1]
