@@ -3507,7 +3507,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      for(idel in 1:lidmut){
 
-                                       gen.prob<-c(1,1,1,1,1)#just uniform for now
+                                       gen.prob<-c(1,1,1,1,0)#just uniform for now
                                        action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
 
 
@@ -3522,12 +3522,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          actvars<-which(varcurb==1)
                                          mother<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreem<-stri_length(mother)
-                                         mother<-stri_sub(mother,from=2, to = ltreem)
+                                         mother<-stri_sub(mother,from=1, to = ltreem)
                                          #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
                                          # generate a father
                                          father<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreef<-stri_length(father)
-                                         father<-stri_sub(father,from=2, to = ltreef)
+                                         father<-stri_sub(father,from=1, to = ltreef)
                                          #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
                                          if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
                                          {
@@ -3563,26 +3563,24 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                        }else if(action.type==5)
                                        {
-                                         # mutation (add a leave not in the search space)
-                                         # crossover type of a proposal
-
-                                         # generate a mother
-                                         actvars<-which(varcurb==1)
-                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
-                                         ltreem<-stri_length(mother)
-                                         mother<-stri_sub(mother,from=2, to = ltreem)
-                                         #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
-                                         # generate a father
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
-                                         ltreef<-stri_length(father)
-                                         father<-stri_sub(father,from=2, to = ltreef)
-                                         #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-                                         if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
+                                         # reduce an operator fparam[idel]
+                                         str.tmp<-stri_split_fixed(fparam[idel],pattern = "I(")[[1]]
+                                         if(length(str.tmp)>1)
                                          {
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                           str.tmp <- str.tmp[which(rbinom(n = length(str.tmp),size = 1,prob = 0.5)==1)]
+                                           if(length(str.tmp)>1)
+                                           {
+                                             proposal<-stri_paste(str.tmp,collapse = "I")
+                                             proposal<-stri_replace_all_fixed(proposal,pattern = "()",replacement = "(1)")
+                                             #proposal<-stri_replace_all_fixed(proposal,pattern = "()",replacement = "(1)")
+                                           }else{
+                                             proposal <- fparam[idel]
+                                           }
+
                                          }else{
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                           proposal <- fparam[idel]
                                          }
+
                                        }
 
                                          if( (!(proposal %in% fparam)) && Nvars<Nvars.max)

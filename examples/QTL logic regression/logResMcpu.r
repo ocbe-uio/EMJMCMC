@@ -21,8 +21,8 @@ estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
   fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "I("))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "*"))
+  sj<-(stri_count_fixed(str = fparam, pattern = "("))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
   sj<-sj+1
   Jprior <- sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
