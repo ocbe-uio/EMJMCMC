@@ -21,8 +21,8 @@ estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
   fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  sj<-(stri_count_fixed(str = fparam, pattern = "I("))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "*"))
   sj<-sj+1
   Jprior <- sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
@@ -145,7 +145,7 @@ for(j in 1:MM)
   data.example = as.data.frame(X1)
   data = X1
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.glm,estimator.args =  list(data = data.example,family = binomial(),n = 1000, m = 50,r=1),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 5000, max.tree.size = 1, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.glm,estimator.args =  list(data = data.example,family = binomial(),n = 1000, m = 50,r=1),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 1, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -154,7 +154,7 @@ for(j in 1:MM)
 
   #do.call(runemjmcmc,vect[1:24])
 
-  #runemjmcmc(vect[1:23])
+
 
   params <- list(vect)[rep(1,32)]
 

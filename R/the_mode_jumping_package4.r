@@ -3531,7 +3531,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
                                          if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
                                          {
-                                           proposal<-stri_paste("I(",mother,father,")",sep = "*")
+                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                         }else{
+                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
                                          }
 
                                        }else if(action.type==3){
@@ -3543,99 +3545,46 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        else if(action.type==4){
                                          # modification type of a proposal of one of either currently active or all covariates
                                          actvars<-which(varcurb==1)
+                                         # select a subset for the projection
+                                         if(length(actvars)>0)
+                                          actvars <- actvars[which(rbinom(n = length(actvars),size = 1,prob = 0.5)==1)]
 
-                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
-                                         proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                       }
-
-
-                                       mother<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)],fparam[runif(n = 1,min = 1,max=Nvars.init)])
-                                       ltreef<-stri_length(father)
-                                       father<-stri_sub(father,from=2, to = ltreef)
-
-                                       if(allow_offsprings==1)
-                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("&","|")))
-                                       else
-                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
-
-
-                                       if(sjm<=max.tree.size)
+                                         if(length(actvars)==0)
+                                         {
+                                           proposal = fparam[1]
+                                         }else{
+                                           # get the projection coefficients as the posterior mode of the fixed effects
+                                           bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
+                                           bet.act<-stri_paste(bet.act,"*",sep = "")
+                                           # make a projection
+                                           bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),sep = "")
+                                           bet.act<-stri_paste("I(",bet.act,")",sep = "")
+                                           proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                         }
+                                       }else if(action.type==5)
                                        {
+                                         # mutation (add a leave not in the search space)
+                                         # crossover type of a proposal
 
-                                         #p.del<-1-(sum(p.add))/Nvars
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam.pool[runif(n = 1,min = 1,max=length(fparam.pool))],fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)])
+                                         # generate a mother
+                                         actvars<-which(varcurb==1)
+                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         ltreem<-stri_length(mother)
+                                         mother<-stri_sub(mother,from=2, to = ltreem)
+                                         #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                         # generate a father
+                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreef<-stri_length(father)
                                          father<-stri_sub(father,from=2, to = ltreef)
-
-                                         if(allow_offsprings==1)
-                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("&","|")))
-                                         else
-                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-
-                                         if(sjm+sjf+1<=max.tree.size)
+                                         #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+                                         if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
                                          {
-                                           if(allow_offsprings==1)
-                                           {
-
-                                             else
-                                             {
-                                               if(max(sjm,sjf)>1)
-                                               {
-                                                 t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
-                                                 if(sjm>=sjf)
-                                                 {
-                                                   loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
-                                                   proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
-                                                 }else
-                                                 {
-                                                   loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
-                                                   proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
-                                                 }
-
-                                                 diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
-                                                 if(diffs>0)
-                                                   proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
-                                                 if(diffs<0)
-                                                   proposal<-stri_paste(stri_paste(rep("(",-diffs),collapse = ""),proposal,collapse = "")
-                                                 proposal<-stri_paste("I",proposal)
-                                                 #print(paste("&&&&&&",mother,"ssss",father))
-                                               }
-                                               else
-                                                 proposal<-stri_paste("I",mother)
-                                             }
-                                             #proposal<-stri_paste("I",mother)
-                                           }
-                                           else
-                                           {
-                                             proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),mother,sep = ""),paste("(",father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
-                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                             while((proposal %in% fparam))
-                                               proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                           }
+                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                         }else{
+                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
                                          }
-                                         else
-                                         {
+                                       }
 
-                                           t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
-                                           if(sjm>=sjf)
-                                           {
-                                             loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
-                                             proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
-                                           }else
-                                           {
-                                             loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
-                                             proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
-                                           }
-
-                                           diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
-                                           if(diffs>0)
-                                             proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
-                                           if(diffs<0)
-                                             proposal<-stri_paste(stri_paste(rep("(",-diffs),collapse = ""),proposal,collapse = "")
-                                           proposal<-stri_paste("I",proposal)
-                                           #print(paste("!!!!!",mother,"ssss",father))
-                                         }
-                                         #maybe check correlations here
                                          if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
                                          {
                                            #if(cor())
@@ -3684,8 +3633,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      acc_moves<-1
                                      j.a<-1
 
-                                   }
-                                 }else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
+                                   }else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
                                  {
                                    recalc.margin = 2^Nvars
                                  }
