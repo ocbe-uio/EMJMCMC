@@ -11,25 +11,26 @@ wait <- cfunction(body=code, includes=includes, convention='.C')
 
 
 
-estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
+estimate.logic.lm <- function(formula, data, n, m, r = 1)
 {
-  X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,51], family=family,coefprior=aic.prior())
+  out <- lm(formula = formula,data = data)
   p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
   fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "("))
+  sj<-(stri_count_fixed(str = fparam, pattern = "I("))
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
-  sj<-sj+1
-  Jprior <- sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
-  mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
+  sj<-sj
+  Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
+  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
 }
+
 
 
 
@@ -79,7 +80,7 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.5)
 
 
 MM = 100
-M = 32
+M = 4
 NM= 1000
 compmax = 16
 th<-(10)^(-5)
@@ -138,14 +139,16 @@ for(j in 1:MM)
   max.popul <- array(0,M)
   set.seed(j)
   X1<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = 0.3),dim = c(1000,50)))
-  Y1=-0.7+1*((X1$V1)*(X1$V4)) + 1*(X1$V8*X1$V11)+1*(X1$V5*X1$V9)
-  X1$Y1<-round(1.0/(1.0+exp(-Y1)))
+  X1$Y1=-0.7+1*((X1$V1)*(X1$V4)) + 1*(X1$V8*X1$V11)+1*(X1$V5*X1$V9)
+  #X1$Y1<-round(1.0/(1.0+exp(-Y1)))
 
   formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(30:51)],collapse = "+")))
   data.example = as.data.frame(X1)
   data = X1
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.glm,estimator.args =  list(data = data.example,family = binomial(),n = 1000, m = 50,r=1),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 1, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
+  inla = function(x) x
+
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 1, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -156,7 +159,7 @@ for(j in 1:MM)
 
 
 
-  params <- list(vect)[rep(1,32)]
+  params <- list(vect)[rep(1,M)]
 
   for(i in 1:M)
   {
@@ -166,7 +169,7 @@ for(j in 1:MM)
   }
   gc()
   print(paste0("begin simulation ",j))
-  results<-parall.gmj(X = params,FUN = runpar,mc.preschedule = F, mc.cores = 32)
+  results<-parall.gmj(X = params,FUN = runpar,mc.preschedule = F, mc.cores = M)
   gc()
   wait()
 

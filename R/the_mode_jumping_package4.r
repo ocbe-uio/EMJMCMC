@@ -32,6 +32,7 @@ require(stats)
 #compile INLA
 
 
+
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
 
