@@ -82,7 +82,7 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.5)
 MM = 100
 M = 4
 NM= 1000
-compmax = 16
+compmax = 36
 th<-(10)^(-5)
 thf<-0.05
 
@@ -148,14 +148,14 @@ for(j in 1:MM)
 
   inla = function(x) x
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 1, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
     min.N=as.integer(1),
     printable = F))
 
-  #do.call(runemjmcmc,vect[1:24])
+  aaa=do.call(runemjmcmc,vect[1:24])
 
 
 

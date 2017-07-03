@@ -31,7 +31,7 @@ library(stringi)
 require(stats)
 #compile INLA
 
-
+m<-function(a,b)a*b
 
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
@@ -3508,7 +3508,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      for(idel in 1:lidmut){
 
-                                       gen.prob<-c(1,1,1,1,0)#just uniform for now
+                                       gen.prob<-c(1,1,1,1,1)#just uniform for now
                                        action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
 
 
@@ -3518,7 +3518,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                        }else if(action.type==2){
                                          # crossover type of a proposal
-
                                          # generate a mother
                                          actvars<-which(varcurb==1)
                                          mother<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
@@ -3556,32 +3555,47 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }else{
                                            # get the projection coefficients as the posterior mode of the fixed effects
                                            bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
-                                           bet.act<-stri_paste(bet.act,"*",sep = "")
+                                           bet.act<-round(bet.act, digits = 2)
+                                           bet.act<-stri_paste("m(",bet.act,",",sep = "")
                                            # make a projection
-                                           bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),sep = "")
+                                           bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
                                            bet.act<-stri_paste("I(",bet.act,")",sep = "")
                                            proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
                                          }
                                        }else if(action.type==5)
                                        {
                                          # reduce an operator fparam[idel]
-                                         str.tmp<-stri_split_fixed(fparam[idel],pattern = "I(")[[1]]
-                                         if(length(str.tmp)>1)
+                                         print("reduction")
+                                         print(idel)
+                                         if(idel>length(fparam))
                                          {
-                                           str.tmp <- str.tmp[which(rbinom(n = length(str.tmp),size = 1,prob = 0.5)==1)]
-                                           if(length(str.tmp)>1)
+                                           proposal<-fparam[1]
+                                         }else{
+                                            cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
+                                           if(length(cpm)==0)
+                                             cpm<-0
+
+
+                                           if(cpm>0)
                                            {
-                                             proposal<-stri_paste(str.tmp,collapse = "I")
-                                             proposal<-stri_replace_all_fixed(proposal,pattern = "()",replacement = "(1)")
-                                             #proposal<-stri_replace_all_fixed(proposal,pattern = "()",replacement = "(1)")
+                                             t.d<-sample.int(size = 1,n = (cpm)+1)
+                                             print(fparam[idel])
+                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
+                                             proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+                                             so<-stri_count_fixed(str = proposal, pattern="(")
+                                             sc<-stri_count_fixed(str = proposal, pattern=")")
+
+                                             print(proposal)
+                                           if(sc>so){
+                                             proposal<-stri_paste(stri_paste(rep("(",sc-so),  collapse = ''),proposal)
+                                           }else if(sc<so)
+                                             proposal<-stri_paste(proposal,stri_paste(rep(")",so-sc),collapse = ''))
+                                            print(proposal)
                                            }else{
-                                             proposal <- fparam[idel]
+                                             proposal<-fparam[idel]
                                            }
 
-                                         }else{
-                                           proposal <- fparam[idel]
                                          }
-
                                        }
 
                                          if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
