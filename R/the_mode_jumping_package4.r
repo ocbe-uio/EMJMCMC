@@ -3589,13 +3589,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                            if(cpm>0)
                                            {
-                                             t.d<-sample.int(size = 1,n = (cpm)+1)
+                                             t.d<-sample.int(size = 1,n = (cpm))
                                              print(fparam[idel])
-                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
-                                             proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+                                             if(runif(n = 1,min = 0,max = 1)<0.5)
+                                             {
+                                               loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
+                                               proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+
+                                             }else{
+                                               dsigmas<-sample.int(size = 1,n = length(sigmas))
+                                               proposal<-stri_replace_all_fixed(replacement = proposal,str = proposal,pattern = sigmas[dsigmas])
+                                             }
                                              so<-stri_count_fixed(str = proposal, pattern="(")
                                              sc<-stri_count_fixed(str = proposal, pattern=")")
-
                                              print(proposal)
                                            if(sc>so){
                                              proposal<-stri_paste(stri_paste("I",rep("(",sc-so),  collapse = ''),proposal)
@@ -3615,7 +3621,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(is.na(proposal))
                                          proposal <- fparam[1]
 
-                                         if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
+                                         if( (!(proposal %in% fparam)) && Nvars<Nvars.max)# more precise check is required here!
                                          {
                                            #if(cor())
                                            fparam<<-c(fparam,proposal)
