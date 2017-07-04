@@ -3478,9 +3478,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        p.add<<-p.add[-to.del]
                                        p.post<-array(data = 1,dim = Nvars)
                                        #print(paste("mutation happended ",proposal," tree  added"))
-                                       varcurb<-varcurb[1:Nvars]
-                                       varcand<-varcurb[1:Nvars]
-                                       varglob<-varcurb[1:Nvars]
+                                       varcurb<-varcurb[-to.del]
+                                       varcand<-varcurb[-to.del]
+                                       varglob<-varcurb[-to.del]
                                        p1 <- array(0,dim = (Nvars))
                                        p2 <- array(1,dim = (Nvars))
                                        acc_moves<-1
@@ -3516,6 +3516,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          # mutation (add a leave not in the search space)
                                          proposal<<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+
                                        }else if(action.type==2){
                                          # crossover type of a proposal
                                          # generate a mother
@@ -3536,13 +3537,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
                                          }
 
+
                                        }else if(action.type==3){
                                          # modification type of a proposal of one of either currently active or all covariates
                                          actvars<-which(varcurb==1)
                                          proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                       }
-                                       else if(action.type==4){
+                                       }else if(action.type==4){
                                          # modification type of a proposal of one of either currently active or all covariates
                                          actvars<-which(varcurb==1)
                                          # select a subset for the projection
@@ -3551,16 +3552,26 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          if(length(actvars)==0)
                                          {
-                                           proposal = fparam[1]
+                                           proposal <- fparam[1]
+
                                          }else{
                                            # get the projection coefficients as the posterior mode of the fixed effects
                                            bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
+                                           nab<-which(is.na(bet.act))
+                                           if(length(nab)>0)
+                                             bet.act[nab]<-0
                                            bet.act<-round(bet.act, digits = 2)
                                            bet.act<-stri_paste("m(",bet.act,",",sep = "")
                                            # make a projection
                                            bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
                                            bet.act<-stri_paste("I(",bet.act,")",sep = "")
                                            proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                           if(is.na(proposal))
+                                           {
+                                             print(fparam[actvars])
+                                             print(actvars)
+                                             print(bet.act)
+                                           }
                                          }
                                        }else if(action.type==5)
                                        {
@@ -3587,7 +3598,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                              print(proposal)
                                            if(sc>so){
-                                             proposal<-stri_paste(stri_paste(rep("(",sc-so),  collapse = ''),proposal)
+                                             proposal<-stri_paste(stri_paste("I",rep("(",sc-so),  collapse = ''),proposal)
                                            }else if(sc<so)
                                              proposal<-stri_paste(proposal,stri_paste(rep(")",so-sc),collapse = ''))
                                             print(proposal)
@@ -3597,6 +3608,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          }
                                        }
+
+                                       if(is.na(proposal))
+                                         print(paste0("!!!!!",action.type,"!!!!!"))#4 happens now and then
+
+                                       if(is.na(proposal))
+                                         proposal <- fparam[1]
 
                                          if( (!(proposal %in% fparam)) && Nvars<Nvars.max)
                                          {
@@ -3610,7 +3627,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                          else if(!(proposal %in% fparam))
                                          {
-                                           to.del<-(which(p.add[(Nvars.init+1):Nvars]< p.allow.replace)+ Nvars.init)
+                                           to.del<-which(p.add < p.allow.replace)
                                            lto.del<-length(x = to.del)
                                            if(lto.del>0)
                                            {

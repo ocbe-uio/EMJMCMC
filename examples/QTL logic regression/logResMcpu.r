@@ -148,7 +148,7 @@ for(j in 1:MM)
 
   inla = function(x) x
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=T,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -156,7 +156,17 @@ for(j in 1:MM)
     printable = F))
 
   aaa=do.call(runemjmcmc,vect[1:24])
+  aaa$p.post
 
+  estimate.logic.lm(data = data.example,formula = formula1,n = 1000,m = 50)
+  for(vars in mySearch$fparam)
+  {
+    formula2 = as.formula(paste(colnames(X1)[51],"~ 1 +",vars))
+
+
+    print(estimate.logic.lm(data = data.example,formula = formula2,n = 1000,m = 50))
+
+  }
 
 
   params <- list(vect)[rep(1,M)]
