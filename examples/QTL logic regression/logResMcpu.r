@@ -17,17 +17,16 @@ estimate.logic.lm <- function(formula, data, n, m, r = 1)
   p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "I("))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
-  sj<-sj
+  sj<-(stri_count_fixed(str = fmla.proc[2], pattern = "*"))
+  sj<-sj+(stri_count_fixed(str = fmla.proc[2], pattern = "+"))
+  sj<-sj+1
   Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
+  mlik = (sj<10)*((-BIC(out) - 2*p*log(sj))/2) + (sj>=10)*(-500)
+  if(is.na(mlik))
+    mlik = -500
   if(mlik==-Inf)
-    mlik = -10000
+    mlik = -500
   return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
 }
 
@@ -148,7 +147,7 @@ for(j in 1:MM)
 
   inla = function(x) x
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 5000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=T,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lm,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,last.mutation = 10000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=T,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -158,7 +157,9 @@ for(j in 1:MM)
   aaa=do.call(runemjmcmc,vect[1:24])
   aaa$p.post
 
-  estimate.logic.lm(data = data.example,formula = formula1,n = 1000,m = 50)
+  estimate.logic.lm(data = data.example,formula =  as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(mySearch$fparam,collapse = "+"))),n = 1000,m = 50)
+
+
   for(vars in mySearch$fparam)
   {
     formula2 = as.formula(paste(colnames(X1)[51],"~ 1 +",vars))

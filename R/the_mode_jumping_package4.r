@@ -3566,6 +3566,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
                                            bet.act<-stri_paste("I(",bet.act,")",sep = "")
                                            proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+
                                            if(is.na(proposal))
                                            {
                                              print(fparam[actvars])
@@ -3576,8 +3578,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else if(action.type==5)
                                        {
                                          # reduce an operator fparam[idel]
-                                         print("reduction")
-                                         print(idel)
+                                         #print("reduction")
+                                         #print(idel)
                                          if(idel>length(fparam))
                                          {
                                            proposal<-fparam[1]
@@ -3590,24 +3592,24 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            if(cpm>0)
                                            {
                                              t.d<-sample.int(size = 1,n = (cpm))
-                                             print(fparam[idel])
-                                             if(runif(n = 1,min = 0,max = 1)<0.5)
-                                             {
-                                               loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
-                                               proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+                                             #print(fparam[idel])
 
-                                             }else{
+                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
+                                            proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+
+                                            if(runif(n = 1,min = 0,max = 1)<0.5){
                                                dsigmas<-sample.int(size = 1,n = length(sigmas))
-                                               proposal<-stri_replace_all_fixed(replacement = proposal,str = proposal,pattern = sigmas[dsigmas])
+                                               if(sigmas[dsigmas]!="")
+                                                proposal<-stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
                                              }
                                              so<-stri_count_fixed(str = proposal, pattern="(")
                                              sc<-stri_count_fixed(str = proposal, pattern=")")
-                                             print(proposal)
+                                             #print(proposal)
                                            if(sc>so){
                                              proposal<-stri_paste(stri_paste("I",rep("(",sc-so),  collapse = ''),proposal)
                                            }else if(sc<so)
                                              proposal<-stri_paste(proposal,stri_paste(rep(")",so-sc),collapse = ''))
-                                            print(proposal)
+                                            #print(proposal)
                                            }else{
                                              proposal<-fparam[idel]
                                            }
@@ -3621,24 +3623,28 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(is.na(proposal))
                                          proposal <- fparam[1]
 
-                                         if( (!(proposal %in% fparam)) && Nvars<Nvars.max)# more precise check is required here!
+                                       add<-T
+                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                       if(is.na(bet.act[length(fparam)+2]))
+                                         add<-F
+
+                                         if(add & Nvars<Nvars.max)#if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                          {
-                                           #if(cor())
                                            fparam<<-c(fparam,proposal)
                                            Nvars<<-as.integer(Nvars+1)
                                            p.add<<-as.array(c(p.add,p.allow.replace))
                                            p.post<-as.array(c(p.post,1))
-                                           if(printable.opt)
+                                           #if(printable.opt)
                                              print(paste("mutation happended ",proposal," tree  added"))
                                          }
-                                         else if(!(proposal %in% fparam))
+                                         else if(add)#if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                          {
                                            to.del<-which(p.add < p.allow.replace)
                                            lto.del<-length(x = to.del)
                                            if(lto.del>0)
                                            {
                                              id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
-                                             if(printable.opt)
+                                             #if(printable.opt)
                                                print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                              fparam[id.replace]<<-proposal
                                              keysarr <- as.array(keys(hashStat))
