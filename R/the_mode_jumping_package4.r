@@ -323,7 +323,7 @@ simplify.formula<-function(fmla,names)
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.9, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                     14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -363,6 +363,9 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
     mySearch$p.allow.tree <<-  interact.param$p.allow.tree
     mySearch$sigmas<<-relations
     mySearch$sigmas.prob<<-relations.prob
+    mySearch$del.sigma<<-del.sigma
+    mySearch$pool.cross<<-pool.cross
+    mySearch$gen.prob<<-gen.prob
     mySearch$p.nor <<- interact.param$p.nor
     mySearch$p.and <<- interact.param$p.and
     mySearch$last.mutation <<- as.integer(interact.param$last.mutation)
@@ -513,6 +516,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          p.nor = "numeric",
                                          p.and = "numeric",
                                          sigmas.prob ="numeric",
+                                         del.sigma = "numeric",
+                                         pool.cross = "numeric",
+                                         gen.prob = "numeric",
                                          sigmas = "vector",
                                          p.allow.replace = "numeric",
                                          max.tree.size = "integer",
@@ -580,6 +586,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  p.allow.replace <<- 0.3
                                  sigmas<<-c("","sin","cos","sigmoid","tanh","atan","erf")
                                  sigmas.prob<<-c(0.4,0.1,0.1,0.1,0.1,0.1,0.1)
+                                 del.sigma<<-0.5
+                                 pool.cross<<-0.9
+                                 gen.prob<<-c(1,1,1,1,1)
                                  p.nor <<- 0.3
                                  p.and <<- 0.7
                                  max.tree.size<<- as.integer(15)
@@ -668,6 +677,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  p.and <<- search.args.list$p.and
                                  sigmas<<-search.args.list$sigmas
                                  sigmas.prob<<-search.args.list$sigmas.prob
+                                 del.sigma<<-search.args.list$del.sigma
+                                 pool.cross<<-search.args.list$pool.cross
+                                 gen.prob<<-search.args.list$gen.prob
                                  double.hashing <<- search.args.list$double.hashing
                                  hash.length <<- as.integer(search.args.list$hash.length)
                                }
@@ -1171,8 +1183,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    change.buf <- array(data = 0,dim = Nvars)
                                    #if(printable.opt)print("type 8 invoked")
                                    #if(printable.opt)print(varcur)
-                                 }else
+                                 }else if(switch.type==9)
                                  {
+                                   log.mod.switch.prob <-0
+                                   log.mod.switchback.prob <-0
+                                   change.buf <- array(data = 1,dim = Nvars)
+                                   varcur<- rbinom(n = Nvars,size = 1,prob=0.5)
+                                 }else{
 
                                    log.mod.switch.prob <- 0
                                    log.mod.switchback.prob <-0
@@ -3471,7 +3488,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        rm(hashStat)
                                        gc()
                                        #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
+                                       rm(hashStat)
                                        hashStat<<-hash()
+                                       #clear(hashStat)
+                                       #hashStat<<-hash()
                                        fparam<<-fparam[-to.del]
                                        Nvars<<-length(fparam)
                                        Nvars.init<<-Nvars
@@ -3491,14 +3511,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    {
                                      if(Nvars>=Nvars.max)
                                      {
-                                       # delete those that are not in the active model with probability 0.5 each
-                                       idmut<-which(varcurb == 0)
+                                       idmut<-which(p.add <= p.allow.replace)
                                        lidmut<-length(idmut) #maximal number of covariates that can die out
-                                       if(lidmut>0)
-                                       {
-                                         p.del<-0.5
-                                         lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
-                                       }
+                                       #if(lidmut>0)
+                                       #{
+                                       # p.del<-(lidmut - sum(p.add[idmut]))/lidmut
+                                       # lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                       #}
                                      }else
                                      {
                                        idmut<-(Nvars+1):Nvars.max
@@ -3508,7 +3527,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      for(idel in 1:lidmut){
 
-                                       gen.prob<-c(1,1,1,1,1)#just uniform for now
+                                       #gen.prob<-c(1,1,1,1,1)#just uniform for now
                                        action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
 
 
@@ -3520,13 +3539,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else if(action.type==2){
                                          # crossover type of a proposal
                                          # generate a mother
-                                         actvars<-which(varcurb==1)
-                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         #actvars<-which(varcurb==1)
+                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreem<-stri_length(mother)
                                          mother<-stri_sub(mother,from=1, to = ltreem)
                                          #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
                                          # generate a father
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreef<-stri_length(father)
                                          father<-stri_sub(father,from=1, to = ltreef)
                                          #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
@@ -3539,18 +3558,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
                                        }else if(action.type==3){
-                                         # modification type of a proposal of one of either currently active or all covariates
-                                         actvars<-which(varcurb==1)
-                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=0.9,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                        }else if(action.type==4){
-                                         # modification type of a proposal of one of either currently active or all covariates
-                                         actvars<-which(varcurb==1)
-                                         # select a subset for the projection
-                                         if(length(actvars)>0)
-                                          actvars <- actvars[which(rbinom(n = length(actvars),size = 1,prob = 0.5)==1)]
 
-                                         if(length(actvars)==0)
+
+                                         # select a subset for the projection
+
+                                         actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add)==1)
+
+                                         if(is.na(actvars))
                                          {
                                            proposal <- fparam[1]
 
@@ -3577,7 +3594,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                        }else if(action.type==5)
                                        {
-                                         # reduce an operator fparam[idel]
+                                         #reduce an operator fparam[idel]
                                          #print("reduction")
                                          #print(idel)
                                          if(idel>length(fparam))
@@ -3588,16 +3605,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            if(length(cpm)==0)
                                              cpm<-0
 
-
                                            if(cpm>0)
                                            {
                                              t.d<-sample.int(size = 1,n = (cpm))
                                              #print(fparam[idel])
 
-                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
+                                            loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
                                             proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
 
-                                            if(runif(n = 1,min = 0,max = 1)<0.5){
+                                            if(runif(n = 1,min = 0,max = 1)<del.sigma){
                                                dsigmas<-sample.int(size = 1,n = length(sigmas))
                                                if(sigmas[dsigmas]!="")
                                                 proposal<-stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
@@ -3618,9 +3634,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
 
                                        if(is.na(proposal))
-                                         print(paste0("!!!!!",action.type,"!!!!!"))#4 happens now and then
-
-                                       if(is.na(proposal))
                                          proposal <- fparam[1]
 
                                        add<-T
@@ -3628,7 +3641,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(is.na(bet.act[length(fparam)+2]))
                                          add<-F
 
-                                         if(add & Nvars<Nvars.max)#if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
+                                         if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                          {
                                            fparam<<-c(fparam,proposal)
                                            Nvars<<-as.integer(Nvars+1)
@@ -3637,29 +3650,276 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            #if(printable.opt)
                                              print(paste("mutation happended ",proposal," tree  added"))
                                          }
-                                         else if(add)#if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
+                                         else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                          {
-                                           to.del<-which(p.add < p.allow.replace)
-                                           lto.del<-length(x = to.del)
-                                           if(lto.del>0)
-                                           {
-                                             id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
-                                             #if(printable.opt)
-                                               print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
-                                             fparam[id.replace]<<-proposal
-                                             keysarr <- as.array(keys(hashStat))
-                                             p.add[id.replace]<<-p.allow.replace
-                                             for(jjj in 1:length(keysarr))
+
+
+                                             to.del<-which(p.add < p.allow.replace)
+                                             lto.del<-length(x = to.del)
+                                             if(lto.del>0)
                                              {
-                                               if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                               id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                               #if(printable.opt)
+                                                 print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                               fparam[id.replace]<<-proposal
+                                               keysarr <- as.array(keys(hashStat))
+                                               p.add[id.replace]<<-p.allow.replace
+                                               for(jjj in 1:length(keysarr))
                                                {
-                                                 del(x = keysarr[jjj],hash = hashStat)
+                                                 if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                                 {
+                                                   del(x = keysarr[jjj],hash = hashStat)
+                                                 }
+
                                                }
 
                                              }
 
+                                         }
+
+
+                                       }
+                                     }
+
+                                     varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
+                                     varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
+                                     varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
+                                     p.post<- array(1,dim = (Nvars))
+                                     p1 = c(p1,array(0,dim = (Nvars -length(p1))))
+                                     p2 = c(p1,array(1,dim = (Nvars -length(p1))))
+                                     acc_moves<-1
+                                     j.a<-1
+
+                                   }else if(allow_offsprings  == 4  && j%%mutation_rate == 0 && j<=last.mutation)
+                                   {
+
+                                     # perform preliminary filtration here
+                                     if(Nvars>Nvars.max || j==mutation_rate)
+                                     {
+                                       #do the stuff here
+                                       if(j==mutation_rate)
+                                         fparam.pool<<-c(fparam.pool,filtered)
+                                       to.del <- which(p.add < p.allow.tree)
+                                       if(length(to.del)==Nvars)
+                                         to.del==to.del[-1]
+                                       print("Data filtered! Insignificant variables deleted!")
+                                       if(length(to.del)>0)
+                                       {
+                                         clear(hashStat)
+                                         rm(hashStat)
+                                         gc()
+                                         #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
+                                         clear(hashStat)
+                                         #hashStat<<-hash()
+                                         fparam<<-fparam[-to.del]
+                                         Nvars<<-length(fparam)
+                                         Nvars.init<<-Nvars
+                                         p.add<<-p.add[-to.del]
+                                         p.post<-array(data = 1,dim = Nvars)
+                                         #print(paste("mutation happended ",proposal," tree  added"))
+                                         varcurb<-varcurb[-to.del]
+                                         varcand<-varcurb[-to.del]
+                                         varglob<-varcurb[-to.del]
+                                         p1 <- array(0,dim = (Nvars))
+                                         p2 <- array(1,dim = (Nvars))
+                                         acc_moves<-1
+                                         j.a<-1
+                                         super.backward = F
+                                       }
+                                     }
+                                     else
+                                     {
+                                       if(Nvars>=Nvars.max)
+                                       {
+                                         # delete those that are not in the active model with probability 0.5 each
+                                         idmut<-which(varcurb == 0)
+                                         lidmut<-length(idmut) #maximal number of covariates that can die out
+                                         if(lidmut>0)
+                                         {
+                                           p.del<-0.5
+                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                         }
+                                       }else
+                                       {
+                                         idmut<-(Nvars+1):Nvars.max
+                                         lidmut<-Nvars.max-Nvars
+                                       }
+                                       # now having chosen the candidates to be deleted we can propose new variables
+
+                                       for(idel in 1:lidmut){
+
+                                         #gen.prob<-c(1,1,1,1,1)#just uniform for now
+                                         action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
+
+
+                                         if(action.type==1)
+                                         {
+                                           # mutation (add a leave not in the search space)
+                                           proposal<<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+
+                                         }else if(action.type==2){
+                                           # crossover type of a proposal
+                                           # generate a mother
+                                           actvars<-which(varcurb==1)
+                                           mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                           ltreem<-stri_length(mother)
+                                           mother<-stri_sub(mother,from=1, to = ltreem)
+                                           #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                           # generate a father
+                                           father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                           ltreef<-stri_length(father)
+                                           father<-stri_sub(father,from=1, to = ltreef)
+                                           #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+                                           if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
+                                           {
+                                             proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                           }else{
+                                             proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
                                            }
 
+
+                                         }else if(action.type==3){
+                                           # modification type of a proposal of one of either currently active or all covariates
+                                           actvars<-which(varcurb==1)
+                                           proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                         }else if(action.type==4){
+                                           # modification type of a proposal of one of either currently active or all covariates
+                                           actvars<-which(varcurb==1)
+                                           # select a subset for the projection
+                                           if(length(actvars)>0)
+                                             actvars <- actvars[which(rbinom(n = length(actvars),size = 1,prob = 0.5)==1)]
+
+                                           if(length(actvars)==0)
+                                           {
+                                             proposal <- fparam[1]
+
+                                           }else{
+                                             # get the projection coefficients as the posterior mode of the fixed effects
+                                             bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
+                                             nab<-which(is.na(bet.act))
+                                             if(length(nab)>0)
+                                               bet.act[nab]<-0
+                                             bet.act<-round(bet.act, digits = 2)
+                                             bet.act<-stri_paste("m(",bet.act,",",sep = "")
+                                             # make a projection
+                                             bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
+                                             bet.act<-stri_paste("I(",bet.act,")",sep = "")
+                                             proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+
+                                             if(is.na(proposal))
+                                             {
+                                               print(fparam[actvars])
+                                               print(actvars)
+                                               print(bet.act)
+                                             }
+                                           }
+                                         }else if(action.type==5)
+                                         {
+                                           # reduce an operator fparam[idel]
+                                           #print("reduction")
+                                           #print(idel)
+                                           if(idel>length(fparam))
+                                           {
+                                             proposal<-fparam[1]
+                                           }else{
+                                             cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
+                                             if(length(cpm)==0)
+                                               cpm<-0
+
+                                             if(cpm>0)
+                                             {
+                                               t.d<-sample.int(size = 1,n = (cpm))
+                                               #print(fparam[idel])
+
+                                               loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
+                                               proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+
+                                               if(runif(n = 1,min = 0,max = 1)<del.sigma){
+                                                 dsigmas<-sample.int(size = 1,n = length(sigmas))
+                                                 if(sigmas[dsigmas]!="")
+                                                   proposal<-stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
+                                               }
+                                               so<-stri_count_fixed(str = proposal, pattern="(")
+                                               sc<-stri_count_fixed(str = proposal, pattern=")")
+                                               #print(proposal)
+                                               if(sc>so){
+                                                 proposal<-stri_paste(stri_paste("I",rep("(",sc-so),  collapse = ''),proposal)
+                                               }else if(sc<so)
+                                                 proposal<-stri_paste(proposal,stri_paste(rep(")",so-sc),collapse = ''))
+                                               #print(proposal)
+                                             }else{
+                                               proposal<-fparam[idel]
+                                             }
+
+                                           }
+                                         }
+
+                                         if(is.na(proposal))
+                                           proposal <- fparam[1]
+
+                                         add<-T
+                                         bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                         if(is.na(bet.act[length(fparam)+2]))
+                                           add<-F
+
+                                         if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
+                                         {
+                                           fparam<<-c(fparam,proposal)
+                                           Nvars<<-as.integer(Nvars+1)
+                                           p.add<<-as.array(c(p.add,p.allow.replace))
+                                           p.post<-as.array(c(p.post,1))
+                                           #if(printable.opt)
+                                           print(paste("mutation happended ",proposal," tree  added"))
+                                         }
+                                         else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
+                                         {
+
+                                           if(allow_offsprings==4)
+                                           {
+                                             #mod.id.old<-runif(n = 1000,min = 1,max = 2^Nvars)
+                                             vect<-buildmodel(max.cpu = 1000,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+                                             res.par <- lapply(X = vect,FUN = .self$fitmodel)
+                                             #lapply(d, function(x) x$mlik)
+                                             print(sum(unlist(lapply(res.par, function(x) exp(x$mlik)))))
+
+                                             to.del<-which(p.add < p.allow.replace)
+                                             lto.del<-length(x = to.del)
+                                             if(lto.del>0)
+                                             {
+                                               id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                               #if(printable.opt)
+                                               print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                               fparam[id.replace]<<-proposal
+                                               keysarr <- as.array(keys(hashStat))
+                                               p.add[id.replace]<<-p.allow.replace
+                                               for(jjj in 1:length(keysarr))
+                                               {
+                                                 if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                                 {
+                                                   del(x = keysarr[jjj],hash = hashStat)
+                                                 }
+
+                                               }
+
+                                             }
+                                           }else{
+                                             #save the old search space
+                                             fparam.old<<-fparam.old
+                                             hashStat.old<<-copy(hashStat)
+                                             smlik.old<-mlikcur
+                                             svarcur.old<-varcurb
+
+                                             to.del<-which(p.add < p.allow.replace)
+                                             lto.del<-length(x = to.del)
+                                             if(lto.del>0)
+                                             {
+                                               fparam[id.replace]<<-proposal
+                                               clear(hashStat)
+
+                                             }
+                                           }
                                          }
 
 
