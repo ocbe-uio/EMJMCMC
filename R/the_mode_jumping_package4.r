@@ -323,7 +323,7 @@ simplify.formula<-function(fmla,names)
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.9, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                     14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -361,6 +361,7 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
     mySearch$max.tree.size <<- as.integer(interact.param$max.tree.size)
     mySearch$p.allow.replace <<-  interact.param$p.allow.replace
     mySearch$p.allow.tree <<-  interact.param$p.allow.tree
+    mySearch$p.epsilon <<-  p.epsilon
     mySearch$sigmas<<-relations
     mySearch$sigmas.prob<<-relations.prob
     mySearch$del.sigma<<-del.sigma
@@ -512,6 +513,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          locstop.nd = "logical",
                                          M.mcmc = "integer",
                                          SA.param = "list",
+                                         p.epsilon = "numeric",
                                          p.allow.tree = "numeric",
                                          p.nor = "numeric",
                                          p.and = "numeric",
@@ -583,6 +585,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  printable.opt <<- FALSE
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
+                                 p.epsilon<<- 0.0001
                                  p.allow.replace <<- 0.3
                                  sigmas<<-c("","sin","cos","sigmoid","tanh","atan","erf")
                                  sigmas.prob<<-c(0.4,0.1,0.1,0.1,0.1,0.1,0.1)
@@ -671,6 +674,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  allow_offsprings <<- as.integer(search.args.list$allow_offsprings)
                                  mutation_rate <<- as.integer(search.args.list$mutation_rate)
                                  p.allow.tree <<- search.args.list$p.allow.tree
+                                 p.epsilon <<-search.args.list$p.epsilon
                                  p.allow.replace <<- search.args.list$p.allow.replace
                                  last.mutation<<-as.integer(search.args.list$last.mutation)
                                  p.nor <<- search.args.list$p.nor
@@ -3540,12 +3544,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          # crossover type of a proposal
                                          # generate a mother
                                          #actvars<-which(varcurb==1)
-                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreem<-stri_length(mother)
                                          mother<-stri_sub(mother,from=1, to = ltreem)
                                          #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
                                          # generate a father
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          ltreef<-stri_length(father)
                                          father<-stri_sub(father,from=1, to = ltreef)
                                          #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
@@ -3558,16 +3562,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
                                        }else if(action.type==3){
-                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
+                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
                                          proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                        }else if(action.type==4){
 
 
                                          # select a subset for the projection
 
-                                         actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add)==1)
+                                         actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
 
-                                         if(is.na(actvars))
+                                         if(length(actvars)<=1)
                                          {
                                            proposal <- fparam[1]
 
@@ -3692,10 +3696,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    }else if(allow_offsprings  == 4  && j%%mutation_rate == 0 && j<=last.mutation)
                                    {
+                                     add.buf<-F
 
                                      # perform preliminary filtration here
                                      if(Nvars>Nvars.max || j==mutation_rate)
                                      {
+                                       on.suggested <- 1
                                        #do the stuff here
                                        if(j==mutation_rate)
                                          fparam.pool<<-c(fparam.pool,filtered)
@@ -3739,12 +3745,72 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            p.del<-0.5
                                            lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
                                          }
+                                         #mod.id.old<-runif(n = 1000,min = 1,max = 2^Nvars)
+                                         if(on.suggested%%2==1){
+
+
+                                           tmp.buf<-fparam[which(varcurb==1)]
+                                           tmp.buf.1<-fparam
+                                           p.add.buf.1<-p.add
+                                           #hashStat.buf.1<-copy(hashStat)
+                                           mlik.buf.1<-mlikcur
+                                           vect<-buildmodel(max.cpu = 999,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+                                           res.par <- lapply(X = vect,FUN = .self$fitmodel)
+                                           #if()
+                                           #lapply(d, function(x) x$mlik)
+                                           print("OLDMOD")
+                                           mso=(sum(unlist(lapply(res.par, function(x) exp(x$mlik))))+exp(mlik.buf.1))
+                                           print(mso)
+
+                                         }else if(on.suggested%%2==0){
+
+                                           vect<-buildmodel(max.cpu = 999,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+                                           res.par <- lapply(X = vect,FUN = .self$fitmodel)
+                                           #lapply(d, function(x) x$mlik)
+                                           tmp.buf.2<-fparam
+                                           p.add.buf.2<-p.add
+                                           #hashStat.buf.2<-copy(hashStat)
+
+                                           msn=(sum(unlist(lapply(res.par, function(x) exp(x$mlik))))+exp(mlikcur))
+                                           print("NEWMOD")
+                                           print(msn)
+                                           if(msn == Inf && mso == Inf ||msn == 0 && mso == 0)
+                                           {
+                                             msn<-0
+                                             mso<-1
+                                           }#*log((sum(tmp.buf%in%fparam)==length(tmp.buf)))
+                                           if(log(runif(1,0,1))>=(log(msn)-log(mso)))
+                                           {
+
+                                             #if(printable.opt)
+                                             print("proposal is rejected")
+                                             fparam<<-tmp.buf.1
+                                             p.add<<-p.add.buf.1
+                                             #clear(h)
+                                             #hashStat<<-hashStat.buf.1
+
+
+                                           }else{
+                                             print("mutation is accepted")
+                                             #idcur<-sample.int(size = 1,n =1000,prob =  c(unlist(lapply(res.par, function(x) exp(x$mlik))),exp(mlikcur)))
+                                             #mlikcur<-res.par$mlik[idcur]
+                                             #varcurb<-unlist(lapply(res.par, function(x) exp(x$varcur)))[idcur]
+                                             fparam<<-tmp.buf.2
+                                             p.add<<-p.add.buf.2
+                                             #clear(h)
+                                             #hashStat<<-hashStat.buf.2
+                                           }
+                                         }
+                                         on.suggested<-on.suggested+1
+
                                        }else
                                        {
                                          idmut<-(Nvars+1):Nvars.max
                                          lidmut<-Nvars.max-Nvars
                                        }
                                        # now having chosen the candidates to be deleted we can propose new variables
+
+
 
                                        for(idel in 1:lidmut){
 
@@ -3878,11 +3944,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                            if(allow_offsprings==4)
                                            {
-                                             #mod.id.old<-runif(n = 1000,min = 1,max = 2^Nvars)
-                                             vect<-buildmodel(max.cpu = 1000,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
-                                             res.par <- lapply(X = vect,FUN = .self$fitmodel)
-                                             #lapply(d, function(x) x$mlik)
-                                             print(sum(unlist(lapply(res.par, function(x) exp(x$mlik)))))
+
 
                                              to.del<-which(p.add < p.allow.replace)
                                              lto.del<-length(x = to.del)
@@ -3890,7 +3952,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              {
                                                id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
                                                #if(printable.opt)
-                                               print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                               #print(paste("mutation suggested ",proposal," tree  replaced ", fparam[id.replace]))
                                                fparam[id.replace]<<-proposal
                                                keysarr <- as.array(keys(hashStat))
                                                p.add[id.replace]<<-p.allow.replace
@@ -3904,28 +3966,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                                }
 
                                              }
-                                           }else{
-                                             #save the old search space
-                                             fparam.old<<-fparam.old
-                                             hashStat.old<<-copy(hashStat)
-                                             smlik.old<-mlikcur
-                                             svarcur.old<-varcurb
 
-                                             to.del<-which(p.add < p.allow.replace)
-                                             lto.del<-length(x = to.del)
-                                             if(lto.del>0)
-                                             {
-                                               fparam[id.replace]<<-proposal
-                                               clear(hashStat)
 
-                                             }
                                            }
                                          }
 
 
                                        }
-                                     }
 
+                                     }
                                      varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
                                      varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
                                      varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
