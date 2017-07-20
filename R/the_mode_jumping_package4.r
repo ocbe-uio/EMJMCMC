@@ -973,6 +973,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              #build a new model to draw from the old one return selection probabilities
                              buildmodel= function(varcur.old,statid, shift.cpu,max.cpu,switch.type,min.N,max.N,changeble.coord = NULL)
                              {
+
                                vect<- vector(length = max.cpu,mode = "list")
                                shift<-0
                                for(cpu in 1:(max.cpu))
@@ -1236,7 +1237,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    #
                                    # }
                                     formula <- NULL
-                                    capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})}) ## not considered currently in RJMCMC, is only valid for model selection
+                                    capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})})
                                     if(is.null(formula)){
                                       formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
 
@@ -1250,6 +1251,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  vect[[cpu]]<-list(formula = formula, varcur = varcur, statid = statid, changed = change.buf, log.mod.switch.prob = log.mod.switch.prob , log.mod.switchback.prob = log.mod.switchback.prob )
 
                                }
+
                                return(vect)
                              },
                              #fit the given model by means of the specified estimator
@@ -3754,8 +3756,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            p.add.buf.1<-p.add
                                            #hashStat.buf.1<-copy(hashStat)
                                            mlik.buf.1<-mlikcur
-                                           vect<-buildmodel(max.cpu = 999,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+                                           vect<-buildmodel(max.cpu = 10,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
                                            res.par <- lapply(X = vect,FUN = .self$fitmodel)
+                                           probs<-unlist(lapply(res.par, function(x) exp(x$mlik)))
+                                           idcur<-sample.int(size = 1,n =length(probs),prob = probs )
+                                           mlikcur<-res.par$mlik[idcur]
+                                           varcurb<-unlist(lapply(res.par, function(x) x$varcur))[idcur]
+                                           print(varcurb)
                                            #if()
                                            #lapply(d, function(x) x$mlik)
                                            print("OLDMOD")
@@ -3764,8 +3771,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          }else if(on.suggested%%2==0){
 
-                                           vect<-buildmodel(max.cpu = 999,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+                                           vect<-buildmodel(max.cpu = 10,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+                                           probs<-unlist(lapply(res.par, function(x) exp(x$mlik)))
+                                           idcur<-sample.int(size = 1,n =length(probs),prob = probs )
+                                           mlikcur<-res.par$mlik[idcur]
+                                           varcurb<-unlist(lapply(res.par, function(x) x$varcur))[idcur]
                                            res.par <- lapply(X = vect,FUN = .self$fitmodel)
+
                                            #lapply(d, function(x) x$mlik)
                                            tmp.buf.2<-fparam
                                            p.add.buf.2<-p.add

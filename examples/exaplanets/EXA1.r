@@ -13,7 +13,7 @@ code <- 'int wstat; while (waitpid(-1, &wstat, WNOHANG) > 0) {};'
 wait <- cfunction(body=code, includes=includes, convention='.C')
 
 
-estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("cosi","sigmoid","tanh","atan","sini","troot"))
+estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("cosi","sigmoid","tanh","atan","sini","troot","m("))
 {
   fparam<-NULL
   fmla.proc<-as.character(formula)[2:3]
@@ -24,7 +24,7 @@ estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),rela
   sj<-(stri_count_fixed(str = fparam, pattern = "*"))
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "+"))
   for(rel in relat)
-    sj<-sj+(stri_count_fixed(str = fparam, pattern = relat))
+    sj<-sj+(stri_count_fixed(str = fparam, pattern = rel))
   sj<-sj+1
   tryCatch(capture.output({
     out <- glm(formula = formula,data = data, family = gaussian)
@@ -143,7 +143,7 @@ runpar<-function(vect)
 }
 
 
-for(j in 1:1)
+for(j in 1:5)
 {
   tryCatch({
 
@@ -158,7 +158,7 @@ for(j in 1:1)
 
     #wait()
 
-    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("","cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.9,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=5000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 5000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("","cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.9,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=7500, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -244,7 +244,7 @@ for(j in 1:1)
 
     posteriors<-values(hfinal)
 
-    print(posteriors)
+    #print(posteriors)
     clear(hfinal)
     rm(hfinal)
     rm(resa)
@@ -265,9 +265,9 @@ for(j in 1:1)
 
     })
     rm(X)
-    rm(data.example)
-    rm(vect)
-    rm(params)
+    #rm(data.example)
+    #rm(vect)
+    #rm(params)
     gc()
     print(paste0("end simulation ",j))
   },error = function(err){
@@ -277,7 +277,7 @@ for(j in 1:1)
   },finally = {
 
     print(paste0("end simulation ",j))
-    rm(X)
+    #rm(X)
     rm(data.example)
     rm(vect)
     rm(params)
