@@ -11,7 +11,7 @@ wait <- cfunction(body=code, includes=includes, convention='.C')
 
 
 
-estimate.logic.lms <- function(formula = NA, data, n, m, r = 1)
+estimate.logic.lms <- function(formula = NA, data, n, m, r = 1,sigmas = c("sin","cos","sigmoid","tanh","atan","erf") )
 {
   if(is.na(formula))
   {
@@ -24,14 +24,16 @@ estimate.logic.lms <- function(formula = NA, data, n, m, r = 1)
   fobserved <- fmla.proc[1]
   sj<-(stri_count_fixed(str = fmla.proc[2], pattern = "*"))
   sj<-sj+(stri_count_fixed(str = fmla.proc[2], pattern = "+"))
+  sj<-sj+sum(stri_count_fixed(str = fmla.proc[2], pattern = sigmas))
   sj<-sj-p+1
   #Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (sj<10)*((-BIC(out) - 2*sj*log(n))/2) + (sj>=10)*(-10000)
+  mlik = (sj<=10)*((-BIC(out) - m*sj*log(n))/2) + (sj>10)*(-10000)
   if(is.na(mlik))
     mlik = -10000
   if(mlik==-Inf)
     mlik = -10000
+  #print(sj)
   return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
 }
 
@@ -99,8 +101,8 @@ runpar<-function(vect)
 {
 
   tryCatch({
-    set.seed(as.integer(vect[24]))
-    do.call(runemjmcmc, vect[1:23])
+    set.seed(as.integer(vect[25]))
+    do.call(runemjmcmc, vect[1:24])
     vals<-values(hashStat)
     fparam<-mySearch$fparam
     cterm<-max(vals[1,],na.rm = T)
@@ -152,7 +154,10 @@ for(j in 1:MM)
 
   inla = function(x) x
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lms,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 100,last.mutation = 15000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 30000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=T,print.freq = 1000,advanced.param = list(
+  #the GMJMCMC works fine
+  #but RGMJMCMC seems ot be much less efficient!?
+
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lms,estimator.args = list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 100,last.mutation = 5000, max.tree.size = 6, Nvars.max = (compmax-1),p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 50000,unique = F,max.cpu = 3,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
@@ -162,17 +167,12 @@ for(j in 1:MM)
   aaa=do.call(runemjmcmc,vect[1:24])
   aaa$p.post
 
-  estimate.logic.lm(data = data.example,formula =  as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(mySearch$fparam,collapse = "+"))),n = 1000,m = 50)
+  formula5 =  as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(mySearch$fparam[which(aaa$p.post>0.8)],collapse = "+")))
 
+   estimate.logic.lms(data = data.example,formula =  as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(mySearch$fparam[which(aaa$p.post>0.8)],collapse = "+"))),n = 1000,m = 50)
 
-  for(vars in mySearch$fparam)
-  {
-    formula2 = as.formula(paste(colnames(X1)[51],"~ 1 +",vars))
+   estimate.logic.lms(data = data.example,formula =  as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(mySearch$fparam[c(10,16,18)],collapse = "+"))),n = 1000,m = 50)
 
-
-    print(estimate.logic.lm(data = data.example,formula = formula2,n = 1000,m = 50))
-
-  }
 
 
   params <- list(vect)[rep(1,M)]

@@ -323,7 +323,7 @@ simplify.formula<-function(fmla,names)
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                     14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -349,9 +349,11 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
   mySearch$estimator.args <<- estimator.args
   mySearch$latent.formula <<- latent
   mySearch$save.beta <<- save.beta
+  mySearch$prand<<-prand
   mySearch$recalc.margin <<- as.integer(recalc_margin)
   mySearch$max.cpu <<- as.integer(max.cpu)
   mySearch$locstop.nd <<- FALSE
+  mySearch$sup.large.n<<-as.integer(sup.large.n)
   mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
   if(interact)
   {
@@ -492,6 +494,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          fobserved = "vector",
                                          switch.type = "integer",
                                          n.size ="integer",
+                                         sup.large.n = "integer",
                                          LocImprove = "array",
                                          max.N = "integer",
                                          save.beta = "logical",
@@ -525,6 +528,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          p.allow.replace = "numeric",
                                          max.tree.size = "integer",
                                          double.hashing = "logical",
+                                         prand = "numeric",
                                          hash.length = "integer",
                                          update.marg.mc = "logical",
                                          Nvars.max = "integer",
@@ -578,8 +582,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  min.N.randomize <<- as.integer(1)
                                  max.N.randomize <<- as.integer(1)
                                  type.randomize <<- as.integer(3)
+                                 prand<<-0.01
                                  max.cpu.glob <<- as.integer(Nvars*0.05 + 1)
                                  max.cpu.hyper <<- as.integer(2)
+                                 sup.large.n<<-as.integer(1000)
                                  save.beta <<- FALSE
                                  filtered<<-vector(mode="character", length=0)
                                  printable.opt <<- FALSE
@@ -651,6 +657,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  max.cpu.hyper <<- as.integer(search.args.list$max.cpu.hyper)
                                  save.beta <<- search.args.list$save.beta
                                  aa <<- search.args.list$lambda.a
+                                 prand<<-earch.args.list$prand
+                                 sup.large.n<<-search.args.list$sup.large.n
                                  thin_rate <-search.args.list$thin_rate
                                  cc <<- search.args.list$lambda.c
                                  M.nd <<- as.integer(search.args.list$stepsGreedy)
@@ -1193,7 +1201,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    log.mod.switch.prob <-0
                                    log.mod.switchback.prob <-0
                                    change.buf <- array(data = 1,dim = Nvars)
-                                   varcur<- rbinom(n = Nvars,size = 1,prob=0.5)
+                                   changevar<- rbinom(n = Nvars,size = 1,prob=prand)
+                                   varcur<-varcur.old
+                                   varcur[which(changevar==1)]<-(1-varcur[which(changevar==1)])
+                                   log.mod.switch.prob<-prand^length(which(changevar==1))
                                  }else{
 
                                    log.mod.switch.prob <- 0
@@ -3704,6 +3715,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(Nvars>Nvars.max || j==mutation_rate)
                                      {
                                        on.suggested <- 1
+                                       preaccepted<-F
                                        #do the stuff here
                                        if(j==mutation_rate)
                                          fparam.pool<<-c(fparam.pool,filtered)
@@ -3750,67 +3762,99 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #mod.id.old<-runif(n = 1000,min = 1,max = 2^Nvars)
                                          if(on.suggested%%2==1){
 
+                                           if(preaccepted)
+                                           {
+                                             log.mod.switch.prob.back<-sum(abs(varcurb.buf-varcurb))
+                                             eqal.things<-which(varcurb.buf==varcurb)
+                                             log.mod.switch.prob.back<-log.mod.switch.prob.back+length(which(fparam[eqal.things]!=tmp.buf.1[eqal.things]))
+                                             log.mod.switch.prob.back<-log.mod.switch.prob.back^prand
+                                             print(paste0("afteracceptance ratio ",log.mod.switch.prob.back/log.mod.switch.prob))
+                                             if(runif(1,0,1)<=log.mod.switch.prob.back/log.mod.switch.prob)
+                                             {
+                                               print("preaccepted mutation is accepted")
+                                               mlikcur<-mlikcur.buf.2
+                                               varcurb<-varcurb.buf.2
+                                               fparam<<-tmp.buf.2
+                                               p.add<<-p.add.buf.2
+                                             }else
+                                             {
+                                               print("preaccepted mutation rejected")
+                                               fparam<<-tmp.buf.1
+                                               p.add<<-p.add.buf.1
+                                               mlikcur<-mlikcur.buf
+                                               varcurb<-varcurb.buf
+                                             }
+                                             preaccepted<-F
+                                           }
 
                                            tmp.buf<-fparam[which(varcurb==1)]
                                            tmp.buf.1<-fparam
                                            p.add.buf.1<-p.add
-                                           #hashStat.buf.1<-copy(hashStat)
-                                           mlik.buf.1<-mlikcur
-                                           vect<-buildmodel(max.cpu = 10,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
+
+                                           # hashStat.buf.1<-copy(hashStat)
+                                           vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = -1,min.N =  Nvars,max.N = Nvars,switch.type = 9)
                                            res.par <- lapply(X = vect,FUN = .self$fitmodel)
-                                           probs<-unlist(lapply(res.par, function(x) exp(x$mlik)))
-                                           idcur<-sample.int(size = 1,n =length(probs),prob = probs )
-                                           mlikcur<-res.par$mlik[idcur]
-                                           varcurb<-unlist(lapply(res.par, function(x) x$varcur))[idcur]
-                                           print(varcurb)
-                                           #if()
-                                           #lapply(d, function(x) x$mlik)
+
+                                           mlikcur<-res.par[[1]]$mlik
+                                           varcurb<-vect[[1]]$varcur
+
+                                           mlikcur.buf<-mlikcur
+                                           varcurb.buf<-varcurb
                                            print("OLDMOD")
-                                           mso=(sum(unlist(lapply(res.par, function(x) exp(x$mlik))))+exp(mlik.buf.1))
+                                           mso=(mlikcur)#(sum(unlist(lapply(res.par, function(x) exp(x$mlik)))))
                                            print(mso)
 
                                          }else if(on.suggested%%2==0){
 
-                                           vect<-buildmodel(max.cpu = 10,varcur.old = varcurb,statid = -1,min.N = 0,max.N = Nvars,switch.type = 9)
-                                           probs<-unlist(lapply(res.par, function(x) exp(x$mlik)))
-                                           idcur<-sample.int(size = 1,n =length(probs),prob = probs )
-                                           mlikcur<-res.par$mlik[idcur]
-                                           varcurb<-unlist(lapply(res.par, function(x) x$varcur))[idcur]
-                                           res.par <- lapply(X = vect,FUN = .self$fitmodel)
-
-                                           #lapply(d, function(x) x$mlik)
+                                           #tmp.buf2<-fparam[which(varcurb==1)]
                                            tmp.buf.2<-fparam
                                            p.add.buf.2<-p.add
-                                           #hashStat.buf.2<-copy(hashStat)
+                                           vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = -1,min.N =  Nvars,max.N = Nvars,switch.type = 9)
+                                           log.mod.switch.prob<-vect[[1]]$log.mod.switch.prob
+                                           res.par <- lapply(X = vect,FUN = .self$fitmodel)
+                                           #print(mlikcur)
 
-                                           msn=(sum(unlist(lapply(res.par, function(x) exp(x$mlik))))+exp(mlikcur))
+                                           mlikcur<-res.par[[1]]$mlik
+                                           varcurb<-vect[[1]]$varcur
+
+                                           vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = -1,min.N =  Nvars,max.N = Nvars,switch.type = 9)
+                                           log.mod.switch.prob<-vect[[1]]$log.mod.switch.prob
+                                           res.par <- lapply(X = vect,FUN = .self$fitmodel)
+                                           print(mlikcur)
+
+                                           mlikcur<-res.par[[1]]$mlik
+                                           varcurb<-vect[[1]]$varcur
+
+                                           mlikcur.buf.2<-mlikcur
+                                           varcurb.buf.2<-varcurb
+                                           msn=(mlikcur)#(sum(unlist(lapply(res.par, function(x) exp(x$mlik)))))
                                            print("NEWMOD")
                                            print(msn)
                                            if(msn == Inf && mso == Inf ||msn == 0 && mso == 0)
                                            {
-                                             msn<-0
+                                             msn<-1
                                              mso<-1
                                            }#*log((sum(tmp.buf%in%fparam)==length(tmp.buf)))
-                                           if(log(runif(1,0,1))>=(log(msn)-log(mso)))
+                                           if(log(runif(1,0,1))>=((msn)-(mso)))
                                            {
 
-                                             #if(printable.opt)
                                              print("proposal is rejected")
                                              fparam<<-tmp.buf.1
                                              p.add<<-p.add.buf.1
-                                             #clear(h)
-                                             #hashStat<<-hashStat.buf.1
+                                             mlikcur<-mlikcur.buf
+                                             varcurb<-varcurb.buf
+                                             preaccepted<-F
+                                             #on.suggested<-on.suggested+1
 
 
                                            }else{
-                                             print("mutation is accepted")
-                                             #idcur<-sample.int(size = 1,n =1000,prob =  c(unlist(lapply(res.par, function(x) exp(x$mlik))),exp(mlikcur)))
-                                             #mlikcur<-res.par$mlik[idcur]
-                                             #varcurb<-unlist(lapply(res.par, function(x) exp(x$varcur)))[idcur]
-                                             fparam<<-tmp.buf.2
-                                             p.add<<-p.add.buf.2
-                                             #clear(h)
-                                             #hashStat<<-hashStat.buf.2
+                                             print("mutation is preaccepted")
+
+                                             #fparam<<-tmp.buf.1
+                                             #p.add<<-p.add.buf.1
+                                             #lidmut<-0
+                                             preaccepted<-T
+
                                            }
                                          }
                                          on.suggested<-on.suggested+1
