@@ -13,38 +13,33 @@ code <- 'int wstat; while (waitpid(-1, &wstat, WNOHANG) > 0) {};'
 wait <- cfunction(body=code, includes=includes, convention='.C')
 
 
-estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("cosi","sigmoid","tanh","atan","sini","troot"))
+
+estimate.dlm <- function(formula = NA, data, n, m, r = 1,sigmas = c("cosi","sigmoid","tanh","atan","sini","troot"))
 {
-  fparam<-NULL
+  if(is.na(formula))
+  {
+    print("FORMULA MISSING")
+    return(NULL)
+  }
+  out <- lm(formula = formula,data = data)
+  p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "*"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "+"))
-  for(rel in relat)
-    sj<-sj+(stri_count_fixed(str = fparam, pattern = rel))
-  sj<-sj+1
-  tryCatch(capture.output({
-    out <- glm(formula = formula,data = data, family = gaussian)
-    # 1 for aic, 2 bic prior, else g.prior
-
-    mlik = (-(out$deviance -2*log(r)*sum(sj)))/2
-    waic = -(out$deviance + 2*out$rank)
-    dic =  -(out$deviance + logn*out$rank)
-    summary.fixed =list(mean = coefficients(out))
-
-  }, error = function(err) {
-    print(err)
+  sj<-(stri_count_fixed(str = fmla.proc[2], pattern = "*"))
+  sj<-sj+(stri_count_fixed(str = fmla.proc[2], pattern = "+"))
+  sj<-sj+sum(stri_count_fixed(str = fmla.proc[2], pattern = sigmas))
+  sj<-sj-p+1
+  #Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
+  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  mlik = (sj<=5)*((-BIC(out) - (m-1)*p*log(n) - m*sj*log(n))/2) + (sj>5)*(-10000)
+  if(is.na(mlik))
     mlik = -10000
-    waic = -10000
-    dic =  -10000
-    summary.fixed =list(mean = array(0,dim=length(fparam)))
-  }))
-  return(list(mlik = mlik,waic = waic , dic = dic,summary.fixed =summary.fixed))
-
+  if(mlik==-Inf)
+    mlik = -10000
+  #print(sj)
+  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
 }
+
 
 
 parall.gmj <<- mclapply
@@ -114,7 +109,7 @@ InvX<-function(x)
 troot<-function(x)abs(x)^(1/3)
 
 MM = 100
-M = 32
+M = 4
 NM= 1000
 compmax = 16
 th<-(10)^(-5)
@@ -149,7 +144,7 @@ for(j in 1:100)
 
     set.seed(j)
 
-    X<-read.csv("exa1.csv")
+    X<-read.csv("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/exaplanets/exa1.csv")
 
     formula1 = as.formula(paste(colnames(X)[5],"~ 1 +",paste0(colnames(X)[-5],collapse = "+")))
     data.example = as.data.frame(X)
@@ -158,12 +153,24 @@ for(j in 1:100)
 
     #wait()
 
-    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("","cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.9,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=10000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+    vect<-list(formula = formula1,data = data.example,estimator =estimate.dlm,estimator.args =  list(data = data.example,n = 223, m = 2),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=10000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 100000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
       min.N=as.integer(1),
       printable = F))
+
+    aaa=do.call(runemjmcmc,vect[1:21])
+    aaa$p.post
+
+    estimate.dlm (data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarMassSlrMass)*PeriodDays*PeriodDays)) ,n = 223, m = 2)
+
+
+
+    estimate.dlm(data = data.example,formula =  as.formula(paste(colnames(X)[5],"~ 1 +",paste0(mySearch$fparam[which(aaa$p.post>0.99)],collapse = "+"))),n = 223, m = 2)
+
+    estimate.dlm(data = data.example,formula =  as.formula(paste(colnames(X)[5],"~ 1 +",paste0(mySearch$fparam[10],collapse = "+"))),n = 223, m = 2)
+
 
     params <- list(vect)[rep(1,M)]
 
