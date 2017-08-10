@@ -38,8 +38,8 @@ estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),rela
   }, error = function(err) {
     print(err)
     mlik = -10000
-    waic = -10000
-    dic =  -10000
+    waic = 10000
+    dic =  10000
     summary.fixed =list(mean = array(0,dim=length(fparam)))
   }))
   return(list(mlik = mlik,waic = waic , dic = dic,summary.fixed =summary.fixed))

@@ -18,7 +18,7 @@ estimate.logic.lms <- function(formula = NA, data, n, m, r = 1,sigmas = c("sin",
     print("FORMULA MISSING")
     return(NULL)
   }
-  out <- glm(formula = formula,data = data)
+  out <- lm(formula = formula,data = data)
   p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]

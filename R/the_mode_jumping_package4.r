@@ -3657,6 +3657,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                        if(is.na(bet.act[length(fparam)+2]))
                                          add<-F
+                                       sj<-(stri_count_fixed(str = proposal, pattern = "*"))
+                                       sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
+                                       sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
+                                       sj<-sj+1
+                                       if(sj>max.tree.size)
+                                         add<-F
 
                                          if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                          {
@@ -3984,6 +3990,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          add<-T
                                          bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                          if(is.na(bet.act[length(fparam)+2]))
+                                           add<-F
+                                         sj<-(stri_count_fixed(str = proposal, pattern = "*"))
+                                         sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
+                                         sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
+                                         sj<-sj+1
+                                         if(sj>max.tree.size)
                                            add<-F
 
                                          if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)

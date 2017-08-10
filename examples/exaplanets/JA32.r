@@ -21,7 +21,7 @@ estimate.dlm <- function(formula = NA, data, n, m, r = 1,sigmas = c("cosi","sigm
     print("FORMULA MISSING")
     return(NULL)
   }
-  out <- lm(formula = formula,data = data)
+  out <- glm(formula = formula,data = data)
   p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
@@ -31,7 +31,7 @@ estimate.dlm <- function(formula = NA, data, n, m, r = 1,sigmas = c("cosi","sigm
   sj<-sj-p+1
   #Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (sj<=5)*((-BIC(out) - (m-1)*p*log(n) - m*sj*log(n))/2) + (sj>5)*(-10000)
+  mlik = (sj<=5)*((-deviance(out) - (m-1)*p*log(n) - m*sj*log(n))/2) + (sj>5)*(-10000)
   if(is.na(mlik))
     mlik = -10000
   if(mlik==-Inf)
@@ -153,7 +153,7 @@ for(j in 1:100)
 
     #wait()
 
-    vect<-list(formula = formula1,data = data.example,estimator =estimate.dlm,estimator.args =  list(data = data.example,n = 223, m = 2),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=10000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 100000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=10000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 100000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -165,9 +165,13 @@ for(j in 1:100)
 
     estimate.dlm (data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarMassSlrMass)*PeriodDays*PeriodDays)) ,n = 223, m = 2)
 
+
     estimate.dlm(data = data.example,formula =  as.formula(paste(colnames(X)[5],"~ 1 +",paste0(mySearch$fparam[which(aaa$p.post>0.99)],collapse = "+"))),n = 223, m = 2)
 
     estimate.dlm(data = data.example,formula =  as.formula(paste(colnames(X)[5],"~ 1 +",paste0(mySearch$fparam[10],collapse = "+"))),n = 223, m = 2)
+
+
+    estimate.gamma.cpen(data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarMassSlrMass)*PeriodDays*PeriodDays)))
 
 
     params <- list(vect)[rep(1,M)]
