@@ -3277,7 +3277,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(j%%100==0)
                                    seed = runif(n = 1,min = 0,max = 100000)
                                  # the small part of the code to be upgraded at least slightly
-                                 if(allow_offsprings  %in% c(1,2)  && j%%mutation_rate == 0 && j<=last.mutation)
+                                 if(allow_offsprings  %in% c(1,2)  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                  {
 
                                    if(Nvars>Nvars.max || j==mutation_rate)
@@ -3486,7 +3486,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    j.a<-1
 
                                    }
-                                 } else if(allow_offsprings  == 3  && j%%mutation_rate == 0 && j<=last.mutation)
+                                 } else if(allow_offsprings  == 3  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                  {
 
                                    # perform preliminary filtration here
@@ -3721,7 +3721,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      acc_moves<-1
                                      j.a<-1
 
-                                   }else if(allow_offsprings  == 4  && j%%mutation_rate == 0 && j<=last.mutation)
+                                   }else if(allow_offsprings  == 4  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                    {
                                      add.buf<-F
 

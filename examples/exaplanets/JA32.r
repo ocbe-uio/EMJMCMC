@@ -172,6 +172,7 @@ for(j in 1:100)
 
 
     estimate.gamma.cpen(data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarMassSlrMass)*PeriodDays*PeriodDays)))
+    estimate.gamma.cpen(data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarTempK)*PeriodDays*PeriodDays)))
 
 
     params <- list(vect)[rep(1,M)]
@@ -196,6 +197,11 @@ for(j in 1:100)
     not.null<-1
     for(k in 1:M)
     {
+      if(is.character(results[[k]]))
+      {
+        nulls<-c(nulls,k)
+        next
+      }
       if(length(results[[k]])==0)
       {
         nulls<-c(nulls,k)
@@ -217,9 +223,17 @@ for(j in 1:100)
       }
       max.popul[k]<-results[[k]]$cterm
       post.popul[k]<-results[[k]]$post.populi
-      resa[,k*3-2]<-c(results[[k]]$fparam,"Post.Gen.Max")
-      resa[,k*3-1]<-c(results[[k]]$p.post,results[[k]]$cterm)
-      resa[,k*3]<-rep(post.popul[k],length(results[[k]]$p.post)+1)
+      if(length(resa[,k*3-2])==(length(results[[k]]$fparam)+1))
+      {
+        resa[,k*3-2]<-c(results[[k]]$fparam,"Post.Gen.Max")
+        resa[,k*3-1]<-c(results[[k]]$p.post,results[[k]]$cterm)
+        resa[,k*3]<-rep(post.popul[k],length(results[[k]]$p.post)+1)
+      }else
+      {
+        resa[,k*3-2]<-rep(results[[k]]$fparam[1],length(resa[,k*3-2]))
+        resa[,k*3-1]<-rep(0,length(resa[,k*3-1]))
+        resa[,k*3]<-rep(-10^9,length(resa[,k*3]))
+      }
 
     }
 
