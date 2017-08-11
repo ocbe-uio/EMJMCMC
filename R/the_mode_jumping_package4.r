@@ -3578,9 +3578,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          # crossover type of a proposal
                                          # generate a mother
                                          #actvars<-which(varcurb==1)
-                                         sjm <- 0
-                                         sjf <- 0
-                                         while(sjm+sjf+1<=max.tree.size)
+                                         sjm <- max.tree.size
+                                         sjf <- max.tree.size
+                                         while(sjm+sjf+1>max.tree.size)
                                          {
                                            mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
                                            ltreem<-stri_length(mother)
