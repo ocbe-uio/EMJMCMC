@@ -172,8 +172,10 @@ for(j in 1:100)
 
 
     estimate.gamma.cpen(data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarMassSlrMass)*PeriodDays*PeriodDays)))
+
     estimate.gamma.cpen(data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarTempK)*PeriodDays*PeriodDays)))
 
+    estimate.gamma.cpen(data = data.example,formula = SemiMajorAxisAU ~ 1 + I(troot((HostStarRadiusSlrRad)*PeriodDays*PeriodDays)))
 
     params <- list(vect)[rep(1,M)]
 
