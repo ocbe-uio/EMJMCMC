@@ -3562,8 +3562,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        lidmut<-Nvars.max-Nvars
                                      }
                                      # now having chosen the candidates to be deleted we can propose new variables
+                                     idel<-1
 
-                                     for(idel in 1:lidmut){
+                                     while(idel <= lidmut){
 
                                        #gen.prob<-c(1,1,1,1,1)#just uniform for now
                                        action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
@@ -3668,6 +3669,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                        }
 
+
+                                       sj<-(stri_count_fixed(str = proposal, pattern = "*"))
+                                       sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
+                                       sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
+                                       sj<-sj+1
+                                       if(sj>max.tree.size || length(sj)==0)
+                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                        if(is.na(proposal))
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
@@ -3676,15 +3684,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(is.na(bet.act[length(fparam)+2]))
                                        {
                                          add<-F
-                                         idel<-idel-1
+                                       }else
+                                       {
+                                         idel<-idel+1
                                        }
-                                       sj<-(stri_count_fixed(str = proposal, pattern = "*"))
-                                       sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
-                                       sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
-                                       sj<-sj+1
-                                       if(sj>max.tree.size || length(sj)==0)
-                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
-
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
                                          fparam<<-c(fparam,proposal)
