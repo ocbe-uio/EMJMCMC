@@ -3687,7 +3687,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        add<-T
                                        bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                        if(is.na(bet.act[length(fparam)+2]))
-                                         add<-F
+                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                        sj<-(stri_count_fixed(str = proposal, pattern = "*"))
                                        sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
                                        sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
