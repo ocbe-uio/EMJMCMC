@@ -323,7 +323,7 @@ simplify.formula<-function(fmla,names)
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.5,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 40,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),pool.cross = 0.5,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 40,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                     0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                     1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                     14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -364,6 +364,7 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
     mySearch$p.allow.replace <<-  interact.param$p.allow.replace
     mySearch$p.allow.tree <<-  interact.param$p.allow.tree
     mySearch$p.epsilon <<-  p.epsilon
+    mySearch$keep.origin<<- keep.origin
     mySearch$sigmas<<-relations
     mySearch$sigmas.prob<<-relations.prob
     mySearch$del.sigma<<-del.sigma
@@ -498,6 +499,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          LocImprove = "array",
                                          max.N = "integer",
                                          save.beta = "logical",
+                                         keep.origin = "logical",
                                          recalc.margin = "numeric",
                                          max.N.glob = "integer",
                                          min.N.glob = "integer",
@@ -589,6 +591,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  save.beta <<- FALSE
                                  filtered<<-vector(mode="character", length=0)
                                  printable.opt <<- FALSE
+                                 keep.origin<<-FALSE
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
                                  p.epsilon<<- 0.0001
@@ -660,6 +663,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  prand<<-earch.args.list$prand
                                  sup.large.n<<-search.args.list$sup.large.n
                                  thin_rate <-search.args.list$thin_rate
+                                 keep.origin<<-search.args.list$keep.origin
                                  cc <<- search.args.list$lambda.c
                                  M.nd <<- as.integer(search.args.list$stepsGreedy)
                                  M.mcmc <<- as.integer(search.args.list$stepsLocMCMC)
@@ -3513,8 +3517,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #clear(hashStat)
                                        #hashStat<<-hash()
                                        fparam<<-fparam[-to.del]
-
-                                       pool.probs[which(fparam.pool %in% fparam)]<-1
+                                       if(!keep.origin)
+                                        pool.probs[which(fparam.pool %in% fparam)]<-1
                                        Nvars<<-length(fparam)
                                        Nvars.init<<-Nvars
                                        p.add<<-p.add[-to.del]
@@ -3533,10 +3537,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    {
                                      if(Nvars>=Nvars.max)
                                      {
-                                       idmut<-which(varcurb == 0)
-                                       lidmut<-length(idmut)
-                                       #idmut<-(which(p.add[(Nvars.init+1):Nvars] <= p.allow.replace) + Nvars.init)
-                                       #lidmut<-length(idmut) #maximal number of covariates that can die out
+                                       if(keep.origin)
+                                       {
+                                         idmut<-(which(p.add[(Nvars.init+1):Nvars] <= p.allow.replace) + Nvars.init)
+                                         lidmut<-length(idmut) #maximal number of covariates that can die out
+                                       }else{
+                                        idmut<-which(varcurb == 0)
+                                        lidmut<-length(idmut)
+                                       }
                                        #if(lidmut>0)
                                        #{
                                        # p.del<-(lidmut - sum(p.add[idmut]))/lidmut
@@ -3682,9 +3690,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                          else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                          {
-
+                                             if(keep.origin){
+                                              to.del<-(which(p.add[(Nvars.init+1):Nvars]< p.allow.replace)+ Nvars.init)
+                                              lto.del<-length(x = to.del)
+                                             }else{
                                              to.del<-which(p.add < p.allow.replace)
                                              lto.del<-length(x = to.del)
+                                             }
                                              #to.del<-(which(p.add[(Nvars.init+1):Nvars]< p.allow.replace)+ Nvars.init)
                                              #lto.del<-length(x = to.del)
                                              if(lto.del>0)

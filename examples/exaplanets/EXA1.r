@@ -164,8 +164,8 @@ for(j in 1:1)
       max.N=as.integer(3),
       min.N=as.integer(1),
       printable = F))
-    aaa=do.call(runemjmcmc,vect[1:21])
-    aaa$p.post
+    #aaa=do.call(runemjmcmc,vect[1:21])
+    #aaa$p.post
 
 
     params <- list(vect)[rep(1,M)]
