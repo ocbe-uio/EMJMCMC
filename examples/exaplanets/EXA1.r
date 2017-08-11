@@ -143,7 +143,7 @@ runpar<-function(vect)
 }
 
 
-for(j in 1:5)
+for(j in 1:1)
 {
   tryCatch({
 
