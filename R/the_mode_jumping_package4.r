@@ -3677,7 +3677,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            Nvars<<-as.integer(Nvars+1)
                                            p.add<<-as.array(c(p.add,p.allow.replace))
                                            p.post<-as.array(c(p.post,1))
-                                           #if(printable.opt)
+                                           if(printable.opt)
                                              print(paste("mutation happended ",proposal," tree  added"))
                                          }
                                          else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
@@ -3690,7 +3690,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              if(lto.del>0)
                                              {
                                                id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
-                                               #if(printable.opt)
+                                               if(printable.opt)
                                                  print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                                fparam[id.replace]<<-proposal
                                                keysarr <- as.array(keys(hashStat))
