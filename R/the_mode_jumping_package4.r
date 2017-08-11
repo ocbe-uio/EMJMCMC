@@ -3501,6 +3501,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        fparam.pool<<-c(fparam.pool,filtered)
                                        pool.probs<-array(data = 1/length(fparam.pool),dim = length(fparam.pool))
+
                                      }
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
@@ -3541,6 +3542,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          idmut<-(which(p.add[(Nvars.init+1):Nvars] <= p.allow.replace) + Nvars.init)
                                          lidmut<-length(idmut) #maximal number of covariates that can die out
+                                         if(lidmut>0)
+                                         {
+                                           p.del<-(lidmut - sum(p.add[idmut]))/lidmut
+                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                         }
                                        }else{
                                         idmut<-which(varcurb == 0)
                                         lidmut<-length(idmut)
