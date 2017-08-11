@@ -3578,49 +3578,32 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          # crossover type of a proposal
                                          # generate a mother
                                          #actvars<-which(varcurb==1)
-                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                         ltreem<-stri_length(mother)
-                                         mother<-stri_sub(mother,from=1, to = ltreem)
-                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
-                                         # generate a father
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                         ltreef<-stri_length(father)
-                                         father<-stri_sub(father,from=1, to = ltreef)
-                                         sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-
-
-
-                                         if(sjm+sjf+1<=max.tree.size)
+                                         sjm <- 0
+                                         sjf <- 0
+                                         while(sjm+sjf+1<=max.tree.size)
                                          {
+                                           mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           ltreem<-stri_length(mother)
+                                           mother<-stri_sub(mother,from=1, to = ltreem)
+                                           sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                           # generate a father
+                                           father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           ltreef<-stri_length(father)
+                                           father<-stri_sub(father,from=1, to = ltreef)
+                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
 
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
-                                           while((proposal %in% fparam))
-                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
 
-                                         }
-                                         else
-                                         {
 
-                                           t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
-                                           if(sjm>=sjf)
+                                           if(sjm+sjf+1<=max.tree.size)
                                            {
-                                             loc<-c(1,stri_locate_all(str = mother,regex = "\\*")[[1]][,1],stri_length(mother))
-                                             proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
-                                           }else
-                                           {
-                                             loc<-c(1,stri_locate_all(str = father,regex = "\\*")[[1]][,1],stri_length(father))
-                                             proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
+
+                                             proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                             while((proposal %in% fparam))
+                                               proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+
                                            }
 
-                                           diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
-                                           if(diffs>0)
-                                             proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
-                                           if(diffs<0)
-                                             proposal<-stri_paste(stri_paste(rep("(",-diffs),collapse = ""),proposal,collapse = "")
-                                           proposal<-stri_paste("I",proposal)
-                                           #print(paste("!!!!!",mother,"ssss",father))
                                          }
-
 
                                        }else if(action.type==3){
                                          proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
