@@ -3587,12 +3587,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          ltreef<-stri_length(father)
                                          father<-stri_sub(father,from=1, to = ltreef)
                                          #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-                                         if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
-                                         {
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
-                                         }else{
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
-                                         }
+
+                                         proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+
 
 
                                        }else if(action.type==3){
@@ -3677,7 +3674,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        add<-T
                                        bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                        if(is.na(bet.act[length(fparam)+2]))
+                                       {
                                          add<-F
+                                         idel<-idel-1
+                                       }
                                        sj<-(stri_count_fixed(str = proposal, pattern = "*"))
                                        sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
                                        sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
