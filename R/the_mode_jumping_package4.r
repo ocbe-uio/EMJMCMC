@@ -3692,9 +3692,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
                                        sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
                                        sj<-sj+1
-                                       if(length(sj)==0)
+                                       if(is.na(sj)==0)
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
-                                       if(sj>max.tree.size)
+                                       else if(sj>max.tree.size)
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                          if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
