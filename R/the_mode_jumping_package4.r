@@ -3765,7 +3765,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-c(1,2)]
-                                     print("Data filtered! Insignificant variables deleted!")
+                                     if(printable.opt) print("Data filtered! Insignificant variables deleted!")
                                      if(length(to.del)>0)
                                      {
                                        clear(hashStat)
