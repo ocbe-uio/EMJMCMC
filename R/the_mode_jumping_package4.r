@@ -3937,59 +3937,42 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #gen.prob<-c(1,1,1,1,1)#just uniform for now
                                        action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
 
-
                                        if(action.type==1)
                                        {
                                          # mutation (add a leave not in the search space)
-                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
 
                                        }else if(action.type==2){
                                          # crossover type of a proposal
                                          # generate a mother
-                                         actvars<-which(varcurb==1)
-                                         if(length(actvars==0))
-                                         {
-                                           mother<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
-                                           father<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
-                                         }else
-                                         {
-                                           mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                           #ltreem<-stri_length(mother)
-                                           #mother<-stri_sub(mother,from=1, to = ltreem)
-                                           #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
-                                           # generate a father
-                                           father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                           #ltreef<-stri_length(father)
-                                           #father<-stri_sub(father,from=1, to = ltreef)
-                                           #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-                                         }
+                                         #actvars<-which(varcurb==1)
+                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                         ltreem<-stri_length(mother)
+                                         mother<-stri_sub(mother,from=1, to = ltreem)
+                                         #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                         # generate a father
+                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                         ltreef<-stri_length(father)
+                                         father<-stri_sub(father,from=1, to = ltreef)
+                                         #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
 
                                          proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
 
 
 
                                        }else if(action.type==3){
-                                         # modification type of a proposal of one of either currently active or all covariates
-                                         actvars<-which(varcurb==1)
-                                         if(length(actvars==0))
-                                         {
-                                           proposal<-fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)]
-                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                         }else
-                                         {
-                                           proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                         }
-                                      }else if(action.type==4){
-                                         # modification type of a proposal of one of either currently active or all covariates
-                                         actvars<-which(varcurb==1)
-                                         # select a subset for the projection
-                                         if(length(actvars)>0)
-                                           actvars <- actvars[which(rbinom(n = length(actvars),size = 1,prob = 0.5)==1)]
+                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                         proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                       }else if(action.type==4){
 
-                                         if(length(actvars)==0)
+
+                                         # select a subset for the projection
+
+                                         actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
+
+                                         if(length(actvars)<=1)
                                          {
-                                           proposal <- fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
+                                           proposal <- fparam[1]
 
                                          }else{
                                            # get the projection coefficients as the posterior mode of the fixed effects
@@ -4014,12 +3997,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                        }else if(action.type==5)
                                        {
-                                         # reduce an operator fparam[idel]
+                                         #reduce an operator fparam[idel]
                                          #print("reduction")
                                          #print(idel)
                                          if(idel>length(fparam))
                                          {
-                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
+                                           proposal<-fparam[1]
                                          }else{
                                            cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
                                            if(length(cpm)==0)
@@ -4053,16 +4036,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          }
                                        }
 
-                                       if(is.na(proposal))
-                                         proposal <- fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
-
 
                                        sj<-(stri_count_fixed(str = proposal, pattern = "*"))
                                        sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
                                        sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
                                        sj<-sj+1
                                        if(sj>max.tree.size || length(sj)==0)
-                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
+                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                       if(is.na(proposal))
+                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        add<-T
                                        bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
@@ -4073,7 +4055,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          idel<-idel+1
                                        }
-
 
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
