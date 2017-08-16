@@ -13,6 +13,9 @@
 #install.packages("bigalgebra")
 #install.packages("speedglm")
 #install.packages("biglm")
+#/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive
+#install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive/bas_0.90.tar.gz", repos = NULL)
+
 library(glmnet)
 library(biglm)
 library(hash)
@@ -3749,11 +3752,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    # perform preliminary filtration here
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
+
                                      on.suggested <- 1
                                      preaccepted<-F
                                      #do the stuff here
                                      if(j==mutation_rate)
+                                     {
                                        fparam.pool<<-c(fparam.pool,filtered)
+                                       pool.probs<-array(data = 1/length(fparam.pool),dim = length(fparam.pool))
+                                     }
+
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-c(1,2)]
@@ -3767,6 +3775,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        clear(hashStat)
                                        #hashStat<<-hash()
                                        fparam<<-fparam[-to.del]
+                                       pool.probs[which(fparam.pool %in% fparam)]<-1
                                        Nvars<<-length(fparam)
                                        Nvars.init<<-Nvars
                                        p.add<<-p.add[-to.del]
@@ -3803,17 +3812,17 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            eqal.things<-which(varcurb.buf==varcurb)
                                            log.mod.switch.prob.back<-log.mod.switch.prob.back+length(which(fparam[eqal.things]!=tmp.buf.1[eqal.things]))
                                            log.mod.switch.prob.back<-log.mod.switch.prob.back^prand
-                                           print(paste0("afteracceptance ratio ",log.mod.switch.prob.back/log.mod.switch.prob))
+                                           if(printable.opt) print(paste0("afteracceptance ratio ",log.mod.switch.prob.back/log.mod.switch.prob))
                                            if(runif(1,0,1)<=log.mod.switch.prob.back/log.mod.switch.prob)
                                            {
-                                             print("preaccepted mutation is accepted")
+                                             if(printable.opt) print("preaccepted mutation is accepted")
                                              mlikcur<-mlikcur.buf.2
                                              varcurb<-varcurb.buf.2
                                              fparam<<-tmp.buf.2
                                              p.add<<-p.add.buf.2
                                            }else
                                            {
-                                             print("preaccepted mutation rejected")
+                                             if(printable.opt) print("preaccepted mutation rejected")
                                              fparam<<-tmp.buf.1
                                              p.add<<-p.add.buf.1
                                              mlikcur<-mlikcur.buf
@@ -3835,9 +3844,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          mlikcur.buf<-mlikcur
                                          varcurb.buf<-varcurb
-                                         print("OLDMOD")
+                                         if(printable.opt) print("OLDMOD")
                                          mso=(mlikcur)#(sum(unlist(lapply(res.par, function(x) exp(x$mlik)))))
-                                         print(mso)
+                                         if(printable.opt) print(mso)
 
                                        }else if(on.suggested%%2==0){
 
@@ -3855,7 +3864,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = -1,min.N =  Nvars,max.N = Nvars,switch.type = 9)
                                          log.mod.switch.prob<-vect[[1]]$log.mod.switch.prob
                                          res.par <- lapply(X = vect,FUN = .self$fitmodel)
-                                         print(mlikcur)
+                                         #print(mlikcur)
 
                                          mlikcur<-res.par[[1]]$mlik
                                          varcurb<-vect[[1]]$varcur
@@ -3863,8 +3872,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          mlikcur.buf.2<-mlikcur
                                          varcurb.buf.2<-varcurb
                                          msn=(mlikcur)#(sum(unlist(lapply(res.par, function(x) exp(x$mlik)))))
-                                         print("NEWMOD")
-                                         print(msn)
+                                         if(printable.opt) print("NEWMOD")
+                                         if(printable.opt) print(msn)
                                          if(msn == Inf && mso == Inf ||msn == 0 && mso == 0)
                                          {
                                            msn<-1
@@ -3873,7 +3882,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          if(log(runif(1,0,1))>=((msn)-(mso)))
                                          {
 
-                                           print("proposal is rejected")
+                                           if(printable.opt)print("proposal is rejected")
                                            fparam<<-tmp.buf.1
                                            p.add<<-p.add.buf.1
                                            mlikcur<-mlikcur.buf
@@ -3883,7 +3892,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
                                          }else{
-                                           print("mutation is preaccepted")
+                                           if(printable.opt)print("mutation is preaccepted")
 
                                            #fparam<<-tmp.buf.1
                                            #p.add<<-p.add.buf.1
@@ -3903,7 +3912,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
 
-                                     for(idel in 1:lidmut){
+                                     idel<-1
+
+                                     while(idel <= lidmut){
 
                                        #gen.prob<-c(1,1,1,1,1)#just uniform for now
                                        action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
@@ -3918,29 +3929,40 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          # crossover type of a proposal
                                          # generate a mother
                                          actvars<-which(varcurb==1)
-                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
-                                         ltreem<-stri_length(mother)
-                                         mother<-stri_sub(mother,from=1, to = ltreem)
-                                         #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
-                                         # generate a father
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
-                                         ltreef<-stri_length(father)
-                                         father<-stri_sub(father,from=1, to = ltreef)
-                                         #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
-                                         if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
+                                         if(length(actvars==0))
                                          {
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
-                                         }else{
-                                           proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+                                           mother<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
+                                           father<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
+                                         }else
+                                         {
+                                           mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           #ltreem<-stri_length(mother)
+                                           #mother<-stri_sub(mother,from=1, to = ltreem)
+                                           #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                           # generate a father
+                                           father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           #ltreef<-stri_length(father)
+                                           #father<-stri_sub(father,from=1, to = ltreef)
+                                           #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
                                          }
+
+                                         proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
+
 
 
                                        }else if(action.type==3){
                                          # modification type of a proposal of one of either currently active or all covariates
                                          actvars<-which(varcurb==1)
-                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1)])
-                                         proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-                                       }else if(action.type==4){
+                                         if(length(actvars==0))
+                                         {
+                                           proposal<-fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)]
+                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                         }else
+                                         {
+                                           proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                         }
+                                      }else if(action.type==4){
                                          # modification type of a proposal of one of either currently active or all covariates
                                          actvars<-which(varcurb==1)
                                          # select a subset for the projection
@@ -3949,7 +3971,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          if(length(actvars)==0)
                                          {
-                                           proposal <- fparam[1]
+                                           proposal <- fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
 
                                          }else{
                                            # get the projection coefficients as the posterior mode of the fixed effects
@@ -3979,7 +4001,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #print(idel)
                                          if(idel>length(fparam))
                                          {
-                                           proposal<-fparam[1]
+                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
                                          }else{
                                            cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
                                            if(length(cpm)==0)
@@ -4014,18 +4036,26 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
 
                                        if(is.na(proposal))
-                                         proposal <- fparam[1]
+                                         proposal <- fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
 
-                                       add<-T
-                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
-                                       if(is.na(bet.act[length(fparam)+2]))
-                                         add<-F
+
                                        sj<-(stri_count_fixed(str = proposal, pattern = "*"))
                                        sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
                                        sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
                                        sj<-sj+1
                                        if(sj>max.tree.size || length(sj)==0)
-                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                         proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
+
+                                       add<-T
+                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                       if(is.na(bet.act[length(fparam)+2]))
+                                       {
+                                         add<-F
+                                       }else
+                                       {
+                                         idel<-idel+1
+                                       }
+
 
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
@@ -4039,33 +4069,27 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                        {
 
-                                         if(allow_offsprings==4)
+                                         to.del<-which(p.add < p.allow.replace)
+                                         lto.del<-length(x = to.del)
+                                         if(lto.del>0)
                                          {
-
-
-                                           to.del<-which(p.add < p.allow.replace)
-                                           lto.del<-length(x = to.del)
-                                           if(lto.del>0)
+                                           id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                           #if(printable.opt)
+                                           #print(paste("mutation suggested ",proposal," tree  replaced ", fparam[id.replace]))
+                                           fparam[id.replace]<<-proposal
+                                           keysarr <- as.array(keys(hashStat))
+                                           p.add[id.replace]<<-p.allow.replace
+                                           for(jjj in 1:length(keysarr))
                                            {
-                                             id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
-                                             #if(printable.opt)
-                                             #print(paste("mutation suggested ",proposal," tree  replaced ", fparam[id.replace]))
-                                             fparam[id.replace]<<-proposal
-                                             keysarr <- as.array(keys(hashStat))
-                                             p.add[id.replace]<<-p.allow.replace
-                                             for(jjj in 1:length(keysarr))
+                                             if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
                                              {
-                                               if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
-                                               {
-                                                 del(x = keysarr[jjj],hash = hashStat)
-                                               }
-
+                                               del(x = keysarr[jjj],hash = hashStat)
                                              }
 
                                            }
 
-
                                          }
+
                                        }
 
 

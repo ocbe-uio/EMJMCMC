@@ -146,7 +146,7 @@ for(j in 1:MM)
   max.popul <- array(0,M)
   set.seed(j)
   X1<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = 0.5),dim = c(1000,50)))
-  X1$Y1=rnorm(n = 1000,mean = 1+0.89*(sin(X1$V1)*cos(X1$V4)) + 0.89*(tanh(X1$V8)*sigmoid(X1$V11))+0.7*(X1$V5*X1$V9),sd = 1)#-0.7+1*((X1$V1)*(X1$V4)) + 1*(X1$V8*X1$V11)+1*(X1$V5*X1$V9)#
+  X1$Y1=rnorm(n = 1000,mean = 1+0.89*((X1$V1)*(X1$V4)) + 0.89*((X1$V8)*(X1$V11))+0.89*(X1$V5*X1$V9),sd = 1)#-0.7+1*((X1$V1)*(X1$V4)) + 1*(X1$V8*X1$V11)+1*(X1$V5*X1$V9)#
   #X1$Y1<-round(1.0/(1.0+exp(-Y1)))
 
   formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(30:51)],collapse = "+")))
@@ -158,15 +158,15 @@ for(j in 1:MM)
   #the GMJMCMC works fine
   #but RGMJMCMC seems ot be much less efficient!?
 
-  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lms,estimator.args = list(data = data.example,n = 1000, m = 2),recalc_margin = 249, save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),interact.param=list(allow_offsprings=3,mutation_rate =100,last.mutation = 5000, max.tree.size = 4, Nvars.max = (compmax-1),p.allow.replace=0.5,p.allow.tree=0.2,p.nor=0.2,p.and = 1),n.models = 100000,unique = F,max.cpu = 3,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = X1,secondary = colnames(X1)[c(30:50)],presearch = T,locstop = F ,estimator = estimate.logic.lms,estimator.args = list(data = data.example,n = 1000, m = 2),recalc_margin = 249, save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,1,1,0.1,1),interact.param=list(allow_offsprings=4,mutation_rate =100,last.mutation = 5000, max.tree.size = 4, Nvars.max = (compmax-1),p.allow.replace=0.5,p.allow.tree=0.1,p.nor=0.2,p.and = 1),n.models = 100000,unique = F,max.cpu = 3,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(3),
     min.N=as.integer(1),
     printable = F))
 
-   #aaa=do.call(runemjmcmc,vect[1:24])
-   #aaa$p.post
+   aaa=do.call(runemjmcmc,vect[1:24])
+   aaa$p.post
 
    #formula5 =  as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(mySearch$fparam[which(aaa$p.post>0.8)],collapse = "+")))
 
