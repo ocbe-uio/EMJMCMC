@@ -3805,19 +3805,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        if(keep.origin)
                                        {
-                                         idmut<-(which(varcurb[(Nvars.init+1):Nvars] ==0) + Nvars.init)
+                                         idmut<-(which(p.add[(Nvars.init+1):Nvars] <= p.allow.replace) + Nvars.init)
                                          lidmut<-length(idmut) #maximal number of covariates that can die out
                                          if(lidmut>0)
                                          {
-                                           p.del<-0.5
+                                           p.del<-(lidmut - sum(p.add[idmut]))/lidmut
                                            lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
                                          }
                                        }else{
-                                         idmut<-which(varcurb == 0)
+                                         idmut<-which(p.add <= p.allow.replace)
                                          lidmut<-length(idmut) #maximal number of covariates that can die out
                                          if(lidmut>0)
                                          {
-                                           p.del<-0.5
+                                           p.del<-(lidmut - sum(p.add[idmut]))/lidmut
                                            lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
                                          }
                                        }
@@ -4069,10 +4069,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
 
                                          if(keep.origin){
-                                           to.del<-(which(varcurb[(Nvars.init+1):Nvars]==0)+ Nvars.init)
+                                           to.del<-(which(p.add[(Nvars.init+1):Nvars]< p.allow.replace)+ Nvars.init)
                                            lto.del<-length(x = to.del)
                                          }else{
-                                           to.del<-which(varcurb == 0)
+                                           to.del<-which(p.add < p.allow.replace)
                                            lto.del<-length(x = to.del)
                                          }
 
