@@ -4064,7 +4064,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          p.add<<-as.array(c(p.add,p.allow.replace))
                                          p.post<-as.array(c(p.post,1))
                                          #if(printable.opt)
-                                         print(paste("mutation happended ",proposal," tree  added"))
+                                         if(printable.opt) print(paste("mutation happended ",proposal," tree  added"))
                                        }
                                        else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                        {
