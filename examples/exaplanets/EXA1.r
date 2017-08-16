@@ -4,7 +4,7 @@
 # squeue -u aliaksah
 #
 
-#source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package2.r")
+#source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 
 library(inline)
@@ -158,14 +158,14 @@ for(j in 1:1)
 
     #wait()
 
-    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("","cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.9,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=7500, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 250,last.mutation=10500, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
       min.N=as.integer(1),
       printable = F))
-    #aaa=do.call(runemjmcmc,vect[1:21])
-    #aaa$p.post
+    aaa=do.call(runemjmcmc,vect[1:21])
+    aaa$p.post
 
 
     params <- list(vect)[rep(1,M)]
