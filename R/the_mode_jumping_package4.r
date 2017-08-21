@@ -3688,14 +3688,20 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        add<-T
-                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
-                                       if(is.na(bet.act[length(fparam)+2]))
-                                       {
+                                       tryCatch(capture.output({
+                                         bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                         
+                                         if(is.na(bet.act[length(fparam)+2]))
+                                         {
+                                           add<-F
+                                         }else
+                                         {
+                                           idel<-idel+1
+                                         }
+                                       }, error = function(err) {
                                          add<-F
-                                       }else
-                                       {
-                                         idel<-idel+1
-                                       }
+                                       }))
+                                       
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
                                          fparam<<-c(fparam,proposal)
@@ -4047,7 +4053,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        add<-T
+                                       
+                                       tryCatch(capture.output({
                                        bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                       
                                        if(is.na(bet.act[length(fparam)+2]))
                                        {
                                          add<-F
@@ -4055,6 +4064,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          idel<-idel+1
                                        }
+                                       }, error = function(err) {
+                                         add<-F
+                                       }))
+                                       
 
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {

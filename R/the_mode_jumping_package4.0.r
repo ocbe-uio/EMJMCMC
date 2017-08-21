@@ -3796,13 +3796,33 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(Nvars>=Nvars.max)
                                      {
                                        # delete those that are not in the active model with probability 0.5 each
-                                       idmut<-which(varcurb == 0)
-                                       lidmut<-length(idmut) #maximal number of covariates that can die out
-                                       if(lidmut>0)
+                                       #idmut<-which(varcurb == 0)
+                                       #lidmut<-length(idmut) #maximal number of covariates that can die out
+                                       #if(lidmut>0)
+                                       #{
+                                       #   p.del<-0.5
+                                       #   lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                       #}
+                                       
+                                       if(keep.origin)
                                        {
-                                         p.del<-0.5
-                                         lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                         idmut<-(which(varcurb[(Nvars.init+1):Nvars] ==0 ) + Nvars.init)
+                                         lidmut<-length(idmut) #maximal number of covariates that can die out
+                                         if(lidmut>0)
+                                         {
+                                           p.del<-0.5
+                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                         }
+                                       }else{
+                                         idmut<-which(varcurb ==0)
+                                         lidmut<-length(idmut) #maximal number of covariates that can die out
+                                         if(lidmut>0)
+                                         {
+                                           p.del<-0.5
+                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                         }
                                        }
+                                       
                                        #mod.id.old<-runif(n = 1000,min = 1,max = 2^Nvars)
                                        if(on.suggested%%2==1){
 
@@ -4068,9 +4088,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
                                        else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                        {
-
-                                         to.del<-which(p.add < p.allow.replace)
-                                         lto.del<-length(x = to.del)
+                                         
+                                         if(keep.origin){
+                                           to.del<-(which(varcurb[(Nvars.init+1):Nvars]==0)+ Nvars.init)
+                                           lto.del<-length(x = to.del)
+                                         }else{
+                                           to.del<-which(varcurb == 0)
+                                           lto.del<-length(x = to.del)
+                                         }
+                                         
+                                         #to.del<-which(p.add < p.allow.replace)
+                                         #lto.del<-length(x = to.del)
+                                         
+                                         #varcurb == 0
                                          if(lto.del>0)
                                          {
                                            id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]

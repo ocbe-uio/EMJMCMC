@@ -3,8 +3,31 @@ library(RCurl)
 library(glmnet)
 library(xgboost)
 library(h2o)
+library(BAS)
 #define your working directory, where the data files are stored
 workdir<-""
+
+
+estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("cosi","sigmoid","tanh","atan","erf") )
+{
+
+  #only poisson and binomial families are currently adopted
+  out <- glm(formula = formula, family=family,data = data)
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
+  sj<-(stri_count_fixed(str = fparam, pattern = "*"))
+  #sj<-sj+(stri_count_fixed(str = fparam, pattern = "+"))
+  for(rel in relat)
+    sj<-sj+(stri_count_fixed(str = fparam, pattern = rel))
+  sj<-sj+1
+  mlik = (-(out$deviance -2*log(r)*sum(sj)))/2
+
+  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+
+}
 
 #prepare the test set data
 simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NEAs.txt"),sep = ",",header = T,fill=TRUE)
@@ -62,7 +85,7 @@ for(ii in 1:100)
 
     formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
 
-    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-0.5)),recalc_margin = 95, save.beta = T,interact = T,relations = c("","cosi","sigmoid","tanh","atan","erf"),relations.prob =c(0.8,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=500, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.1,p.allow.tree=0.18,p.nor=0.3,p.and = 0.7),n.models = 7000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,gen.prob =c(1,10,1,10,1),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,family = binomial(), logn = log(64),r=exp(-0.5)),recalc_margin = 95, save.beta = T,interact = T,relations = c("cosi","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=10000, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.1,p.allow.tree=0.18,p.nor=0.3,p.and = 0.7),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),

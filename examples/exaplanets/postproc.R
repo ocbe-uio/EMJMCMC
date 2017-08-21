@@ -31,9 +31,9 @@ sigmoid<-function(x)exp(-x)
 #temp = list.files(pattern="posteriorsJA3_*")
 #myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
 
-details = file.info(list.files(pattern="*postJA1_*"))
+details = file.info(list.files(pattern="*postJM16old_*"))
 details = details[with(details, order(as.POSIXct(mtime),decreasing = T)), ]
-files = rownames(details)[1:116]
+files = rownames(details)
 
 ids<-NULL
 nms<-NULL
@@ -43,7 +43,7 @@ for(file in files)
   i<-i+1
   tmp<-strsplit(x = file,fixed = T,split = c("_","."))[[1]][2]
   tmp<-strsplit(x = tmp,fixed = T,split = ".")[[1]][1]
-  if(as.integer(tmp)<=100)
+  if(as.integer(tmp)<=100&&stri_count_fixed(str = file,pattern = "new")[[1]]==0)
   {
     ids<-c(ids,i)
     nms<-c(nms,tmp)
@@ -66,7 +66,7 @@ for(i in 1:length(myfiles))
 }
 
 
-xxx<-simplifyposteriors(X=X,posteriors=as.matrix(myfiles[i][[1]]),th=0.0001,thf=0.3)
+#xxx<-simplifyposteriors(X=X,posteriors=as.matrix(myfiles[i][[1]]),th=0.0001,thf=0.3)
 
 
 rhash<-hash()
@@ -86,7 +86,7 @@ for(i in 1:min(100,N))
     {
       expr<-as.character(myfiles[[i]]$tree[j])
       print(expr)
-      14
+      res<-model.matrix(data=X,object = as.formula(paste0("RadiusJpt~",expr)))
       ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,1],collapse = ""),1,expr)
       if(!(ress[1] %in% values(rhash)))
         rhash[[ress[1]]]<-ress
@@ -112,9 +112,51 @@ for(i in 1:min(100,N))
 }
 
 
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expJA1222.csv",row.names = F,col.names = F)
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM16o22.csv",row.names = F,col.names = F)
 
 
 
 
+rhash<-hash()
+
+N<-length(myfiles)
+alpha<-0.25
+clear(rhash)
+
+
+for(i in 1:min(100,N))
+{
+  for(j in 1:1)
+  {
+    if(myfiles[[i]]$posterior[j]>=alpha)
+    {
+      expr<-as.character(myfiles[[i]]$tree[j])
+      print(expr)
+      res<-model.matrix(data=X,object = as.formula(paste0("RadiusJpt~",expr)))
+      ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,1],collapse = ""),1,expr)
+      if(!(ress[1] %in% values(rhash)))
+        rhash[[ress[1]]]<-ress
+      else
+      {
+        if(ress[1] %in% keys(rhash))
+        {
+          rhash[[ress[1]]][3]<- (as.numeric(rhash[[ress[1]]][3])) + as.numeric(1)
+          if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
+            rhash[[ress[1]]][4]<-expr
+        }
+        else
+        {
+          rhash[[ress[2]]][3]<- (as.numeric(rhash[[ress[2]]][3])) + as.numeric(1)
+          if(stri_length(rhash[[ress[2]]][4])>stri_length(expr))
+            rhash[[ress[2]]][4]<-expr
+        }
+      }
+    }
+
+  }
+
+}
+
+
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM16o1222.csv",row.names = F,col.names = F)
 

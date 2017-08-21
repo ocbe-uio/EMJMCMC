@@ -28,8 +28,8 @@ sigmoid<-function(x)exp(-x)
 
 
 #experiment i
-temp = list.files(pattern="posteriorsJA3_*")
-myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
+#temp = list.files(pattern="posteriorsJA3_*")
+#myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
 
 details = file.info(list.files(pattern="*posteriorsJA1*"))
 details = details[with(details, order(as.POSIXct(mtime),decreasing = T)), ]
@@ -103,5 +103,5 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.3)
 for(i in 1:length(myfiles))
 {
   print(i)
-  write.csv(x = simplifyposteriors(X=X,posteriors=as.matrix(myfiles[i][[1]]),th=0.0001,thf=0.1),file =  paste0("postJA32_",nms[i],".csv"),row.names = F)
+  write.csv(x = simplifyposteriors(X=X,posteriors=as.matrix(myfiles[i][[1]]),th=0.0001,thf=0.1),file =  paste0("postJA16_",nms[i],".csv"),row.names = F)
 }
