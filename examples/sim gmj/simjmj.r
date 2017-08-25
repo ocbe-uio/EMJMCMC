@@ -109,7 +109,7 @@ troot<-function(x)abs(x)^(1/3)
 MM = 1
 M = 4
 NM= 1000
-compmax = 26
+compmax = 41
 th<-(10)^(-5)
 thf<-0.05
 
@@ -261,7 +261,7 @@ for(j in 1:100)
     posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
     posteriors$X<-as.character(posteriors$X)
     tryCatch({
-      res1<-simplifyposteriors(X = X,posteriors = posteriors, th,thf)
+      res1<-simplifyposteriors(X = X4,posteriors = posteriors, th,thf)
       row.names(res1)<-1:dim(res1)[1]
       write.csv(x =res1,row.names = F,file = paste0("postGMJSIM_",j,".csv"))
     },error = function(err){
