@@ -40,6 +40,34 @@ train <- df[index, ]
 
 data.example <- as.data.frame(train,stringsAsFactors = T)
 
+
+
+estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("cosi","sigmoid","tanh","atan","erf","m("))
+{
+
+  #only poisson and binomial families are currently adopted
+  X <- model.matrix(object = formula,data = data)
+  capture.output({out <- bayesglm.fit(x = X, y = data[,yid], family=family,coefprior=prior)})
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  #fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
+  #sj<-(stri_count_fixed(str = fparam, pattern = "("))
+  sj<-2*(stri_count_fixed(str = fmla.proc[2], pattern = "*"))
+  sj<-sj+1*(stri_count_fixed(str = fmla.proc[2], pattern = "+"))
+  for(rel in relat)
+    sj<-sj+2*(stri_count_fixed(str = fmla.proc[2], pattern = rel))
+  #sj<-sj+1
+
+  mlik = ((-out$deviance +2*log(r)*sum(sj)))/2
+
+  #print(sj)
+  #print(sum(sj))
+  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+
+}
+
 estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1)
 {
 
@@ -64,6 +92,7 @@ h2o.init(nthreads=-1, max_mem_size = "6G")
 
 h2o.removeAll()
 
+cosi<-function(x)cos(x/180*pi)
 
 M<-10
 
@@ -71,7 +100,7 @@ results<-array(0,dim = c(11,M,5))
 for(ii in 1:M)
 {
   print(paste("iteration ",ii))
-  capture.output({withRestarts(tryCatch(capture.output({
+#  capture.output({withRestarts(tryCatch(capture.output({
 
 
   set.seed(ii)
@@ -88,7 +117,7 @@ for(ii in 1:M)
 
       formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[ids],collapse = "+")))
 
-      res = runemjmcmc(formula = formula1,data = data.example,presearch=T, locstop =T,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-1),yid=1),recalc_margin = 95, save.beta = T,interact = T,relations = c("","cosi","sigmoid","tanh","atan","erf","gmean","gmedi","gfquar","glquar"),relations.prob =c(0.8,0.1,0.1,0.1,0.1,0.1,0.1,0.5,0.1,0.1),interact.param=list(allow_offsprings=1,mutation_rate = 500,last.mutation=2500, max.tree.size = 4, Nvars.max =70,p.allow.replace=0.1,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+      res = runemjmcmc(formula = formula1,data = data.example,presearch=T, locstop =T,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-1),yid=1),recalc_margin = 95, save.beta = T,interact = T,relations = c("cosi","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,last.mutation=2500, max.tree.size = 4, Nvars.max =70,p.allow.replace=0.1,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
         max.N.glob=as.integer(10),
         min.N.glob=as.integer(5),
         max.N=as.integer(3),
@@ -157,7 +186,7 @@ for(ii in 1:M)
 #   })), abort = function(){onerr<-TRUE;out<-NULL})})
 #   print(results[1,ii,1])
 #
-# }
+}
 
   #MJMCMC
   t<-system.time({

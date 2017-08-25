@@ -28,7 +28,7 @@ library(MASS)
 library(ade4)
 #library(copula)
 #library(compiler)
-library(BAS)
+library(BAS)# should be version 0.9 !!!! otherwise some dependencies might not work!
 library(stringi)
 #library(speedglm)
 require(stats)
@@ -3606,16 +3606,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                        }else if(action.type==4){
 
-
+                                              
                                          # select a subset for the projection
 
                                          actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
-
+                                        
+                                         
                                          if(length(actvars)<=1)
                                          {
                                            proposal <- fparam[1]
 
                                          }else{
+                                           
+                                           #print(as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+"))))
                                            # get the projection coefficients as the posterior mode of the fixed effects
                                            bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
                                            nab<-which(is.na(bet.act))
@@ -3628,7 +3631,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            bet.act<-stri_paste("I(",bet.act,")",sep = "")
                                            proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
                                            proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
-
+                                           
+                                          
+                                           #print(proposal)
+                                           
                                            if(is.na(proposal))
                                            {
                                              print(fparam[actvars])
@@ -3691,28 +3697,38 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        tryCatch(capture.output({
                                          bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                          
-                                         if(is.na(bet.act[length(fparam)+2]))
+                                         if(is.na(bet.act[length(fparam)+2])&&action.type!=4)
                                          {
                                            add<-F
                                          }else
                                          {
+                                           #
+                                           
                                            idel<-idel+1
                                          }
                                        }, error = function(err) {
+                                         #print(proposal)
                                          add<-F
                                        }))
-                                       
+
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
                                          fparam<<-c(fparam,proposal)
                                          Nvars<<-as.integer(Nvars+1)
                                          p.add<<-as.array(c(p.add,p.allow.replace))
                                          p.post<-as.array(c(p.post,1))
+                                         
+                                         
+                                         
                                          if(printable.opt)
                                            print(paste("mutation happended ",proposal," tree  added"))
                                        }
                                        else if(add)#alternative restricted to correlation: if(max(abs(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example)))))<0.9999)
                                        {
+                                         
+                                         #if(action.type==4)
+                                         #   print(proposal)
+                                         
                                          if(keep.origin){
                                            to.del<-(which(p.add[(Nvars.init+1):Nvars]< p.allow.replace)+ Nvars.init)
                                            lto.del<-length(x = to.del)
@@ -4053,10 +4069,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        add<-T
-                                       
+
                                        tryCatch(capture.output({
                                        bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
-                                       
+
                                        if(is.na(bet.act[length(fparam)+2]))
                                        {
                                          add<-F
@@ -4067,7 +4083,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }, error = function(err) {
                                          add<-F
                                        }))
-                                       
+
 
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
@@ -5544,6 +5560,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "*",replacement = "M")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "|",replacement = "a")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "&",replacement = "A")
+                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = ",",replacement = "k")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = " ",replacement = "")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "\n",replacement = "")
                                names(covariates)<-stri_replace_all(str = names(covariates),fixed = "cFALSE",replacement = "c")
@@ -5553,6 +5570,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = ")",replacement = "c")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "+",replacement = "p")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "-",replacement = "m")
+                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = ",",replacement = "k")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "*",replacement = "M")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "|",replacement = "a")
                                fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "&",replacement = "A")

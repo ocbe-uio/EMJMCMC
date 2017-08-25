@@ -31,7 +31,7 @@ sigmoid<-function(x)exp(-x)
 #temp = list.files(pattern="posteriorsJA3_*")
 #myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
 
-details = file.info(list.files(pattern="*postJM16old_*"))
+details = file.info(list.files(pattern="*postJM1new_*"))
 details = details[with(details, order(as.POSIXct(mtime),decreasing = T)), ]
 files = rownames(details)
 
@@ -43,14 +43,14 @@ for(file in files)
   i<-i+1
   tmp<-strsplit(x = file,fixed = T,split = c("_","."))[[1]][2]
   tmp<-strsplit(x = tmp,fixed = T,split = ".")[[1]][1]
-  if(as.integer(tmp)<=100&&stri_count_fixed(str = file,pattern = "new")[[1]]==0)
+  if(as.integer(tmp)<=150&&stri_count_fixed(str = file,pattern = "new")[[1]]==1)
   {
     ids<-c(ids,i)
     nms<-c(nms,tmp)
   }
 }
 temp<-files[ids]
-myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
+myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)[1:100]
 
 #X<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
 length(myfiles)
@@ -112,7 +112,7 @@ for(i in 1:min(100,N))
 }
 
 
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM16o22.csv",row.names = F,col.names = F)
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM1n22.csv",row.names = F,col.names = F)
 
 
 
@@ -158,5 +158,5 @@ for(i in 1:min(100,N))
 }
 
 
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM16o1222.csv",row.names = F,col.names = F)
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM1n1222.csv",row.names = F,col.names = F)
 

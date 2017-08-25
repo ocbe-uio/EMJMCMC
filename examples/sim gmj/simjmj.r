@@ -4,7 +4,7 @@
 # squeue -u aliaksah
 #
 
-#source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 
 library(inline)
@@ -13,7 +13,7 @@ code <- 'int wstat; while (waitpid(-1, &wstat, WNOHANG) > 0) {};'
 wait <- cfunction(body=code, includes=includes, convention='.C')
 
 
-estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("cosi","sigmoid","tanh","atan","sini","troot","m("))
+estimate.gamma.cpen <- function(formula, data,r = 1.0/1000.0,logn=log(1000.0),relat=c("cos","sigmoid","tanh","atan","sin","erf"))
 {
   fparam<-NULL
   fmla.proc<-as.character(formula)[2:3]
@@ -21,7 +21,7 @@ estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),rela
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
   fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "("))
+  sj<-(stri_count_fixed(str = fparam, pattern = "*"))
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "+"))
   for(rel in relat)
     sj<-sj+(stri_count_fixed(str = fparam, pattern = rel))
@@ -30,9 +30,9 @@ estimate.gamma.cpen <- function(formula, data,r = 1.0/223.0,logn=log(223.0),rela
     out <- glm(formula = formula,data = data, family = gaussian)
     # 1 for aic, 2 bic prior, else g.prior
 
-    mlik = (-(out$deviance -2*log(r)*sum(sj)))/2
-    waic = -(out$deviance + 2*out$rank)
-    dic =  -(out$deviance + logn*out$rank)
+    mlik = (-(out$deviance -2*log(r)*sum(sj)))/2+10000
+    waic = (out$deviance + 2*out$rank)+10000
+    dic =  (out$deviance + logn*out$rank)+10000
     summary.fixed =list(mean = coefficients(out))
 
   }, error = function(err) {
@@ -51,7 +51,7 @@ parall.gmj <<- mclapply
 
 
 
-simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.3)
+simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2)
 {
   posteriors<-posteriors[-which(posteriors[,2]<th),]
   rhash<-hash()
@@ -59,10 +59,9 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.3)
   {
     expr<-posteriors[i,1]
     print(expr)
-    res<-model.matrix(data=X,object = as.formula(paste0("RadiusJpt~",expr)))
-    res[,1]<-res[,1]-res[,2]
-    ress<-c(stri_flatten(res[,1],collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
-    if(!((ress[2] %in% values(rhash))))
+    res<-model.matrix(data=X,object = as.formula(paste0("Y4~",expr)))
+    ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
+    if(!((ress[1] %in% values(rhash))))
       rhash[[ress[1]]]<-ress
     else
     {
@@ -71,12 +70,6 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.3)
         rhash[[ress[1]]][3]<- (as.numeric(rhash[[ress[1]]][3]) + as.numeric(ress[3]))
         if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
           rhash[[ress[1]]][4]<-expr
-      }
-      else
-      {
-        rhash[[ress[2]]][3]<- (as.numeric(rhash[[ress[2]]][3]) + as.numeric(ress[3]))
-        if(stri_length(rhash[[ress[2]]][4])>stri_length(expr))
-          rhash[[ress[2]]][4]<-expr
       }
     }
 
@@ -113,10 +106,10 @@ InvX<-function(x)
 }
 troot<-function(x)abs(x)^(1/3)
 
-MM = 100
+MM = 1
 M = 4
 NM= 1000
-compmax = 16
+compmax = 26
 th<-(10)^(-5)
 thf<-0.05
 
@@ -143,30 +136,27 @@ runpar<-function(vect)
 }
 
 
-for(j in 1:1)
+for(j in 1:100)
 {
   tryCatch({
 
     set.seed(j)
 
-    X<-read.csv("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/exaplanets/exa1.csv")
+    X4<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+    Y4<-rnorm(n = 1000,mean = 1+7*(X4$V4*X4$V17*X4$V30*X4$V10)+7*(((X4$V50*X4$V19*X4$V13*X4$V11)>0)) + 9*(X4$V37*X4$V20*X4$V12)+ 7*(X4$V1*X4$V27*X4$V3)
+              +3.5*(X4$V9*X4$V2) + 6.6*(X4$V21*X4$V18) + 1.5*X4$V7 + 1.5*X4$V8,sd = 1)
+    X4$Y4<-Y4
 
-    formula1 = as.formula(paste(colnames(X)[5],"~ 1 +",paste0(colnames(X)[-5],collapse = "+")))
-    data.example = as.data.frame(X)
+    formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
+    data.example = as.data.frame(X4)
+    # outgraphs=F
 
-    print(formula1)
-
-    #wait()
-
-    vect<-list(formula = formula1,data = data.example,estimator =estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 250,last.mutation=10500, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+    vect<-list(formula = formula1,outgraphs=F,data = X4,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 100, m = 50),recalc_margin = 249, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation = 10000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
       min.N=as.integer(1),
       printable = F))
-    aaa=do.call(runemjmcmc,vect[1:21])
-    aaa$p.post
-
 
     params <- list(vect)[rep(1,M)]
 
@@ -179,7 +169,7 @@ for(j in 1:1)
     gc()
     print(paste0("begin simulation ",j))
     results<-parall.gmj(X = params,FUN = runpar,mc.preschedule = F, mc.cores = M)
-    #print(results)
+    print(results)
 
     wait()
 
@@ -187,9 +177,15 @@ for(j in 1:1)
     post.popul <- array(0,M)
     max.popul <- array(0,M)
     nulls<-NULL
+
     not.null<-1
     for(k in 1:M)
     {
+      if(is.character(results[[k]]))
+      {
+        nulls<-c(nulls,k)
+        next
+      }
       if(length(results[[k]])==0)
       {
         nulls<-c(nulls,k)
@@ -211,9 +207,17 @@ for(j in 1:1)
       }
       max.popul[k]<-results[[k]]$cterm
       post.popul[k]<-results[[k]]$post.populi
-      resa[,k*3-2]<-c(results[[k]]$fparam,"Post.Gen.Max")
-      resa[,k*3-1]<-c(results[[k]]$p.post,results[[k]]$cterm)
-      resa[,k*3]<-rep(post.popul[k],length(results[[k]]$p.post)+1)
+      if(length(resa[,k*3-2])==(length(results[[k]]$fparam)+1))
+      {
+        resa[,k*3-2]<-c(results[[k]]$fparam,"Post.Gen.Max")
+        resa[,k*3-1]<-c(results[[k]]$p.post,results[[k]]$cterm)
+        resa[,k*3]<-rep(post.popul[k],length(results[[k]]$p.post)+1)
+      }else
+      {
+        resa[,k*3-2]<-rep(results[[k]]$fparam[1],length(resa[,k*3-2]))
+        resa[,k*3-1]<-rep(0,length(resa[,k*3-1]))
+        resa[,k*3]<-rep(-10^9,length(resa[,k*3]))
+      }
 
     }
 
@@ -247,7 +251,7 @@ for(j in 1:1)
 
     posteriors<-values(hfinal)
 
-    #print(posteriors)
+    print(posteriors)
     clear(hfinal)
     rm(hfinal)
     rm(resa)
@@ -258,19 +262,20 @@ for(j in 1:1)
     posteriors$X<-as.character(posteriors$X)
     tryCatch({
       res1<-simplifyposteriors(X = X,posteriors = posteriors, th,thf)
-      write.csv(x =res1,row.names = F,file = paste0("postJA32_",j,".csv"))
+      row.names(res1)<-1:dim(res1)[1]
+      write.csv(x =res1,row.names = F,file = paste0("postGMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
-      write.csv(x =posteriors,row.names = F,file = paste0("posteriorsJA32_",j,".csv"))
+      write.csv(x =posteriors,row.names = F,file = paste0("postGMJSIM_",j,".csv"))
     },finally = {
 
       print(paste0("end simulation ",j))
 
     })
     rm(X)
-    #rm(data.example)
-    #rm(vect)
-    #rm(params)
+    rm(data.example)
+    rm(vect)
+    rm(params)
     gc()
     print(paste0("end simulation ",j))
   },error = function(err){
@@ -280,7 +285,7 @@ for(j in 1:1)
   },finally = {
 
     print(paste0("end simulation ",j))
-    #rm(X)
+    rm(X)
     rm(data.example)
     rm(vect)
     rm(params)

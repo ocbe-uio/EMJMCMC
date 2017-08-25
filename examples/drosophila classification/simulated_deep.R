@@ -5,16 +5,37 @@ library(xgboost)
 library(h2o)
 library(caret)
 #define your working directory, where the data files are stored
-workdir<-""
-
+workdir<-"/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/drosophila classification"
+setwd(workdir)
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 #prepare the test set data
-voice <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/voice%20recognition/voice.csv"),sep = ",",header = T,fill=TRUE)
+X <- read.csv("data.csv",sep = ",",header = T,fill=TRUE)
 
-voice$label<-as.numeric((voice$label=="male"))
+XL<-length(names(X))
+names(X)[XL]<-"Y"
+i1<-which(X[,-XL]>0)
+arr<-array(data = 0,dim = dim(X[,-XL])[1]*dim(X[,-XL])[2])
+arr[i1]<-1
+X[,-XL]<-array(data = arr,dim = c(dim(X[,-XL])[1],dim(X[,-XL])[2]))
+
+nass<-which(is.na(X$Y))
+if(length(nass)>0)
+{
+  X<-X[-nass,]
+}
+idss<-which(abs(cor(x = X,y=X$Y))>0.0)
+
+gc()
+nms<-names(X)
+Y<-0.4 -9*(X[nms[4]]*X[nms[17]]*X[nms[30]]*X[nms[10]]) + 9*(X[nms[7]]*X[nms[20]]*X[nms[12]]) - 5*(X[nms[9]]*X[nms[2]])
+
+X$label<-(round(1.0/(1.0+exp(-Y$v))))
+
+#GMJMCMC
 
 
 
-estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("cosi","sigmoid","tanh","atan","erf","gmean","gmedi","gfquar","glquar"))
+estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("cosi","sigmoid","tanh","atan","erf","m("))
 {
 
   #only poisson and binomial families are currently adopted
@@ -39,12 +60,16 @@ estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid
   return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
 
 }
+M<-10
 
-gc()
+results<-array(0,dim = c(11,M,5))
 
 
-results<-array(0,dim = c(11,100,5))
-#GMJMCMC
+h2o.init(nthreads=-1, max_mem_size = "6G")
+
+h2o.removeAll()
+
+X$Y<-NULL
 
 
 
@@ -55,34 +80,19 @@ cosi<-function(x)cos(x/180*pi)
 gmean<-function(x)as.integer(x>mean(x))
 norm<-function(x)pnorm(x,mean = mean(x),sd = sd(x))
 
-squar<-function(x)1/(x^2+1)
 
-sort(norm(voice$meanfreq))
-gmean(voice$meanfreq)
-gmean(gmean(voice$meanfreq))==gmean(voice$meanfreq)
-gmedi(voice$meanfreq)==gmean(voice$meanfreq)
-gfquar(voice$meanfreq)
-gfquar(glquar(voice$meanfreq))==gfquar(voice$meanfreq)
-gmean(voice$meanfreq)
-gmean(gmean(voice$meanfreq))
-# h2o initiate
-h2o.init(nthreads=-1, max_mem_size = "6G")
-
-h2o.removeAll()
-
-M<-5
-for(ii in 1:100)
+for(ii in 1:10)
 {
   print(paste("iteration ",ii))
- # capture.output({withRestarts(tryCatch(capture.output({
+#  capture.output({withRestarts(tryCatch(capture.output({
 
 
   set.seed(ii)
 
-    index <- createDataPartition(voice$label, p = 0.25, list = FALSE)
+    index <- createDataPartition(X[,46], p = 0.5, list = FALSE)
 
-    test <- voice[-index, ]
-    train <- voice[index, ]
+    test <- X[-index, ]
+    train <-X[index, ]
 
     data.example <- as.data.frame(train,stringsAsFactors = T)
 
@@ -90,9 +100,9 @@ for(ii in 1:100)
   #set.seed(runif(1,1,10000))
   t<-system.time({
 
-  formula1 = as.formula(paste(colnames(data.example)[21],"~ 1 +",paste0(colnames(data.example)[-c(21)],collapse = "+")))
+    formula1 = as.formula(paste(colnames(data.example)[47],"~ 1 +",paste0(colnames(data.example)[-c(46,47)],collapse = "+")))
 
-    res = runemjmcmc(formula = formula1,data = data.example,gen.prob = c(1,5,10,5,1),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(792),r=exp(-0.5),yid=21),recalc_margin = 95, save.beta = T,interact = T,relations = c("squar","sigmoid","tanh","atan","erf","gmean","gmedi","gfquar","glquar"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,1,1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=10000, max.tree.size = 4, Nvars.max =25,p.allow.replace=0.1,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 70000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(481),r=exp(-1),yid=46),recalc_margin = 95, save.beta = T,interact = T,relations = c("cosi","sigmoid","tanh","atan","erf","gmean","gmedi","gfquar","glquar"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1,0.5,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200,last.mutation=1600, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.1,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 10000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -127,7 +137,7 @@ for(ii in 1:100)
 
   t<-system.time({
 
-    res<-mySearch$forecast.matrix.na(link.g = g,covariates = (test[,-c(21)]),betas = betas,mliks.in = mliks)$forecast
+    res<-mySearch$forecast.matrix.na(link.g = g,covariates = (test[,-c(46)]),betas = betas,mliks.in = mliks)$forecast
 
   })
 
@@ -166,9 +176,9 @@ for(ii in 1:100)
   #MJMCMC
   t<-system.time({
 
-    formula1 = as.formula(paste(colnames(data.example)[21],"~ 1 +",paste0(colnames(data.example)[-c(21)],collapse = "+")))
+    formula1 = as.formula(paste(colnames(data.example)[46],"~ 1 +",paste0(colnames(data.example)[-c(46)],collapse = "+")))
 
-    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(2376),yid=21),recalc_margin = 50, save.beta = T,interact = F,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=2,last.mutation=1000,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 21,p.allow.replace=0.1,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 2000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-1),yid=46),recalc_margin = 50, save.beta = T,interact = F,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=2,last.mutation=1000,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 21,p.allow.replace=0.1,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 5000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -204,7 +214,7 @@ for(ii in 1:100)
 
   t<-system.time({
 
-    res<-mySearch$forecast.matrix.na(link.g = g,covariates = (test[,-c(21)]),betas = betas,mliks.in = mliks)$forecast
+    res<-mySearch$forecast.matrix.na(link.g = g,covariates = (test[,-c(46)]),betas = betas,mliks.in = mliks)$forecast
 
   })
 
@@ -252,12 +262,12 @@ for(ii in 1:100)
  # train<-as.data.frame(data.example[,-c(21)])
  # test<-as.data.frame(test[,-c(21)])
 
-  dval<-xgb.DMatrix(data = data.matrix(train[,-21]), label = data.matrix(train[,21]),missing=NA)
+  dval<-xgb.DMatrix(data = data.matrix(train[,-46]), label = data.matrix(train[,46]),missing=NA)
   watchlist<-list(dval=dval)
 
 
-  m2 <- xgb.train(data = xgb.DMatrix(data = data.matrix(train[,-21]), label = data.matrix(train[,21]),missing=NA),
-                  param, nrounds = 10000,
+  m2 <- xgb.train(data = xgb.DMatrix(data = data.matrix(train[,-46]), label = data.matrix(train[,46]),missing=NA),
+                  param, nrounds = 1000,
                   watchlist = watchlist,
                   print_every_n = 1000)
 
@@ -265,7 +275,7 @@ for(ii in 1:100)
   # Predict
   results[3,ii,4]<-t[3]
   t<-system.time({
-  dtest  <- xgb.DMatrix(data.matrix(test[,-20]),missing=NA)
+  dtest  <- xgb.DMatrix(data.matrix(test[,-46]),missing=NA)
   })
 
 
@@ -300,12 +310,12 @@ for(ii in 1:100)
                 max_depth = 15)
 
   as.h2o(test[,-1])
-  dval<-xgb.DMatrix(data = data.matrix(train[,-21]), label = data.matrix(train[,21]),missing=NA)
+  dval<-xgb.DMatrix(data = data.matrix(train[,-46]), label = data.matrix(train[,46]),missing=NA)
   watchlist<-list(dval=dval)
 
 
-    m2 <- xgb.train(data = xgb.DMatrix(data = data.matrix(train[,-21]), label = data.matrix(train[,21]),missing=NA),
-                    param, nrounds = 10000,
+    m2 <- xgb.train(data = xgb.DMatrix(data = data.matrix(train[,-46]), label = data.matrix(train[,46]),missing=NA),
+                    param, nrounds = 1000,
                     watchlist = watchlist,
                     print_every_n = 1000)
 
@@ -313,7 +323,7 @@ for(ii in 1:100)
   # Predict
   results[4,ii,4]<-t[3]
   t<-system.time({
-    dtest  <- xgb.DMatrix(data.matrix(test[,-21]),missing=NA)
+    dtest  <- xgb.DMatrix(data.matrix(test[,-46]),missing=NA)
   })
 
 
@@ -337,11 +347,11 @@ for(ii in 1:100)
   #GLMNET (elastic networks) # lasso a=1
 
   t<-system.time({
-  fit2 <- glmnet(as.matrix(train)[,-21], train$label, family="binomial")
+  fit2 <- glmnet(as.matrix(train)[,-46], train$label, family="binomial")
   })
   results[5,ii,4]<-t[3]
 
-  mmm<-as.matrix(test[,-21])
+  mmm<-as.matrix(test[,-46])
   mmm[which(is.na(mmm))]<-0
   t<-system.time({
   out <- predict(fit2,mmm , type = "response")[,fit2$dim[2]]
@@ -363,11 +373,11 @@ for(ii in 1:100)
   # ridge a=0
 
   t<-system.time({
-    fit2 <- glmnet(as.matrix(train)[,-21], train$label, family="binomial",alpha=0)
+    fit2 <- glmnet(as.matrix(train)[,-46], train$label, family="binomial",alpha=0)
   })
   results[6,ii,4]<-t[3]
 
-  mmm<-as.matrix(test[,-21])
+  mmm<-as.matrix(test[,-46])
   mmm[which(is.na(mmm))]<-0
   t<-system.time({
     out <- predict(fit2,mmm , type = "response")[,fit2$dim[2]]
@@ -403,7 +413,7 @@ for(ii in 1:100)
 
   train1[1:5,]
 
-  features = names(train1)[-21]
+  features = names(train1)[-46]
 
   # in order to make the classification prediction
   train1$label <- as.factor(train1$label)
@@ -575,27 +585,14 @@ for(ii in 1:100)
 
   print(results[,ii,1])
 }
-
-ids<-NULL
-for(i in 1:100)
-{
-  if(min(results[,i,1])>0)
-    ids<-c(ids,i)
-
-}
-
-length(ids)
-
-ress<-results[,ids[1:100],]
-
 summary.results<-array(data = NA,dim = c(11,15))
 for(i in 1:11)
 {
   for(j in 1:5)
   {
-    summary.results[i,(j-1)*3+1]<-min(ress[i,,j])
-    summary.results[i,(j-1)*3+2]<-median(ress[i,,j])
-    summary.results[i,(j-1)*3+3]<-max(ress[i,,j])
+    summary.results[i,(j-1)*3+1]<-min(results[i,,j])
+    summary.results[i,(j-1)*3+2]<-mean(results[i,,j])
+    summary.results[i,(j-1)*3+3]<-max(results[i,,j])
   }
 }
 summary.results<-as.data.frame(summary.results)
@@ -605,10 +602,9 @@ rownames(summary.results)<-c("GMJMCMC(AIC)","MJMCMC(AIC)","tXGBOOST(AUC)","lXGBO
 
 for(i in 1:11)
 {
-  plot(density(ress[i,,1],bw = "SJ"), main="Compare Kernel Density of precisions")
-  polygon(density(ress[i,,1],bw = "SJ"), col="red", border="blue")
+  plot(density(results[i,,1],bw = "SJ"), main="Compare Kernel Density of precisions")
+  polygon(density(results[i,,1],bw = "SJ"), col="red", border="blue")
 
 }
 
-write.csv(x = round(summary.results,4),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/voice recognition/voicerec.csv")
-
+write.csv(x = round(summary.results,4),file = "simures.csv")
