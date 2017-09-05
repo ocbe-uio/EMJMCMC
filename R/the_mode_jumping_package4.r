@@ -1,20 +1,24 @@
 #rm(list = ls(all = TRUE))
 
-#install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
-#install.packages("bigmemory")
-#install.packages("snow")
-#install.packages("Rmpi")
-#install.packages("ade4")
-#install.packages("sp")
-#install.packages("BAS")
-#install.packages("hash")
-#install.packages("stringi")
-#install.packages("irlba")
-#install.packages("bigalgebra")
-#install.packages("speedglm")
-#install.packages("biglm")
-#/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive
-#install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive/bas_0.90.tar.gz", repos = NULL)
+#install the following packages if required!
+
+if(!("INLA" %in% rownames(installed.packages()))) 
+  install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
+if(!("bigmemory" %in% rownames(installed.packages()))) 
+  install.packages("bigmemory")
+if(!("ade4" %in% rownames(installed.packages()))) 
+ install.packages("ade4")
+if(!("hash" %in% rownames(installed.packages()))) 
+  install.packages("hash")
+if(!("stringi" %in% rownames(installed.packages()))) 
+  install.packages("stringi")
+if(!("biglm" %in% rownames(installed.packages()))) 
+  install.packages("biglm")
+if(!("glmnet" %in% rownames(installed.packages()))) 
+  install.packages("glmnet")
+if(!("BAS" %in% rownames(installed.packages()))) 
+  install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/examples/BAS%20archive/BAS_0.91.tar.gz?raw=true", repos = NULL)
+
 
 library(glmnet)
 library(biglm)
@@ -23,16 +27,12 @@ library(sp)
 library(INLA)
 library(parallel)
 library(bigmemory)
-#library(snow)
 library(MASS)
 library(ade4)
-#library(copula)
-#library(compiler)
 library(BAS)# should be version 0.9 !!!! otherwise some dependencies might not work!
 library(stringi)
-#library(speedglm)
 require(stats)
-#compile INLA
+
 
 m<-function(a,b)a*b
 
