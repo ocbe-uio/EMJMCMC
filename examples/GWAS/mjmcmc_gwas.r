@@ -38,7 +38,7 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 4,u=50)
 }
 
 
-vect<-list(formula = formula1,outgraphs=F,data = geno,estimator = estimate.lm.MBIC2,presearch=T, locstop =T,estimator.args =  list(data = geno),recalc_margin = 249,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 250,last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+vect<-list(formula = formula1,outgraphs=F,data = geno,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = geno),recalc_margin = 249,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 250,last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
   max.N.glob=as.integer(10),
   min.N.glob=as.integer(5),
   max.N=as.integer(3),

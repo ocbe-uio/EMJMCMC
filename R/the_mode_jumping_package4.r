@@ -3262,11 +3262,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                j<-0
                                j.a<-0
                                p.post<-array(data = 1,dim = Nvars)
-                               waiccur<-Inf
-                               waicglob<-Inf
-                               mlikcur<- -Inf
-                               mlikglob<- -Inf
-                               ratcur<- -Inf
+                               waiccur<-50000
+                               waicglob<-50000
+                               mlikcur<- -50000
+                               mlikglob<- -50000
+                               ratcur<- -50000
                                fm<-NULL
                                eps.emp<-normprob(p1,p2)
                                max.cpu.buf<-max.cpu
