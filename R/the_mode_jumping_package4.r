@@ -3211,7 +3211,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  
                                }else
                                {
-                                 p.add<<-rep(0.5,Nvars)
+                                 p.add<<-as.array(rep(0.5,Nvars))
                                }
                                waiccur<-Inf
                                waicglob<-Inf
