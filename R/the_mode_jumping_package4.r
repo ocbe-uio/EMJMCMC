@@ -3199,15 +3199,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
                                  backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
-                               }
-
-                               if(exists("statistics1")&&recalc.margin < 2^Nvars)
+                               
+                                 if(exists("statistics1")&&recalc.margin < 2^Nvars)
+                                 {
+                                   p.add <<- as.array(post_proceed_results(statistics1)$p.post)
+                                 }
+                                 else if(exists("hashStat")&&recalc.margin < 2^Nvars)
+                                 {
+                                   p.add <<- as.array(post_proceed_results_hash(hashStat)$p.post)
+                                 }
+                                 
+                               }else
                                {
-                                 p.add <<- as.array(post_proceed_results(statistics1)$p.post)
-                               }
-                               else if(exists("hashStat")&&recalc.margin < 2^Nvars)
-                               {
-                                 p.add <<- as.array(post_proceed_results_hash(hashStat)$p.post)
+                                 p.add<<-rep(0.5,Nvars)
                                }
                                waiccur<-Inf
                                waicglob<-Inf
