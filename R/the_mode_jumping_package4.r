@@ -3212,6 +3212,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                }else
                                {
                                  p.add<<-array(data = 0.5,Nvars)
+                                 p.post<-array(data = 0.5,Nvars)
+                                 vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
+                                 varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                }
                                waiccur<-Inf
                                waicglob<-Inf
@@ -3254,8 +3257,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                varglob<-varcur
                                modglob<-NULL
 
-                               p1 = array(data = 0,dim = Nvars)
-                               p2 = array(data = 1,dim = Nvars)
+                               p1 = array(data = 0.0001,dim = Nvars)
+                               p2 = array(data = 0.9999,dim = Nvars)
                                j<-0
                                j.a<-0
                                p.post<-array(data = 1,dim = Nvars)
