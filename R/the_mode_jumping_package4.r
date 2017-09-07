@@ -1709,7 +1709,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      res.par <- parallelize(X = vect,FUN = .self$fitmodel)
 
                                    }
-                                   p.select.y <- array(data = 0, dim = max.cpu)
+                                   p.select.y <- array(data = 0.001, dim = max.cpu)
                                    for(mod_id in 1:max.cpu)
                                    {
                                      if(cluster)
@@ -1763,8 +1763,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      p.select.y[mod_id]<-(mlikcand + vect[[mod_id]]$log.mod.switchback.prob+log(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos =  FALSE))) # correct for different criteria later
 
-                                     if(is.na(p.select.y[mod_id]))
-                                       p.select.y[mod_id] <- 0
+                                     if(is.na(p.select.y[mod_id])|| is.nan(p.select.y[mod_id]))
+                                       p.select.y[mod_id] <- 0.0001
                                      if(is.infinite(p.select.y[mod_id]) || p.select.y[mod_id]>100000000)
                                      {
                                        #if(printable.opt)print(paste("very large log.w.y detected ",p.select.y[mod_id]))
@@ -4261,8 +4261,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      p.select.y[mod_id]<-(mlikcand + vect[[mod_id]]$log.mod.switchback.prob+log(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos =  FALSE))) # correct for different criteria later
 
-                                     if(is.na(p.select.y[mod_id]))
-                                       p.select.y[mod_id] <- 0
+                                     if(is.na(p.select.y[mod_id])||is.nan(p.select.y[mod_id]))
+                                       p.select.y[mod_id] <- 0.0001
                                      if(is.infinite(p.select.y[mod_id]) || p.select.y[mod_id]>100000000)
                                      {
                                        #if(printable.opt)print(paste("very large log.w.y detected ",p.select.y[mod_id]))
@@ -4392,8 +4392,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        p.select.z[mod_id]<-(mlikcand.b+vect1[[mod_id]]$log.mod.switchback.prob+(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand.b,g.domain.pos = FALSE))) # correct for different criteria later
 
-                                       if(is.na(p.select.z[mod_id]))
-                                         p.select.z[mod_id]=0
+                                       if(is.na(p.select.z[mod_id]) || is.nan(p.select.z[mod_id]))
+                                         p.select.z[mod_id]=0.0001
                                        if(is.infinite(p.select.z[mod_id]) || p.select.z[mod_id] > 100000000)
                                        {
                                          #if(printable.opt)print(paste("very large log.w.y detected ",p.select.z[mod_id]))
@@ -4408,8 +4408,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    p.select.z[max.cpu.glob] <- (mlikcur+vect[[ID]]$log.mod.switch.prob+(lambda(c = cc, alpha = aa, g1 = -g1, g2 = -waiccand,g.domain.pos = FALSE)))
 
-                                   if(is.na(p.select.z[mod_id]))
-                                     p.select.z[mod_id]=0
+                                   if(is.na(p.select.z[mod_id]) || is.nan(p.select.z[mod_id]))
+                                     p.select.z[mod_id]=0.0001
                                    if(is.infinite(p.select.z[mod_id]) || p.select.z[mod_id] > 100000000)
                                    {
                                      #if(printable.opt)print(paste("very large log.w.y detected ",p.select.z[mod_id]))
