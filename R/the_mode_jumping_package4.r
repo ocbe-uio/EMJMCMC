@@ -3215,6 +3215,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  p.post<-array(data = 0.5,Nvars)
                                  vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
+                                 varcurb<-c(array(0,dim = (Nvars -length(vec))),vec)
+                                 vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = -1,min.N =  Nvars,max.N = Nvars,switch.type = 9)
                                }
                                waiccur<-Inf
                                waicglob<-Inf
@@ -3262,11 +3264,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                j<-0
                                j.a<-0
                                p.post<-array(data = 1,dim = Nvars)
-                               waiccur<-50000
-                               waicglob<-50000
-                               mlikcur<- -50000
-                               mlikglob<- -50000
-                               ratcur<- -50000
+                               waiccur<-Inf
+                               waicglob<-Inf
+                               mlikcur<- -Inf
+                               mlikglob<- -Inf
+                               ratcur<- -Inf
                                fm<-NULL
                                eps.emp<-normprob(p1,p2)
                                max.cpu.buf<-max.cpu
