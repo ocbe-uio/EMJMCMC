@@ -3217,6 +3217,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                  varcurb<-c(array(0,dim = (Nvars -length(vec))),vec)
                                  vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = -1,min.N =  Nvars,max.N = Nvars,switch.type = 9)
+                                 res.par <- lapply(X = vect,FUN = .self$fitmodel)
                                }
                                waiccur<-Inf
                                waicglob<-Inf
