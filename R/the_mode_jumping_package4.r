@@ -28,7 +28,10 @@ if(!("parallel" %in% rownames(installed.packages())))
   install.packages("parallel")
 if(!("stats" %in% rownames(installed.packages()))) 
   install.packages("stats")
+#if(!("inline" %in% rownames(installed.packages()))) 
+#  install.packages("inline")
 
+library(inline)
 library(glmnet)
 library(biglm)
 library(hash)
@@ -41,6 +44,11 @@ library(ade4)
 library(BAS)# should be version 0.9 !!!! otherwise some dependencies might not work!
 library(stringi)
 require(stats)
+
+#includes <- '#include <sys/wait.h>'
+#code <- 'int wstat; while (waitpid(-1, &wstat, WNOHANG) > 0) {};'
+#wait <- cfunction(body=code, includes=includes, convention='.C')
+
 
 
 m<-function(a,b)a*b
@@ -56,6 +64,7 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
 }
 
+factorial<-function(x) ifelse(x<=170,gamma(x + 1),gamma(171))
 
 estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
 {
@@ -332,8 +341,62 @@ simplify.formula<-function(fmla,names)
   return(list(fparam = fparam,fobserved = fobserved))
 }
 
-# a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
+simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2, resp)
+{
+  posteriors<-posteriors[-which(posteriors[,2]<th),]
+  rhash<-hash()
+  for(i in 1:length(posteriors[,1]))
+  {
+    expr<-posteriors[i,1]
+    print(expr)
+    res<-model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
+    ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
+    if(!((ress[1] %in% values(rhash))))
+      rhash[[ress[1]]]<-ress
+    else
+    {
+      if(ress[1] %in% keys(rhash))
+      {
+        rhash[[ress[1]]][3]<- (as.numeric(rhash[[ress[1]]][3]) + as.numeric(ress[3]))
+        if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
+          rhash[[ress[1]]][4]<-expr
+      }
+    }
+    
+  }
+  res<-as.data.frame(t(values(rhash)[c(3,4),]))
+  res$V1<-as.numeric(as.character(res$V1))
+  res<-res[which(res$V1>thf),]
+  res<-res[order(res$V1, decreasing = T),]
+  clear(rhash)
+  rm(rhash)
+  res[which(res[,1]>1),1]<-1
+  colnames(res)<-c("posterior","tree")
+  return(res)
+}
+
+
+do.call.emjmcmc<-function(vect)
+{
+  
+  set.seed(as.integer(vect$cpu))
+  do.call(runemjmcmc, vect[1:vect$simlen])
+  vals<-values(hashStat)
+  fparam<-mySearch$fparam
+  cterm<-max(vals[1,],na.rm = T)
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  post.populi<-sum(exp(values(hashStat)[1,][1:NM]-cterm),na.rm = T)
+  clear(hashStat)
+  rm(hashStat)
+  rm(vals)
+  gc()
+  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
+}
+
+parall.gmj <- function(X) mclapply(X = X, FUN = do.call.emjmcmc,mc.preschedule = F, mc.cores = 16,mc.cleanup = T)
+
+# a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
                      estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 40,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
