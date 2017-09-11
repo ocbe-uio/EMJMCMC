@@ -349,7 +349,7 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2, resp)
   for(i in 1:length(posteriors[,1]))
   {
     expr<-posteriors[i,1]
-    print(expr)
+    #print(expr)
     res<-model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
     ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
     if(!((ress[1] %in% values(rhash))))
@@ -394,7 +394,7 @@ do.call.emjmcmc<-function(vect)
   return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
 }
 
-parall.gmj <- function(X) mclapply(X = X, FUN = do.call.emjmcmc,mc.preschedule = F, mc.cores = 16,mc.cleanup = T)
+parall.gmj <- function(X,M=16) mclapply(X = X, FUN = do.call.emjmcmc,mc.preschedule = F, mc.cores = M,mc.cleanup = T)
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),

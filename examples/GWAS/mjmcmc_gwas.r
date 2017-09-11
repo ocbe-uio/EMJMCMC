@@ -66,6 +66,58 @@ dataNeigbourhoodS2 <- plyr::ldply(causSNPsS2, findNeigbour)
 dataNeigbourhoodS3 <- plyr::ldply(causSNPsS3, findNeigbour)
 dataNeigbourhoodS4 <- plyr::ldply(causSNPsS4, findNeigbour)
 
+j=0
+fdr.tot=0
+pow.tot=0
+for(i in 1:79)
+{
+  res1<-read.csv(paste0("postGMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
+  if(!is.null(res1$tree))
+  {
+    print(paste0("Converged Iteration ",i))
+    detected<-res1$tree
+    detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+    detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+    
+    detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+    detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+    
+    detlen<-length(detect.true.unique)
+    totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+    
+    pow=detlen/20
+    print(pow)
+    fdr=(totlen-detlen)/totlen
+    print(fdr)
+    j=j+1
+    fdr.tot = fdr.tot + fdr
+    pow.tot = pow.tot + pow
+    
+  }else
+  {
+    if(!is.null(res$tree))
+    {
+      print(paste0("Diverged Iteration ",i))
+      detected<-res1$X
+      detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+      detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+      
+      detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+      detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+      
+      detlen<-length(detect.true.unique)
+      totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+      
+      print(detlen/20)
+      print((totlen-detlen)/totlen)
+      
+    }
+  }
+  
+}
+pow.tot/j
+fdr.tot/j
+
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 pheno<-read.csv(paste0("/home/michaelh/SIMULATION_paper/data_S2_nocausal_5402/pimass/data.recode.pheno_",1,".txt"),header = F)
@@ -96,8 +148,8 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 4,u=150)
 
 
 MM = 10
-M = 16
-size.init=100
+M = 20
+size.init=150
 NM= 1000
 compmax = 41
 th<-(10)^(-5)
@@ -113,16 +165,20 @@ for(j in 1:100)
     geno$Y<-as.numeric(pheno$V1)
                     
     
-    cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
-    sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
-    cov.names<-names(sum$coefficients[-1,4])
+    #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
+    #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
+    #cov.names<-names(sum$coefficients[-1,4])
     
-    formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
+    #cov.names<-names[which(cors>0.05)]
+    #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
+    #c#ov.names<-names(sum$coefficients[-1,4])
     
-    secondary <-names[-which(names %in% cov.names)] 
+    #formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
+    
+    #secondary <-names[-which(names %in% cov.names)] 
     
   
-    vect<-list(outgraphs=F,data = geno,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = geno),recalc_margin = 249,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation = 1000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
+    vect<-list(outgraphs=F,data = geno,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = geno),recalc_margin = 249,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -135,9 +191,14 @@ for(j in 1:100)
     
     for(i in 1:M)
     {
-      cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
+      #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
+      #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
+      #cov.names<-names(sum$coefficients[-1,4])
+      
+      cov.names<-names[which(abs(cors)>0.04)]
       sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
       cov.names<-names(sum$coefficients[-1,4])
+      #cov.names<-cov.names[sample.int(n = length(cov.names),size = size.init,prob = abs(cors[which(abs(cors)>0.04)]))]
       
       formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
       
@@ -151,7 +212,7 @@ for(j in 1:100)
     
     gc()
     print(paste0("begin simulation ",j))
-    results<-parall.gmj(X = params)
+    results<-parall.gmj(X = params, M = M)
     print(results)
     
     #wait()
@@ -207,6 +268,7 @@ for(j in 1:100)
     
     gc()
     rm(results)
+    
     ml.max<-max(max.popul)
     post.popul<-post.popul*exp(-ml.max+max.popul)
     p.gen.post<-post.popul/sum(post.popul)
@@ -244,8 +306,24 @@ for(j in 1:100)
     posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
     posteriors$X<-as.character(posteriors$X)
     tryCatch({
-      res1<-simplifyposteriors(X = X4,posteriors = posteriors, th,thf)
+      res1<-simplifyposteriors(X = geno,posteriors = posteriors, th,thf, resp = "Y")
       row.names(res1)<-1:dim(res1)[1]
+      
+      detected<-res1$tree
+      detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+      detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+      
+      detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+      detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+      
+      detlen<-length(detect.true.unique)
+      totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+      
+      print(detlen/20)
+      print((totlen-detlen)/totlen)
+      
+      
+      
       write.csv(x =res1,row.names = F,file = paste0("postGMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
@@ -268,8 +346,6 @@ for(j in 1:100)
   },finally = {
     
     print(paste0("end simulation ",j))
-    rm(X4)
-    rm(data.example)
     rm(vect)
     rm(params)
     gc()
@@ -284,6 +360,9 @@ for(j in 1:100)
 
 
 detected<-sort(mySearch$fparam[which(res$p.post>0.5)])
+
+detected<-res1$tree
+
 detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
 detected<-stri_replace(str = detected,fixed = ")",replacement = "")
 
