@@ -689,9 +689,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  filtered<<-vector(mode="character", length=0)
                                  aa <<- 0.9
                                  cc <<- 0.0
-                                 M.nd <<- as.integer(Nvars)
+                                 M.nd <<- as.integer(min(Nvars,100))
                                  M.mcmc <<- as.integer(5)
-                                 SA.param <<- list(t.min = 0.0001,t.init = 10, dt = 3, M = as.integer(Nvars/5+1))
+                                 SA.param <<- list(t.min = 0.0001,t.init = 10, dt = 3, M = as.integer(min(Nvars/5+1,100)))
                                  fobserved <<- fobserved.example
                                  switch.type <<- as.integer(2)
                                  n.size <<- as.integer(10)
