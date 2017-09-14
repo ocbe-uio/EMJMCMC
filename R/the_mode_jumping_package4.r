@@ -398,7 +398,7 @@ parall.gmj <- function(X,M=16) mclapply(X = X, FUN = do.call.emjmcmc,mc.presched
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
-                     estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 40,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+                     estimator,estimator.args = "list",n.models, unique = F,save.beta=F, locstop.nd = T, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 40,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -427,7 +427,7 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   mySearch$prand<<-prand
   mySearch$recalc.margin <<- as.integer(recalc_margin)
   mySearch$max.cpu <<- as.integer(max.cpu)
-  mySearch$locstop.nd <<- FALSE
+  mySearch$locstop.nd <<- locstop.nd
   mySearch$sup.large.n<<-as.integer(sup.large.n)
   mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
   if(interact)
@@ -691,7 +691,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  cc <<- 0.0
                                  M.nd <<- as.integer(min(Nvars,100))
                                  M.mcmc <<- as.integer(5)
-                                 SA.param <<- list(t.min = 0.0001,t.init = 10, dt = 3, M = as.integer(min(Nvars/5+1,100)))
+                                 SA.param <<- list(t.min = 0.0001,t.init = 10, dt = 3, M = as.integer(min(Nvars/5+1,20)))
                                  fobserved <<- fobserved.example
                                  switch.type <<- as.integer(2)
                                  n.size <<- as.integer(10)
@@ -2186,7 +2186,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          mlikcand<-statistics1[iidd,1]
                                        }else if(exists("hashStat"))
                                        {
-                                         iidd<-paste(varcand,collapse = "")
+                                         iidd<-stri_paste(varcand,collapse = "")
                                          waiccand<-values(hashStat[iidd])[2]
                                          mlikcand<-values(hashStat[iidd])[1]
                                        }
@@ -3276,7 +3276,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  p.add<<-array(data = 0.1,Nvars)
                                  p.post<-array(data = 0.1,Nvars)
-                                 vec<-rbinom(n = Nvars,size = 1,prob = 0.1) # generate an initial solution
+                                 vec<-rbinom(n = Nvars,size = 1,prob = 0.0000001) # generate an initial solution
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                  
                                }

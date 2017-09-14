@@ -190,11 +190,11 @@ for(j in 1:100)
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
     
     vect<-list(formula = formula1, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 1000,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 10,advanced.param = list(
-      max.N.glob=as.integer(100),
+      max.N.glob=as.integer(500),
       min.N.glob=as.integer(50),
-      max.N=as.integer(10),
+      max.N=as.integer(50),
       min.N=as.integer(1),
-      printable = F))
+      printable = T))
     
     
     params <- list(vect)[rep(1,M)]
@@ -210,7 +210,7 @@ for(j in 1:100)
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-26
+      params[[i]]$simlen<-25
     }
     
     gc()
