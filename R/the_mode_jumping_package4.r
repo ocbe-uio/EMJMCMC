@@ -386,7 +386,7 @@ do.call.emjmcmc<-function(vect)
   fparam<-mySearch$fparam
   cterm<-max(vals[1,],na.rm = T)
   ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
-  post.populi<-sum(exp(values(hashStat)[1,][1:NM]-cterm),na.rm = T)
+  post.populi<-sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
   clear(hashStat)
   rm(hashStat)
   rm(vals)
@@ -3374,7 +3374,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        fparam.pool<<-c(fparam.pool,filtered)
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
-                                       to.del<-to.del[-c(1,2)]
+                                       to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
+                                     if(length(to.del)==0)
+                                     {
+                                       to.del<-1:Nvars
+                                       to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
+                                     }
                                      print("Data filtered! Insignificant variables deleted!")
                                      # keysarr <- as.array(keys(hashStat))
                                      # keysarr.new<-NULL

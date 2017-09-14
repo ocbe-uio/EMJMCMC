@@ -164,7 +164,6 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, resp, dataNeigbourhoo
 }
 
 
-
 for(j in 1:100)
 {
   tryCatch({
@@ -173,25 +172,27 @@ for(j in 1:100)
     
     pheno<-read.csv(paste0("data_S2_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
     data.example$Y<-as.numeric(pheno$V1)
+    rm(pheno)
+    gc()
+    cov.names<-names[which(abs(cors)>0.03)]
+    sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = data.example))
+    cov.names<-names(sum$coefficients[-1,4])
+    detected<-cov.names
+    detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+    detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+    detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+    detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+    detlen<-length(detect.true.unique)
+    totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+    print(detlen/20)
+    print((totlen-detlen)/totlen)
+    gc()
+    formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
     
-    
-    #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
-    #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
-    #cov.names<-names(sum$coefficients[-1,4])
-    
-    #cov.names<-names[which(cors>0.05)]
-    #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
-    #c#ov.names<-names(sum$coefficients[-1,4])
-    
-    #formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
-    
-    #secondary <-names[-which(names %in% cov.names)] 
-    
-    
-    vect<-list(outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = geno),recalc_margin = 1000,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 100,advanced.param = list(
-      max.N.glob=as.integer(10),
-      min.N.glob=as.integer(5),
-      max.N=as.integer(3),
+    vect<-list(formula = formula1, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 1000,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 10,advanced.param = list(
+      max.N.glob=as.integer(100),
+      min.N.glob=as.integer(50),
+      max.N=as.integer(10),
       min.N=as.integer(1),
       printable = F))
     
@@ -203,39 +204,16 @@ for(j in 1:100)
       #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
       #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
       #cov.names<-names(sum$coefficients[-1,4])
-      
-      cov.names<-names[which(abs(cors)>0.035)]
-      #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
-      #cov.names<-names(sum$coefficients[-1,4])
-      cov.names<-cov.names[sample.int(n = length(cov.names),size = size.init,prob = abs(cors[which(abs(cors)>0.035)]))]
-      
-      detected<-cov.names
-      
-      
-      detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
-      detected<-stri_replace(str = detected,fixed = ")",replacement = "")
-      
-      detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
-      detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
-      
-      detlen<-length(detect.true.unique)
-      totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
-      
-      print(detlen/20)
-      print((totlen-detlen)/totlen)
-      
-      
-      formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
-      
-      params[[i]]$secondary <-names[-which(names %in% cov.names)] 
+      #params[[i]]$
       params[[i]]$formula = formula1
       params[[i]]$cpu<-i*j
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-25
+      params[[i]]$simlen<-26
     }
     
+    gc()
     
     #res<-do.call(runemjmcmc,args = params[[3]][1:25])
     
@@ -337,7 +315,7 @@ for(j in 1:100)
     posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
     posteriors$X<-as.character(posteriors$X)
     tryCatch({
-      res1<-simplifyposteriors(posteriors = posteriors, th,thf, resp = "Y")
+      res1<-simplifyposteriors(posteriors = posteriors, th,thf)
       row.names(res1)<-1:dim(res1)[1]
       
       detected<-res1$tree
