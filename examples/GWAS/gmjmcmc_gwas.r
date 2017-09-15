@@ -219,6 +219,8 @@ for(j in 1:100)
     gc()
     
     #res<-do.call(runemjmcmc,args = params[[3]][1:26])
+    #res$p.post
+    #length(which(!is.na(res$m.post)))
     
     gc()
     print(paste0("begin simulation ",j))
