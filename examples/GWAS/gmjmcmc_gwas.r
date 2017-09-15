@@ -91,7 +91,7 @@ geno <- as.data.frame(mclapply(geno, as.numeric))
 
 cors<-cor(geno$Y,geno[,1:24602])
 
-estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=100)
+estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
@@ -112,7 +112,7 @@ M = 30
 size.init=1000
 NM= 1000
 
-compmax = size.init+1
+compmax = 51
 th<-(10)^(-5)
 thf<-0.05
 
@@ -163,6 +163,7 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, resp, dataNeigbourhoo
   return(res)
 }
 
+j=1 
 
 for(j in 1:100)
 {
@@ -174,7 +175,7 @@ for(j in 1:100)
     data.example$Y<-as.numeric(pheno$V1)
     rm(pheno)
     gc()
-    cov.names<-names[which(abs(cors)>0.03)]
+    cov.names<-names[which(abs(cors)>0.05)]
     sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = data.example))
     cov.names<-names(sum$coefficients[-1,4])
     detected<-cov.names
@@ -188,13 +189,15 @@ for(j in 1:100)
     print((totlen-detlen)/totlen)
     gc()
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
+    secondary <-names[-which(names %in% cov.names)]
     
-    vect<-list(formula = formula1, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 1000,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =40,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 15000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 10,advanced.param = list(
-      max.N.glob=as.integer(500),
-      min.N.glob=as.integer(50),
-      max.N=as.integer(50),
+    
+    vect<-list(formula = formula1, locstop.nd = T, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 499,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 10,advanced.param = list(
+      max.N.glob=as.integer(30),
+      min.N.glob=as.integer(10),
+      max.N=as.integer(5),
       min.N=as.integer(1),
-      printable = T))
+      printable = F))
     
     
     params <- list(vect)[rep(1,M)]
@@ -210,12 +213,12 @@ for(j in 1:100)
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-25
+      params[[i]]$simlen<-26
     }
     
     gc()
     
-    #res<-do.call(runemjmcmc,args = params[[3]][1:25])
+    #res<-do.call(runemjmcmc,args = params[[3]][1:26])
     
     gc()
     print(paste0("begin simulation ",j))
