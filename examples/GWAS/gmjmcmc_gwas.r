@@ -108,7 +108,7 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 
 
 MM = 10
-M = 30
+M = 31
 size.init=1000
 NM= 1000
 
@@ -174,7 +174,7 @@ for(j in 1:100)
     pheno<-read.csv(paste0("data_S2_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
     data.example$Y<-as.numeric(pheno$V1)
     rm(pheno)
-    cors<-cor(geno$Y,geno[,1:24602])
+    cors<-cor(data.example$Y,geno[,1:24602])
     gc()
     cov.names<-names[which(abs(cors)>0.05)]
     sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = data.example))
