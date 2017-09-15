@@ -197,7 +197,7 @@ for(j in 1:100)
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
       min.N=as.integer(1),
-      printable = F))
+      printable = T))
     
     
     params <- list(vect)[rep(1,M)]
@@ -221,6 +221,7 @@ for(j in 1:100)
     #res<-do.call(runemjmcmc,args = params[[3]][1:26])
     #res$p.post
     #length(which(!is.na(res$m.post)))
+    #detected<-mySearch$fparam[which(res$p.post>0.1)]
     
     gc()
     print(paste0("begin simulation ",j))
