@@ -89,7 +89,7 @@ names(geno)<-names
 geno$Y<-pheno$V1
 geno <- as.data.frame(mclapply(geno, as.numeric))
 
-cors<-cor(geno$Y,geno[,1:24602])
+
 
 estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 {
@@ -174,6 +174,7 @@ for(j in 1:100)
     pheno<-read.csv(paste0("data_S2_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
     data.example$Y<-as.numeric(pheno$V1)
     rm(pheno)
+    cors<-cor(geno$Y,geno[,1:24602])
     gc()
     cov.names<-names[which(abs(cors)>0.05)]
     sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = data.example))
@@ -192,7 +193,7 @@ for(j in 1:100)
     secondary <-names[-which(names %in% cov.names)]
     
     
-    vect<-list(formula = formula1, locstop.nd = T, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 499,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 10,advanced.param = list(
+    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 499,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 10,advanced.param = list(
       max.N.glob=as.integer(30),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
@@ -213,12 +214,12 @@ for(j in 1:100)
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-26
+      params[[i]]$simlen<-27
     }
     
     gc()
     
-    #res<-do.call(runemjmcmc,args = params[[3]][1:26])
+    #res<-do.call(runemjmcmc,args = params[[3]][1:27])
     #res$p.post
     #length(which(!is.na(res$m.post)))
     #detected<-mySearch$fparam[which(res$p.post>0.1)]

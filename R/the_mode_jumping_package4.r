@@ -1843,10 +1843,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    max.p.select.y <- max(p.select.y)
                                    p.select.y<-p.select.y-max.p.select.y
 
-                                   #if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
+                                   if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
 
 
-                                   ID<-sample(x = max.cpu,size = 1,prob = exp(p.select.y))
+                                   ID<-sample.int(n = max.cpu,size = 1,prob = exp(p.select.y))
 
                                    if(printable.opt)print(paste("cand ",ID," selected"))
 
@@ -3347,8 +3347,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  p1<-p.post/acc_moves
                                  set.seed(runif(n = 1, min = 1, max = seed*100), kind = NULL, normal.kind = NULL)
-                                 LocImprove <- (sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
-                                 LocNeighbor<-(sample(x = 7,size = 1,prob = distrib_of_neighbourhoods[LocImprove+1,]))
+                                 LocImprove <- (sample.int(n = 5,size = 1,prob = distrib_of_proposals) - 1)
+                                 LocNeighbor<-(sample.int(n = 7,size = 1,prob = distrib_of_neighbourhoods[LocImprove+1,]))
                                  switch.type.glob.buf = LocNeighbor
                                  switch.type.buf = LocNeighbor
                                  if(LocNeighbor == 7)
@@ -4358,10 +4358,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    max.p.select.y <- max(p.select.y)
                                    p.select.y<-p.select.y-max.p.select.y
 
-                                   #if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
+                                   if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
 
 
-                                   ID<-sample(x = max.cpu.glob,size = 1,prob = exp(p.select.y))
+                                   ID<-sample.int(n = max.cpu.glob,size = 1,prob = exp(p.select.y))
 
                                    if(printable.opt)print(paste("cand ",ID," selected"))
 
