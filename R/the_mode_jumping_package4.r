@@ -3606,7 +3606,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                         pool.probs<-abs(cor(estimator.args$data[[fobserved.cleaned]],estimator.args$data[,which(fparam.pool.cleaned %in% names(estimator.args$data))]))+p.epsilon
                                         rm(fobserved.cleaned)
                                         rm(fparam.pool.cleaned)
-                                        print(pool.probs[1:100])
+                                        #print(pool.probs[1:100])
                                        }
                                      }
                                      to.del <- which(p.add < p.allow.tree)
