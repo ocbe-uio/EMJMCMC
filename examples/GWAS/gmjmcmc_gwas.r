@@ -193,7 +193,7 @@ for(j in 1:100)
     secondary <-names[-which(names %in% cov.names)]
     
     
-    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F, secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 499,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 500,max.time = 25, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 20000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 299,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,max.time = 360, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(30),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
@@ -214,7 +214,7 @@ for(j in 1:100)
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-27
+      params[[i]]$simlen<-28
     }
     
     gc()
@@ -272,6 +272,7 @@ for(j in 1:100)
         resa[,k*3]<-rep(post.popul[k],length(results[[k]]$p.post)+1)
       }else
       {
+        #idsx<-order(results[[k]]$p.post,decreasing = T,na.last = T)
         resa[,k*3-2]<-rep(results[[k]]$fparam[1],length(resa[,k*3-2]))
         resa[,k*3-1]<-rep(0,length(resa[,k*3-1]))
         resa[,k*3]<-rep(-10^9,length(resa[,k*3]))
@@ -312,7 +313,7 @@ for(j in 1:100)
     
     posteriors<-values(hfinal)
     
-    print(posteriors)
+    #print(posteriors)
     clear(hfinal)
     rm(hfinal)
     rm(resa)
@@ -366,7 +367,7 @@ for(j in 1:100)
     rm(params)
     gc()
   })
-  
+    
 }
 
 
