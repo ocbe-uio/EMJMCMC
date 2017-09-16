@@ -3910,8 +3910,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          rm(fobserved.cleaned)
                                          rm(fparam.pool.cleaned)
                                          #print(pool.probs[1:100])
+                                        }
                                      }
-
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
