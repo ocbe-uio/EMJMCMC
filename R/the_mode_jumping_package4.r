@@ -3610,6 +3610,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                         #print(pool.probs[1:100])
                                        }
                                      }
+                                     to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
                                      if(length(to.del)==0)
@@ -3892,31 +3893,34 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      on.suggested <- 1
                                      preaccepted<-F
                                      #do the stuff here
-                                     fparam.pool<<-unique(c(fparam.pool,filtered))
-                                     if(!pool.cor.prob)
-                                       pool.probs<-array(data = 1/length(fparam.pool),dim = length(fparam.pool))
-                                     else{
-                                       
-                                       fobserved.cleaned<-fobserved
-                                       fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = "I(",replacement = "")
-                                       fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = ")",replacement = "")
-                                       fparam.pool.cleaned<-fparam.pool
-                                       fparam.pool.cleaned<-stri_replace(str = fparam.pool.cleaned,fixed = "I(",replacement = "")
-                                       fparam.pool.cleaned<-stri_replace(str = fparam.pool.cleaned,fixed = ")",replacement = "")
-                                       pool.probs<-abs(cor(estimator.args$data[[fobserved.cleaned]],estimator.args$data[,which(fparam.pool.cleaned %in% names(estimator.args$data))]))+p.epsilon
-                                       rm(fobserved.cleaned)
-                                       rm(fparam.pool.cleaned)
-                                       #print(pool.probs[1:100])
+                                     if(j==mutation_rate)
+                                     {
+                                       fparam.pool<<-unique(c(fparam.pool,filtered))
+                                       if(!pool.cor.prob)
+                                         pool.probs<-array(data = 1/length(fparam.pool),dim = length(fparam.pool))
+                                       else{
+                                         
+                                         fobserved.cleaned<-fobserved
+                                         fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = "I(",replacement = "")
+                                         fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = ")",replacement = "")
+                                         fparam.pool.cleaned<-fparam.pool
+                                         fparam.pool.cleaned<-stri_replace(str = fparam.pool.cleaned,fixed = "I(",replacement = "")
+                                         fparam.pool.cleaned<-stri_replace(str = fparam.pool.cleaned,fixed = ")",replacement = "")
+                                         pool.probs<-abs(cor(estimator.args$data[[fobserved.cleaned]],estimator.args$data[,which(fparam.pool.cleaned %in% names(estimator.args$data))]))+p.epsilon
+                                         rm(fobserved.cleaned)
+                                         rm(fparam.pool.cleaned)
+                                         #print(pool.probs[1:100])
                                      }
-                                   }
-                                   if(length(to.del)==Nvars)
-                                     to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
-                                   if(length(to.del)==0)
-                                   {
-                                     
-                                     tdl.id<-order(p.add,decreasing = T)
-                                     to.del<-to.del[-tdl.id[Nvars.max+1:Nvars]]
-                                   }
+
+                                     to.del <- which(p.add < p.allow.tree)
+                                     if(length(to.del)==Nvars)
+                                       to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
+                                     if(length(to.del)==0)
+                                     {
+                                       
+                                       tdl.id<-order(p.add,decreasing = T)
+                                       to.del<-to.del[-tdl.id[Nvars.max+1:Nvars]]
+                                     }
                                      print("Data filtered! Insignificant variables deleted!")
                                      if(length(to.del)>0)
                                      {
