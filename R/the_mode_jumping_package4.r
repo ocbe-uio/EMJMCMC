@@ -3379,7 +3379,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
-                                     if(length(to.del)==0)
+                                     if(length(to.del)<Nvars-Nvars.max)
                                      {
                                        
                                        tdl.id<-order(p.add,decreasing = T)
@@ -3613,7 +3613,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
-                                     if(length(to.del)==0)
+                                     if(length(to.del)<Nvars-Nvars.max)
                                      {
                                        
                                        tdl.id<-order(p.add,decreasing = T)
@@ -3915,7 +3915,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      to.del <- which(p.add < p.allow.tree)
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
-                                     if(length(to.del)==0)
+                                     if(length(to.del)<Nvars-Nvars.max)
                                      {
                                        
                                        tdl.id<-order(p.add,decreasing = T)
