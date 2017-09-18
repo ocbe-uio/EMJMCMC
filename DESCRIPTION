@@ -1,10 +1,11 @@
 Package: EMJMCMC
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1
-Date: 2016-05-18
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Title: EMJMCMC
+Version: 1.a
+Date: 2017-09-18
+Author: person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut", "cre"))
+Maintainer: Aliaksandr Hubin<aliaksah@math.uio.no>
+Description:In package article we introduced approachfor estimating posterior model probabilities and Bayesian model averaging and selection with possible simultaneous feature engineering based on some primitive recursive functions.
+License: GNU LIBRARY GENERAL PUBLIC LICENSE
 LazyData: TRUE
+Built: R 3.4.1; ; 2017-09-18 11:00:04 UTC; windows
