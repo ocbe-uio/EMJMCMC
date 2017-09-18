@@ -68,6 +68,93 @@ formula.best.mosgwa1<- (Y~1+
 
 estimate.lm.MBIC2(formula.best.mosgwa1,data.example)
 
+library(stringi)
+j=0
+fdr.tot=0
+pow.tot=0
+for(i in 1:73)
+  {
+      res1<-read.csv(paste0("postGMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
+      if(!is.null(res1$tree))
+        {
+            print(paste0("Converged Iteration ",i))
+            detected<-res1$tree
+            detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+            detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+            
+              detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+              detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+              
+                detlen<-length(detect.true.unique)
+                totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+                
+                  pow=detlen/20
+                  print(pow)
+                  fdr=(totlen-detlen)/totlen
+                  print(fdr)
+                  j=j+1
+                  fdr.tot = fdr.tot + fdr
+                  pow.tot = pow.tot + pow
+                  
+                  
+                  }else
+                      {
+                          if(!is.null(res$tree))
+                            {
+                                print(paste0("Diverged Iteration ",i))
+                                detected<-res1$X
+                                detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+                                detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+                                
+                                  detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+                                  detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+                                  
+                                    detlen<-length(detect.true.unique)
+                                    totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+                                    
+                                      print(detlen/20)
+                                    print((totlen-detlen)/totlen)
+                                    
+                                    }
+                        }
+        
+        }
+pow.tot/j
+fdr.tot/j
 
 
+
+
+estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
+{
+  size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
+  
+  if(size>u)
+  {
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+  }else{
+    out <- lm(formula = formula,data = data)
+    logmarglik <- (2*logLik(out) - out$rank*log(m*m*n/c) + 2*log(factorial(out$rank)))/2
+    # use dic and aic as bic and aic correspondinly
+    return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  }
+}
+
+
+
+
+estimate.fastlm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
+{
+  size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
+  
+  if(size>u)
+  {
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+  }else{
+    out <- lm(formula = formula,data = data)
+    logmarglik <- (2*logLik(out) - out$rank*log(m*m*n/c) + 2*log(factorial(out$rank)))/2
+    # use dic and aic as bic and aic correspondinly
+    return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  }
+}
 
