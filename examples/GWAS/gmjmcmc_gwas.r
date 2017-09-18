@@ -341,10 +341,10 @@ for(j in 1:100)
       
       
       
-      write.csv(x =res1,row.names = F,file = paste0("postGMJSIM_",j,".csv"))
+      write.csv(x =res1,row.names = F,file = paste0("post1GMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
-      write.csv(x =posteriors,row.names = F,file = paste0("postEGMJSIM_",j,".csv"))
+      write.csv(x =posteriors,row.names = F,file = paste0("post1EGMJSIM_",j,".csv"))
     },finally = {
       
       print(paste0("end simulation ",j))

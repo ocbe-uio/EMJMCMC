@@ -125,7 +125,7 @@ fdr.tot/j
 
 
 
-estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
+estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=1700)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
@@ -140,10 +140,14 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
   }
 }
 
+system.time({
+  
+estimate.lm.MBIC2(formula = formula1,data = data.example)
+
+})
 
 
-
-estimate.fastlm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
+estimate.fastlm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=1700)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
@@ -151,10 +155,13 @@ estimate.fastlm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=1
   {
     return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
   }else{
-    out <- lm(formula = formula,data = data)
-    logmarglik <- (2*logLik(out) - out$rank*log(m*m*n/c) + 2*log(factorial(out$rank)))/2
+    out <- biglm(formula = formula,data = data)
+    logmarglik <- (2*(-deviance(out)) - size*log(m*m*n/c) + 2*log(factorial(size)))/2
     # use dic and aic as bic and aic correspondinly
-    return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+    return(list(mlik = logmarglik,waic = AIC(out) , dic =  AIC(out),summary.fixed =list(mean = coef(out))))
   }
 }
 
+system.time({
+estimate.fastlm.MBIC2(formula = formula1,data = data.example)
+})
