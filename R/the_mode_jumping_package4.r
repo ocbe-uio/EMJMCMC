@@ -10,6 +10,8 @@ if(!("ade4" %in% rownames(installed.packages())))
  install.packages("ade4")
 if(!("hash" %in% rownames(installed.packages()))) 
   install.packages("hash")
+if(!("speedglm" %in% rownames(installed.packages()))) 
+  install.packages("speedglm")
 if(!("stringi" %in% rownames(installed.packages()))) 
   install.packages("stringi")
 if(!("biglm" %in% rownames(installed.packages()))) 
@@ -30,7 +32,8 @@ if(!("stats" %in% rownames(installed.packages())))
   install.packages("stats")
 #if(!("inline" %in% rownames(installed.packages()))) 
 #  install.packages("inline")
-
+if(!("RCurl" %in% rownames(installed.packages()))) 
+  install.packages("RCurl")
 #library(inline)
 library(glmnet)
 library(biglm)
@@ -66,12 +69,11 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
 factorial<-function(x) ifelse(x<=170,gamma(x + 1),gamma(171))
 
-estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
+estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
 {
-
-  #only poisson and binomial families are currently adopted
   X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
+  out <- bayesglm.fit(x = X, y = data[,51], family=family,coefprior=aic.prior())
+  p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
@@ -79,13 +81,34 @@ estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
   fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
   sj<-(stri_count_fixed(str = fparam, pattern = "&"))
   sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
-  Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-
-  return(list(mlik = (out$logmarglik+2*log(Jprior) + 2*tn*log(r)),waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
-
+  sj<-sj+1
+  Jprior <- sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
+  mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
+  if(mlik==-Inf)
+    mlik = -10000
+  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
 }
 
+
+estimate.logic.lm <- function(formula, data, n, m, r = 1)
+{
+  out <- lm(formula = formula,data = data)
+  p <- out$rank
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  sj<-sj+1
+  Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
+  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
+  if(mlik==-Inf)
+    mlik = -10000
+  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+}
 
 #estimate elastic nets
 
@@ -100,36 +123,26 @@ estimate.elnet <- function(formula,response, data, family,alpha)
 }
 
 # use dic and aic as bic and aic correspondinly
-estimate.speedglm <- function(formula, data, family, prior) # weird behaviour, bad control of singularity
+estimate.speedglm <- function(formula, data, family, prior, logn) # weird behaviour, bad control of singularity
 {
   X <- model.matrix(object = formula,data = data)
   out <- speedglm.wfit(y = data[,1], X = X, intercept=FALSE, family=family,eigendec = T, method = "Cholesky")
   if(prior == "AIC")
     return(list(mlik = -out$aic ,waic = -(out$deviance + 2*out$rank) , dic =  -(out$RSS),summary.fixed =list(mean = out$coefficients)))
-  if(prior=="RSS")
-    return(list(mlik = -out$RSS ,waic = -(out$deviance + 2*out$rank) , dic =  -(out$RSS),summary.fixed =list(mean = out$coefficients)))
+  if(prior=="BIC")
+    return(list(mlik = -out$RSS-logn*out$rank ,waic = -(out$deviance + 2*out$rank) , dic =  -(out$RSS+logn*out$rank),summary.fixed =list(mean = out$coefficients)))
 }
 
-estimate.bigm <- function(formula, data, family, prior, maxit = 2,chunksize = 1000000) # nice behaviour
+estimate.bigm <- function(formula, data, family, prior,n, maxit = 2,chunksize = 1000000) # nice behaviour
 {
 
   out <- bigglm(data = data, family=family,formula = formula, sandwich = F,maxit = maxit, chunksize = chunksize)
   if(prior == "AIC")
-    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = 2),summary.fixed =list(mean = coef(out))))
-  if(prior=="RSS")
-    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = 2),summary.fixed =list(mean = coef(out))))
+    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = n),summary.fixed =list(mean = coef(out))))
+  if(prior=="BIC")
+    return(list(mlik = -AIC(out,k = n) ,waic = AIC(out, k = 2) , dic =  AIC(out,k = n),summary.fixed =list(mean = coef(out))))
 }
 
-estimate.bas.glm.bagging <- function(formula, data, family, prior, logn, bag.size)
-{
-
-  #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
-  # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
-
-}
 
 sigmoid<- function(x)
 {
@@ -168,101 +181,18 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 
 }
 
-estimate.logic.lm <- function(formula, data, n, m, r = 1)
-{
-  out <- lm(formula = formula,data = data)
-  p <- out$rank
-  fmla.proc<-as.character(formula)[2:3]
-  fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
-  Jprior <- prod(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
-  if(mlik==-Inf)
-    mlik = -10000
-  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
-}
 
-
-estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
-{
-  X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=aic.prior())
-  p <- out$rank
-  fmla.proc<-as.character(formula)[2:3]
-  fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
-  Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (out$logmarglik + 4*p - log(n)*p +2*log(Jprior) + 2*p*log(r)+n)
-  if(mlik==-Inf)
-    mlik = -10000
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
-}
-
-estimate.bas.lm.bagging <- function(formula, data, prior, n, g = 0, bag.size)
-{
-
-  out <- lm(formula = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
-  # 1 for aic, 2 bic prior, else g.prior
-
-  p <- out$rank
-  if(prior == 1)
-  {
-    ss<-sum(out$residuals^2)
-    logmarglik <- -0.5*(log(ss)+2*p)
-  }
-  else if(prior ==2)
-  {
-    ss<-sum(out$residuals^2)
-    logmarglik <- -0.5*(log(ss)+log(n)*p)
-  }
-  else
-  {
-    Rsquare <- summary(out)$r.squared
-    #logmarglik =  .5*(log(1.0 + g) * (n - p -1)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
-    logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
-  }
-
-  # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
-
-}
-
-estimate.inla.iid <- function(formula, args)
+estimate.inla <- function(formula, args)
 {
 
   out <- do.call(inla, c(args,formula = formula))
   # use dic and aic as bic and aic correspondinly
   coef<-out$summary.fixed$mode
   coef[1]<-coef[1]+out$summary.hyperpar$mode[1]
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank), summary.fixed =list(mean = coef)))
+  return(list(mlik = out$mlik[1],waic =  out$waic[1] , dic = out$dic[1], summary.fixed =list(mean = coef)))
 
 }
 
-estimate.inla.ar1 <- function(formula, args)
-{
-
-  out<-NULL
-  capture.output({withRestarts(tryCatch(capture.output({out <- do.call(inla, c(args,formula = formula)) })), abort = function(){onerr<-TRUE;out<-NULL})})
-  if(is.null(out))
-  {
-    return(list(mlik = -10000,waic =10000, dic =10000, summary.fixed = 0))
-  }
-  # use dic and aic as bic and aic correspondinly
-  coef<-out$summary.fixed$mode
-  coef[1]<-coef[1]+out$summary.hyperpar$mode[1]/(1-out$summary.hyperpar$mode[2])
-  return(list(mlik = out$mlik[1],waic = out$waic[1] , dic = out$dic[1], summary.fixed =list(mean =coef)))
-
-}
 
 parallelize<-function(X,FUN)
 {
@@ -280,30 +210,8 @@ parallelize<-function(X,FUN)
 }
 
 
-estimate.glm <- function(formula, data, prior, family)
-{
 
-  out <- glm(formula = formula,data = data, family = family)
-  # 1 for aic, 2 bic prior, else g.prior
-
-
-  if(prior == 1)
-  {
-
-    logmarglik <- -AIC(out)
-  }
-  else
-  {
-    logmarglik <- -BIC(out)
-  }
-
-  # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
-
-}
-
-
-estimate.glm.alt <- function(formula, data, family, prior, n, g = 0)
+estimate.glm <- function(formula, data, family, prior, n=1, g = 0)
 {
 
   out <- glm(formula = formula, family = family, data = data)
