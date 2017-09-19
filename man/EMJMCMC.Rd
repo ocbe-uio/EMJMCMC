@@ -52,30 +52,36 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
 }
 \details{See Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017), Hubin & Storvik (2017) details. The local optimization is performed through stepwise search within a neighborhood in the current gamma vector, allowing one component to be changed at a time.}
 \value{A list containing
-  \item{gam}{The gamma vector at the last iteration}
-  \item{lvec}{A vector of the log-marginal likelihoods at each iteration}
-  \item{acc}{The acceptance rate among the ordinary M-H steps}
-  \item{acc.large}{The acceptance rate among the large jumps}
-  \item{num.large}{The number of large jumps considered. Should be approximately numit*mu}
+  \item{p.post}{A vector of posterior probabilities of the final vector of active covariates (features)}
+  \item{m.post}{A vector of posterior probabilities of the models from the search space induced by the final vector of active covariates (features)}
+  \item{s.mass}{Sum of marginal likelihoods times the priors from the explored part of the search space induced by the final vector of active covariates (features)}
 }
 \references{Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017), Hubin & Storvik (2017)}
 \author{Aliaksandr Hubin}
 
-\seealso{myMJMCMC.calc.marglik.R,myMJMCMC.opt}
+\seealso{global objects statistics1 (if create.table==T) or hashStat (if create.table==F) contain all marginal likelihoods and two other model selection criteria as well as all of the beta coefficients for the models (if save.beta==T)}
 \examples{
 data(crimedata)
 
-#Comparing with and without large jumps.
-#Not really a fair comparison since the latter one uses more resourses
 
-res1 = myMJMCMC(Y~.,data=crimedata,neigh=1,numit=10000,mu=0.0)
-V1 = sum(exp(unique(res1$lvec)))
+if(!("RCurl" %in% rownames(installed.packages()))) 
+  install.packages("RCurl")
+library(RCurl)
+simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Protein%20Activity%20Data/proteincen.txt"),sep = " ")
+data.example <- as.data.frame(simx)
+names(data.example)[89]="Y"
 
-res2 = myMJMCMC(Y~.,data=data.example,neigh=1,numit=10000,mu=0.1)
-V2 = sum(exp(unique(res2$lvec)))
+system.time({
+  
+  formula1 = as.formula(paste(colnames(data.example)[89],"~ 1 +",paste0(colnames(data.example)[-89],collapse = "+")))
+  
+  res = runemjmcmc(formula = formula1,data = data.example,recalc_margin = 2^10,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = T,interact = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 95,p.allow.replace=0.9,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 50000,unique = T,max.cpu = 10,max.cpu.glob = 10,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
+    max.N.glob=as.integer(20),
+    min.N.glob=as.integer(5),
+    max.N=as.integer(3),                                                                                                    min.N=as.integer(1),
+    printable = F))
+})
 
-matplot(cbind(res1$lvec,res2$lvec),type="l")
-show(c(V1,V2))
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line
