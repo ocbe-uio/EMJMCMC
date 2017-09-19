@@ -1,11 +1,10 @@
 Package: EMJMCMC
 Type: Package
 Title: EMJMCMC
-Version: 1.a
+Version: 1.4
 Date: 2017-09-18
 Author: person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut", "cre"))
 Maintainer: Aliaksandr Hubin<aliaksah@math.uio.no>
 Description:In package article we introduced approachfor estimating posterior model probabilities and Bayesian model averaging and selection with possible simultaneous feature engineering based on some primitive recursive functions.
 License: GNU LIBRARY GENERAL PUBLIC LICENSE
 LazyData: TRUE
-Built: R 3.4.1; ; 2017-09-18 11:00:04 UTC; windows
