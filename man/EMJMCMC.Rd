@@ -61,25 +61,26 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
 
 \seealso{global objects statistics1 (if create.table==T) or hashStat (if create.table==F) contain all marginal likelihoods and two other model selection criteria as well as all of the beta coefficients for the models (if save.beta==T)}
 \examples{
-data(crimedata)
-
 
 if(!("RCurl" %in% rownames(installed.packages()))) 
   install.packages("RCurl")
 library(RCurl)
-simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Protein%20Activity%20Data/proteincen.txt"),sep = " ")
-data.example <- as.data.frame(simx)
-names(data.example)[89]="Y"
+
+simx <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-x1.txt"),sep = ",")
+simy <- read.table(text=getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/US%20Data/simcen-y1.txt"))
+data.example <- cbind(simy,simx)
+names(data.example)[1]="Y"
 
 system.time({
   
-  formula1 = as.formula(paste(colnames(data.example)[89],"~ 1 +",paste0(colnames(data.example)[-89],collapse = "+")))
+  formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-1],collapse = "+")))
   
-  res = runemjmcmc(formula = formula1,data = data.example,recalc_margin = 2^10,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 96 ,n=96),save.beta = T,interact = T,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 95,p.allow.replace=0.9,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 50000,unique = T,max.cpu = 10,max.cpu.glob = 10,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
-    max.N.glob=as.integer(20),
+  res = runemjmcmc(formula = formula1,data = data.example,recalc_margin = 200,estimator =estimate.bas.lm,estimator.args =  list(data = data.example,prior = 3, g = 47 ,n=47),save.beta = T,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 95,p.allow.replace=0.9,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 2,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 100,advanced.param = list(
+    max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
-    max.N=as.integer(3),                                                                                                    min.N=as.integer(1),
+    max.N=as.integer(1),                                                                                                                                                                                                                                                                                                      min.N=as.integer(1),
     printable = F))
+  print(res$p.post)
 })
 
 }
