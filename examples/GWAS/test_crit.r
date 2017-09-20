@@ -72,7 +72,7 @@ library(stringi)
 j=0
 fdr.tot=0
 pow.tot=0
-for(i in 1:73)
+for(i in 1:22)
   {
       res1<-read.csv(paste0("postGMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
       if(!is.null(res1$tree))
