@@ -108,11 +108,11 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 
 
 MM = 10
-M = 100
+M = 31
 size.init=1000
 NM= 1000
 
-compmax = 51
+compmax = 151
 th<-(10)^(-5)
 thf<-0.05
 
@@ -171,8 +171,8 @@ for(j in 1:1)
     
     set.seed(j)
   
-    vect<-list(locstop.nd = T, keep.origin = F, pool.cor.prob = T, outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,recalc_margin = 299,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,max.time = 360, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
-      max.N.glob=as.integer(30),
+    vect<-list(locstop.nd = T, keep.origin = F, pool.cor.prob = T, outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),max.time = 120,interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =150,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 50000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+      max.N.glob=as.integer(100),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
       min.N=as.integer(1),
@@ -204,7 +204,8 @@ for(j in 1:1)
       print((totlen-detlen)/totlen)
       gc()
       formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
-      secondary <-names[-which(names %in% cov.names)]
+      names1<-names[which(abs(cors)>0.01)]
+      secondary <-names1[-which(names1 %in% cov.names)]
       #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
       #sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = geno))
       #cov.names<-names(sum$coefficients[-1,4])
@@ -216,8 +217,8 @@ for(j in 1:1)
       params[[i]]$cpu<-i*j
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
-      params[[i]]$NM<-NM
-      params[[i]]$simlen<-28
+      params[[i]]$NM<-5000
+      params[[i]]$simlen<-29
     }
     
     gc()
@@ -258,6 +259,42 @@ for(j in 1:1)
       }
       
     }
+    
+    k=0
+    fdr.tot=0
+    pow.tot=0
+    for(i in 1:M)
+    {
+      
+        if(i %in% nulls)
+        {
+          next
+        }
+        print(paste0("Converged Iteration ",i))
+        detected<-results[[i]]$fparam[which(results[[i]]$p.post>0.1)]
+        detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
+        detected<-stri_replace(str = detected,fixed = ")",replacement = "")
+        
+        detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
+        detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+        
+        detlen<-length(detect.true.unique)
+        totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
+        
+        pow=detlen/20
+        print(pow)
+        fdr=(totlen-detlen)/totlen
+        print(fdr)
+        k=k+1
+        fdr.tot = fdr.tot + fdr
+        pow.tot = pow.tot + pow
+        
+        
+      
+    }
+    pow.tot/k
+    fdr.tot/k
+    
     
     
     for(k in 1:M)

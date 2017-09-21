@@ -306,7 +306,7 @@ parall.gmj <- function(X,M=16,preschedule = F) mclapply(X = X, FUN = do.call.emj
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0),
-                     estimator,estimator.args = "list",n.models, unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+                     estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5, unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,1),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -333,6 +333,8 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   mySearch$latent.formula <<- latent
   mySearch$save.beta <<- save.beta
   mySearch$prand<<-prand
+  mySearch$p.add<<-p.add
+  mySearch$p.add.default<<-p.add.default
   mySearch$recalc.margin <<- as.integer(recalc_margin)
   mySearch$max.cpu <<- as.integer(max.cpu)
   mySearch$locstop.nd <<- locstop.nd
@@ -489,6 +491,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          min.N.glob = "integer",
                                          max.cpu.glob = "integer",
                                          max.cpu.hyper = "integer",
+                                         p.add.default="numeric",
                                          switch.type.glob = "integer",
                                          isobsbinary = "array",
                                          filtered = "vector",
@@ -581,6 +584,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
                                  p.epsilon<<- 0.0001
+                                 p.add.default<<-1
                                  p.allow.replace <<- 0.3
                                  sigmas<<-c("","sin","cos","sigmoid","tanh","atan","erf")
                                  sigmas.prob<<-c(0.4,0.1,0.1,0.1,0.1,0.1,0.1)
@@ -646,7 +650,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  max.cpu.hyper <<- as.integer(search.args.list$max.cpu.hyper)
                                  save.beta <<- search.args.list$save.beta
                                  aa <<- search.args.list$lambda.a
-                                 prand<<-earch.args.list$prand
+                                 prand<<-search.args.list$prand
+                                 p.add.default<<-search.args.list$ p.add.default
                                  sup.large.n<<-search.args.list$sup.large.n
                                  thin_rate <-search.args.list$thin_rate
                                  keep.origin<<-search.args.list$keep.origin
@@ -3780,7 +3785,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      }
                                    }
-
+                                    
+                                   if(p.add.default<1)
+                                     p.add<<-array(p.add.default,Nvars)
                                    varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
                                    varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
                                    varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
