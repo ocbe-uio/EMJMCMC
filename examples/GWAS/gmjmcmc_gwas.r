@@ -112,7 +112,7 @@ M = 31
 size.init=1000
 NM= 1000
 
-compmax = 51
+compmax = 151
 th<-(10)^(-5)
 thf<-0.05
 
@@ -177,6 +177,8 @@ for(j in 1:100)
     cors<-cor(data.example$Y,data.example[,1:24602])
     gc()
     cov.names<-names[which(abs(cors)>0.05)]
+    names1<-names[which(abs(cors)>0.025)]
+    print(length(names1))
     sum<-summary(lm(as.formula(paste0("Y~1+",paste(cov.names,collapse = "+"))),data = data.example))
     cov.names<-names(sum$coefficients[-1,4])
     detected<-cov.names
@@ -190,11 +192,11 @@ for(j in 1:100)
     print((totlen-detlen)/totlen)
     gc()
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
-    secondary <-names[-which(names %in% cov.names)]
+    secondary <-names1[-which(names1 %in% cov.names)]
     
     
-    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 299,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 300,max.time = 360, last.mutation = 15000, max.tree.size = 4, Nvars.max =50,p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
-      max.N.glob=as.integer(30),
+    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000,max.time = 360, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+      max.N.glob=as.integer(130),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
       min.N=as.integer(1),
@@ -214,7 +216,7 @@ for(j in 1:100)
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-28
+      params[[i]]$simlen<-30
     }
     
     gc()
@@ -367,7 +369,7 @@ for(j in 1:100)
     rm(params)
     gc()
   })
-    
+  
 }
 
 

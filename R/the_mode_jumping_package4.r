@@ -333,7 +333,7 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   mySearch$latent.formula <<- latent
   mySearch$save.beta <<- save.beta
   mySearch$prand<<-prand
-  mySearch$p.add<<-array(p.add,Nvars)
+  mySearch$p.add<<-array(p.add,length(fparam.example))
   mySearch$p.add.default<<-p.add.default
   mySearch$recalc.margin <<- as.integer(recalc_margin)
   mySearch$max.cpu <<- as.integer(max.cpu)
