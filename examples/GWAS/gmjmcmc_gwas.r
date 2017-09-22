@@ -169,7 +169,7 @@ for(j in 1:100)
 {
   tryCatch({
     
-    set.seed(j)
+    set.seed(5)
     
     pheno<-read.csv(paste0("data_S2_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
     data.example$Y<-as.numeric(pheno$V1)
@@ -195,7 +195,7 @@ for(j in 1:100)
     secondary <-names1[-which(names1 %in% cov.names)]
     
     
-    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1, p.add.default = 0.1, pool.cor.prob = T,secondary <-names1[-which(names1 %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000,max.time = 60, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 120, p.add.default = 0.1, pool.cor.prob = T,secondary <-names1[-which(names1 %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(130),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
@@ -216,7 +216,7 @@ for(j in 1:100)
       params[[i]]$simul<-"scenario_JM_"
       params[[i]]$simid<-j
       params[[i]]$NM<-NM
-      params[[i]]$simlen<-30
+      params[[i]]$simlen<-31
     }
     
     gc()
