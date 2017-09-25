@@ -244,9 +244,9 @@ fdr.tot=0
 pow.tot=0
 fps=0
 mis=0
-for(i in 1:29)
+for(i in 1:28)
 {
-  res1<-read.csv(paste0("postGMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
+  res1<-read.csv(paste0("post4GMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
   if(!is.null(res1$tree))
   {
     print(paste0("Converged Iteration ",i))
@@ -254,19 +254,19 @@ for(i in 1:29)
     detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
     detected<-stri_replace(str = detected,fixed = ")",replacement = "")
     
-    detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
-    detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+    detect.true.unique<-unique(dataNeigbourhoodS4$causSNPid[which(dataNeigbourhoodS4$SNPid %in% detected)])
+    detect.true<-which(detected %in% dataNeigbourhoodS4$SNPid)
     
     detlen<-length(detect.true.unique)
     totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
     
-    pow=detlen/20
+    pow=detlen/40
     print(pow)
     fdr=(totlen-detlen)/totlen
     print(fdr)
     j=j+1
     fps=fps+totlen-detlen
-    mis=mis+totlen-detlen + 20 - detlen
+    mis=mis+totlen-detlen + 40 - detlen
     fdr.tot = fdr.tot + fdr
     pow.tot = pow.tot + pow
     
