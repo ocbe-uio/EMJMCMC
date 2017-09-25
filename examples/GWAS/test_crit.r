@@ -120,7 +120,7 @@ fdr.tot=0
 pow.tot=0
 fps=0
 mis=0
-for(i in 1:29)
+for(i in 1:31)
 {
   res1<-read.csv(paste0("postGMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
   if(!is.null(res1$tree))
