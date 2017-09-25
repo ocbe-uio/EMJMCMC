@@ -121,7 +121,7 @@ data.example<-geno
 rm(geno)
 gc()
 
-simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, resp, dataNeigbourhood = dataNeigbourhoodS2)
+simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = dataNeigbourhoodS2)
 {
   tds<-which(posteriors[,2]<th)
   if(length(tds)>0)
@@ -165,7 +165,7 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, resp, dataNeigbourhoo
 
 j=1 
 
-for(j in 1:100)
+for(j in 2:100)
 {
   tryCatch({
     
