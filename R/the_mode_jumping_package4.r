@@ -2,37 +2,37 @@
 
 #install the following packages if required!
 
-if(!("INLA" %in% rownames(installed.packages()))) 
+if(!("INLA" %in% rownames(installed.packages())))
   install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
-if(!("bigmemory" %in% rownames(installed.packages()))) 
+if(!("bigmemory" %in% rownames(installed.packages())))
   install.packages("bigmemory")
-if(!("ade4" %in% rownames(installed.packages()))) 
+if(!("ade4" %in% rownames(installed.packages())))
  install.packages("ade4")
-if(!("hash" %in% rownames(installed.packages()))) 
+if(!("hash" %in% rownames(installed.packages())))
   install.packages("hash")
-if(!("speedglm" %in% rownames(installed.packages()))) 
+if(!("speedglm" %in% rownames(installed.packages())))
   install.packages("speedglm")
-if(!("stringi" %in% rownames(installed.packages()))) 
+if(!("stringi" %in% rownames(installed.packages())))
   install.packages("stringi")
-if(!("biglm" %in% rownames(installed.packages()))) 
+if(!("biglm" %in% rownames(installed.packages())))
   install.packages("biglm")
-if(!("glmnet" %in% rownames(installed.packages()))) 
+if(!("glmnet" %in% rownames(installed.packages())))
   install.packages("glmnet")
-if(!("BAS" %in% rownames(installed.packages()))) 
+if(!("BAS" %in% rownames(installed.packages())))
   install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/examples/BAS%20archive/BAS_0.91.tar.gz?raw=true", repos = NULL)
-if(!("BAS" %in% rownames(installed.packages()))) 
+if(!("BAS" %in% rownames(installed.packages())))
   install.packages("BAS")
-if(!("sp" %in% rownames(installed.packages()))) 
+if(!("sp" %in% rownames(installed.packages())))
   install.packages("sp")
-if(!("MASS" %in% rownames(installed.packages()))) 
+if(!("MASS" %in% rownames(installed.packages())))
   install.packages("MASS")
-if(!("parallel" %in% rownames(installed.packages()))) 
+if(!("parallel" %in% rownames(installed.packages())))
   install.packages("parallel")
-if(!("stats" %in% rownames(installed.packages()))) 
+if(!("stats" %in% rownames(installed.packages())))
   install.packages("stats")
-#if(!("inline" %in% rownames(installed.packages()))) 
+#if(!("inline" %in% rownames(installed.packages())))
 #  install.packages("inline")
-if(!("RCurl" %in% rownames(installed.packages()))) 
+if(!("RCurl" %in% rownames(installed.packages())))
   install.packages("RCurl")
 #library(inline)
 library(glmnet)
@@ -185,11 +185,31 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 estimate.inla <- function(formula, args)
 {
 
-  args$formula <- formula
-  out <- do.call(inla, args)
+  out<-NULL
+  tryCatch(capture.output({
+  out <- do.call(inla, c(args,formula = formula))}))
+  if(is.null(out))
+    return(list(mlik = -10000,waic =  10000 , dic = 10000, summary.fixed =list(mean = NULL)))
   # use dic and aic as bic and aic correspondinly
   coef<-out$summary.fixed$mode
   coef[1]<-coef[1]+out$summary.hyperpar$mode[1]
+  return(list(mlik = out$mlik[1],waic =  out$waic[1] , dic = out$dic[1], summary.fixed =list(mean = coef)))
+
+}
+
+
+estimate.inla.poisson <- function(formula, data)
+{
+
+  out<-NULL
+  capture.output({tryCatch(capture.output({
+    out <-inla(family = "poisson",data = data,formula = formula,control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
+      }))})
+  if(is.null(out))
+    return(list(mlik = -10000,waic =  10000 , dic = 10000, summary.fixed =list(mean = NULL)))
+  # use dic and aic as bic and aic correspondinly
+  coef<-out$summary.fixed$mode
+  #coef[1]<-coef[1]+out$summary.hyperpar$mode[1]
   return(list(mlik = out$mlik[1],waic =  out$waic[1] , dic = out$dic[1], summary.fixed =list(mean = coef)))
 
 }
@@ -272,7 +292,7 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2, resp)
           rhash[[ress[1]]][4]<-expr
       }
     }
-    
+
   }
   res<-as.data.frame(t(values(rhash)[c(3,4),]))
   res$V1<-as.numeric(as.character(res$V1))
@@ -288,7 +308,7 @@ simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2, resp)
 
 do.call.emjmcmc<-function(vect)
 {
-  
+
   set.seed(as.integer(vect$cpu))
   do.call(runemjmcmc, vect[1:vect$simlen])
   vals<-values(hashStat)
@@ -333,6 +353,7 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   if(length(secondary)>0)
     mySearch$filtered <<- sapply(FUN = paste,"I(",secondary,")",sep="")
   mySearch$estimator <<- estimator
+  mySearch$latnames <<- latnames
   mySearch$estimator.args <<- estimator.args
   mySearch$latent.formula <<- latent
   mySearch$save.beta <<- save.beta
@@ -500,6 +521,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          isobsbinary = "array",
                                          filtered = "vector",
                                          fparam = "vector",
+                                         latnames = "vector",
                                          fparam.pool = "vector",
                                          p.add = "array",
                                          latent.formula = "character",
@@ -588,6 +610,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  thin_rate<<- as.integer(-1)
                                  p.allow.tree <<- 0.6
                                  p.epsilon<<- 0.0001
+                                 latnames<<-""
                                  p.add.default<<-1
                                  p.allow.replace <<- 0.3
                                  sigmas<<-c("","sin","cos","sigmoid","tanh","atan","erf")
@@ -638,6 +661,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  max.cpu <<- as.integer(search.args.list$max.cpu)
                                  objective <<- as.integer(search.args.list$objective)
                                  parallelize <<- search.args.list$parallelize
+                                 latnames <<- search.args.list$latnames
                                  parallelize.global <<- search.args.list$parallelize.global
                                  parallelize.hyper  <<- search.args.list$parallelize.hyper
                                  p.prior <<-  search.args.list$p.prior
@@ -3183,7 +3207,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
                                  backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
-                               
+
                                  if(exists("statistics1")&&recalc.margin < 2^Nvars)
                                  {
                                    p.add <<- as.array(post_proceed_results(statistics1)$p.post)
@@ -3192,14 +3216,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    p.add <<- as.array(post_proceed_results_hash(hashStat)$p.post)
                                  }
-                                 
+
                                }else
                                {
                                  p.add<<-array(data = 0.1,Nvars)
                                  p.post<-array(data = 0.1,Nvars)
                                  vec<-rbinom(n = Nvars,size = 1,prob = 0.0000001) # generate an initial solution
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
-                                 
+
                                }
                                waiccur<-Inf
                                waicglob<-Inf
@@ -3298,7 +3322,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
                                      if(length(to.del)<Nvars-Nvars.max)
                                      {
-                                       
+
                                        tdl.id<-order(p.add,decreasing = T)
                                        to.del<-to.del[-tdl.id[1:Nvars.max]]
                                      }
@@ -3514,7 +3538,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(!pool.cor.prob)
                                         pool.probs<-array(data = 1/length(fparam.pool),dim = length(fparam.pool))
                                        else{
-                                         
+
                                         fobserved.cleaned<-fobserved
                                         fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = "I(",replacement = "")
                                         fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = ")",replacement = "")
@@ -3532,7 +3556,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
                                      if(length(to.del)<Nvars-Nvars.max)
                                      {
-                                       
+
                                        tdl.id<-order(p.add,decreasing = T)
                                        to.del<-to.del[-tdl.id[1:Nvars.max]]
                                      }
@@ -3721,6 +3745,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        add<-T
+
+                                       if(latnames!="")
+                                         if(sum(stri_count_fixed(str = proposal,pattern = latnames))>0)
+                                           add<-F
+
+                                       print(proposal)
+
+                                       if(add){
                                        tryCatch(capture.output({
                                          bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
 
@@ -3737,6 +3769,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #print(proposal)
                                          add<-F
                                        }))
+
+                                       }
 
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
@@ -3789,7 +3823,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      }
                                    }
-                                    
+
                                    if(p.add.default<1)
                                      p.add<<-array(p.add.default,Nvars)
                                    varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
@@ -3818,7 +3852,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(!pool.cor.prob)
                                          pool.probs<-array(data = 1/length(fparam.pool),dim = length(fparam.pool))
                                        else{
-                                         
+
                                          fobserved.cleaned<-fobserved
                                          fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = "I(",replacement = "")
                                          fobserved.cleaned<-stri_replace(str = fobserved.cleaned,fixed = ")",replacement = "")
@@ -3836,7 +3870,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        to.del<-to.del[-sample.int(n = Nvars,size = sample.int(n=Nvars-1,size = 1),prob = p.add+p.epsilon)]
                                      if(length(to.del)<Nvars-Nvars.max)
                                      {
-                                       
+
                                        tdl.id<-order(p.add,decreasing = T)
                                        to.del<-to.del[-tdl.id[1:Nvars.max]]
                                      }
