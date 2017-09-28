@@ -165,7 +165,7 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = da
 
 j=1 
 
-for(j in 1:100)
+for(j in 2:100)
 {
   tryCatch({
     
@@ -180,11 +180,11 @@ for(j in 1:100)
     detected<-cov.names
     detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
     detected<-stri_replace(str = detected,fixed = ")",replacement = "")
-    detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
-    detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+    detect.true.unique<-unique(dataNeigbourhoodS3$causSNPid[which(dataNeigbourhoodS3$SNPid %in% detected)])
+    detect.true<-which(detected %in% dataNeigbourhoodS3$SNPid)
     detlen<-length(detect.true.unique)
     totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
-    print(detlen/20)
+    print(detlen/30)
     print((totlen-detlen)/totlen)
     gc()
     
@@ -387,8 +387,8 @@ for(j in 1:100)
       detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
       detected<-stri_replace(str = detected,fixed = ")",replacement = "")
       
-      detect.true.unique<-unique(dataNeigbourhoodS2$causSNPid[which(dataNeigbourhoodS2$SNPid %in% detected)])
-      detect.true<-which(detected %in% dataNeigbourhoodS2$SNPid)
+      detect.true.unique<-unique(dataNeigbourhoodS3$causSNPid[which(dataNeigbourhoodS3$SNPid %in% detected)])
+      detect.true<-which(detected %in% dataNeigbourhoodS3$SNPid)
       
       detlen<-length(detect.true.unique)
       totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
@@ -398,10 +398,10 @@ for(j in 1:100)
       
       
       
-      write.csv(x =res1,row.names = F,file = paste0("post12SMJSIM_",j,".csv"))
+      write.csv(x =res1,row.names = F,file = paste0("post13SMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
-      write.csv(x =posteriors,row.names = F,file = paste0("post12SEGMJSIM_",j,".csv"))
+      write.csv(x =posteriors,row.names = F,file = paste0("post13SEGMJSIM_",j,".csv"))
     },finally = {
       
       print(paste0("end simulation ",j))

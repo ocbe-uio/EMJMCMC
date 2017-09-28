@@ -3526,7 +3526,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                  } else if(allow_offsprings  == 3  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                  {
-
+                                   #if(latnames[1]!="")
+                                     
                                    # perform preliminary filtration here
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
@@ -3746,9 +3747,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        add<-T
 
+                                       
+                                       ids.lat<-integer(0)
                                        if(latnames[1]!="")
+                                       { 
+                                         ids.lat<-which(fparam %in% latnames)
                                          if(sum(stri_count_fixed(str = proposal,pattern = latnames))>0)
                                            add<-F
+                                       }
+                                       if(length(ids.lat)==0)
+                                         ids.lat<-Nvars.max + 1
                                               
                                        
                                        print(add)
@@ -3756,7 +3764,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        if(add){
                                        tryCatch(capture.output({
-                                         bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                         bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
 
                                          if(is.na(bet.act[length(fparam)+2]))
                                          {
