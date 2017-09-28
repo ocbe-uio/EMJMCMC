@@ -64,8 +64,8 @@ findNeigbour <- function(causSNP) {
 }
 
 #dataNeigbourhoodS1 <- plyr::ldply(causSNPsS1, findNeigbour)
-dataNeigbourhoodS2 <- plyr::ldply(causSNPsS2, findNeigbour)
-#dataNeigbourhoodS3 <- plyr::ldply(causSNPsS3, findNeigbour)
+#dataNeigbourhoodS2 <- plyr::ldply(causSNPsS2, findNeigbour)
+dataNeigbourhoodS3 <- plyr::ldply(causSNPsS3, findNeigbour)
 #dataNeigbourhoodS4 <- plyr::ldply(causSNPsS4, findNeigbour)
 
 rm(genoData)
@@ -81,8 +81,8 @@ gc()
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 
-pheno<-read.csv(paste0("data_S2_nocausal_5402/pimass/data.recode.pheno_",1,".txt"),header = F)
-geno<-t(read.csv("data_S2_nocausal_5402/pimass/data.recode.mean.geno.txt",header = F,stringsAsFactors = F))
+pheno<-read.csv(paste0("data_S3_nocausal_5402/pimass/data.recode.pheno_",1,".txt"),header = F)
+geno<-t(read.csv("data_S3_nocausal_5402/pimass/data.recode.mean.geno.txt",header = F,stringsAsFactors = F))
 names<-geno[1,]
 geno<-as.data.frame(geno[-c(1,2,3),])
 names(geno)<-names
@@ -91,7 +91,7 @@ geno <- as.data.frame(mclapply(geno, as.numeric))
 
 
 
-estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
+estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24592, c = 16,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
@@ -121,7 +121,7 @@ data.example<-geno
 rm(geno)
 gc()
 
-simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = dataNeigbourhoodS2)
+simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = dataNeigbourhoodS3)
 {
   tds<-which(posteriors[,2]<th)
   if(length(tds)>0)
@@ -171,7 +171,7 @@ for(j in 1:100)
     
     set.seed(j)
     
-    pheno<-read.csv(paste0("data_S2_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
+    pheno<-read.csv(paste0("data_S3_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
     data.example$Y<-as.numeric(pheno$V1)
     rm(pheno)
     cors<-cor(data.example$Y,data.example[,1:(dim(data.example)[2]-1)])
