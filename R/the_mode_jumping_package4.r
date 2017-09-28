@@ -346,10 +346,7 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   #  fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
   #}
   fparam.tmp<- sapply(FUN = paste,"I(",variables$fparam,")",sep="")
-  if(latnames[1]!="")
-    fparam.example<<-c(fparam.tmp,latnames)
-  else
-    fparam.example<<-fparam.tmp
+  fparam.example<<-c(fparam.tmp,latnames)
   #print(fparam.tmp)
   #print(fparam.example)
   assign("mySearch",EMJMCMC2016(), envir=globalenv())
@@ -3669,10 +3666,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          if(length(actvars)<=1)
                                          {
-                                           proposal <- fparam[1]
+                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                          }else{
-
+                                           tryCatch(capture.output({
                                            #print(as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+"))))
                                            # get the projection coefficients as the posterior mode of the fixed effects
                                            bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
@@ -3687,7 +3684,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
                                            proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
 
-
+                                           }, error = function(err) {
+                                             #print(proposal)
+                                             proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                           }))
                                            #print(proposal)
 
                                            if(is.na(proposal))
@@ -3704,7 +3704,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #print(idel)
                                          if(idel>length(fparam))
                                          {
-                                           proposal<-fparam[1]
+                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                          }else{
                                            cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
                                            if(length(cpm)==0)
@@ -3759,7 +3759,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            add<-F
                                        }
                                        if(length(ids.lat)==0)
-                                         ids.lat<-Nvars.max + 1
+                                         ids.lat<-Nvars.max +1
                                               
                                        
                                        print(add)

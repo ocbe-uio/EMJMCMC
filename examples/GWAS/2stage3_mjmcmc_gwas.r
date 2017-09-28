@@ -276,7 +276,7 @@ for(j in 1:100)
     
     gc()
     
-    compmax=length(results[[1]]$fparam)+1
+    compmax=length(selected)+1
     
     #res<-do.call(runemjmcmc,args = params[[3]][1:27])
     #res$p.post
