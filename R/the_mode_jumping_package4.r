@@ -3779,7 +3779,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            idel<-idel+1
                                          }
                                        }, error = function(err) {
-                                         #print(proposal)
+                                         print(err)
                                          add<-F
                                        }))
 
