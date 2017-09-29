@@ -49,7 +49,7 @@ data.example$pos3<-data.example$pos
 lambda = c(inla.pc.ar.lambda(p = 2, b = 0.5), rep(1, 10))
 initial = c(inla.models()$latent$ar$hyper$theta2$to.theta(pacf), rep(0, 10))
 #example of the underlying model within INLA
-formula2 <- as.formula("methylated_bases ~ 1+ (data.example$pos*f(data.example$pos,model=\"ar1\"))+f(data.example$pos2,model=\"iid\")")#  +f(data.example$pos1,model=\"rw1\")+f(data.example$pos2,model=\"iid\")")
+formula2 <- as.formula("methylated_bases ~ 1+I(CHG)+I(CHG)+ f(data.example$pos,model=\"ar1\")+f(data.example$pos2,model=\"iid\")")#  +f(data.example$pos1,model=\"rw1\")+f(data.example$pos2,model=\"iid\")")
 
 
 # +f(data.example$pos2,model=\"rw2\")+f(data.example$pos3,model=\"crw2\")")

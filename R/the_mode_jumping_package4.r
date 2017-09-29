@@ -210,7 +210,7 @@ estimate.inla.poisson <- function(formula, data)
   # use dic and aic as bic and aic correspondinly
   coef<-out$summary.fixed$mode
   #coef[1]<-coef[1]+out$summary.hyperpar$mode[1]
-  return(list(mlik = out$mlik[1],waic =  out$waic[1] , dic = out$dic[1], summary.fixed =list(mean = coef)))
+  return(list(mlik = out$mlik[1],waic =  out$waic[1]$waic , dic = out$dic[1]$dic, summary.fixed =list(mean = coef)))
 
 }
 
@@ -3527,7 +3527,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  } else if(allow_offsprings  == 3  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                  {
                                    #if(latnames[1]!="")
-                                     
+
                                    # perform preliminary filtration here
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
@@ -3750,26 +3750,26 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        add<-T
 
-                                       
+
                                        ids.lat<-integer(0)
                                        if(latnames[1]!="")
-                                       { 
+                                       {
                                          ids.lat<-which(fparam %in% latnames)
                                          if(sum(stri_count_fixed(str = proposal,pattern = latnames))>0)
                                            add<-F
                                        }
                                        if(length(ids.lat)==0)
                                          ids.lat<-Nvars.max +1
-                                              
-                                       
-                                       print(add)
-                                       print(proposal)
+
+
+                                       #print(add)
+                                       #print(proposal)
 
                                        if(add){
                                        tryCatch(capture.output({
                                          bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
 
-                                         if(is.na(bet.act[length(fparam)+2]))
+                                         if(is.na(bet.act[length(fparam[-ids.lat])+2]))
                                          {
                                            add<-F
                                          }else
@@ -3779,15 +3779,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            idel<-idel+1
                                          }
                                        }, error = function(err) {
-                                         print(err)
+                                         #print(err)
                                          add<-F
                                        }))
 
                                        }
-                                        
-                                       print(add)
-                                       print("next")
-                                       
+
+                                       #print(add)
+                                       #print("next")
+
                                        if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
                                        {
                                          fparam<<-c(fparam,proposal)
