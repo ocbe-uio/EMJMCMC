@@ -21,6 +21,7 @@ fobservs <- colnames(data.example)[5]
 #create MySearch object with default parameters. N/B default estimator is INLA!
 args<-list(family = "poisson",control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
 
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 system.time({
 
