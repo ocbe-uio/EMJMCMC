@@ -383,7 +383,10 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   #  fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
   #}
   fparam.tmp<- sapply(FUN = paste,"I(",variables$fparam,")",sep="")
-  fparam.example<<-c(fparam.tmp,latnames)
+  if(latnames[1]!="")
+    fparam.example<<-c(fparam.tmp,latnames)
+  else
+    fparam.example<<-fparam.tmp
   #print(fparam.tmp)
   #print(fparam.example)
   assign("mySearch",EMJMCMC2016(), envir=globalenv())
