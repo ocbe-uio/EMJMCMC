@@ -239,11 +239,11 @@ for(j in 2:100)
     selected <- NULL
     for(i in 1:M)
     {
-      selected<-c(selected,results[[i]]$fparam[which(results[[i]]$p.post>thf)])
+      selected<-c(selected,results[[i]]$fparam[which(results[[i]]$p.post>0.001)])
     }
     selected<-stri_replace(str = selected,fixed = "I(",replacement = "")
     selected<-stri_replace(str = selected,fixed = ")",replacement = "")
-    rm(results)
+   
     gc()
     formula1 <- as.formula(paste0("Y~1+",paste(selected,collapse = "+")))
     secondary <-names[-which(names %in% selected)]
@@ -273,6 +273,8 @@ for(j in 2:100)
       params[[i]]$simlen<-31
     }
     
+    
+    rm(results)
     print("begin the second stage")
     results<-parall.gmj(X = params, M = M)
     
