@@ -83,6 +83,8 @@ for(j in 1:1)
     print(paste0("begin simulation ",j))
     results<-parall.gmj(X = params, M = M)
 
+    print(results)
+    
     resa<-array(data = 0,dim = c(compmax,M*3))
     post.popul <- array(0,M)
     max.popul <- array(0,M)
@@ -181,6 +183,7 @@ for(j in 1:1)
       write.csv(x =res1,row.names = F,file = paste0("postEPIGEN_",j,".csv"))
     },error = function(err){
       print("error")
+      print(err)
       write.csv(x =posteriors,row.names = F,file = paste0("postEPIGENERR_",j,".csv"))
     },finally = {
 
