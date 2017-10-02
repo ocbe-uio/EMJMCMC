@@ -197,22 +197,59 @@ estimate.inla <- function(formula, args)
 
 }
 
-
-estimate.inla.poisson <- function(formula, data)
+estimate.inla.poisson <- function(formula, data,r = 1.0/200.0,logn=log(200.0), relat=c("*","+","cos","sigmoid","tanh","atan","sin","erf"))
 {
+
 
   out<-NULL
   capture.output({tryCatch(capture.output({
-    out <-inla(family = "poisson",data = data,formula = formula,control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
+    fmla.proc<-as.character(formula)[2:3]
+    sj<-sum(stri_count_fixed(str = fmla.proc[2],pattern = relat))
+    out <-inla(family = "poisson",silent = 2L,data = data,formula = formula,control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
       }))})
   if(is.null(out))
-    return(list(mlik = -10000,waic =  10000 , dic = 10000, summary.fixed =list(mean = NULL)))
+    return(list(mlik = -10000+log(r)*(sj),waic =  10000 , dic = 10000, summary.fixed =list(mean = NULL)))
   # use dic and aic as bic and aic correspondinly
   coef<-out$summary.fixed$mode
   #coef[1]<-coef[1]+out$summary.hyperpar$mode[1]
-  return(list(mlik = out$mlik[1],waic =  out$waic[1]$waic , dic = out$dic[1]$dic, summary.fixed =list(mean = coef)))
+  return(list(mlik = out$mlik[1]+log(r)*(sj),waic =  out$waic[1]$waic , dic = out$dic[1]$dic, summary.fixed =list(mean = coef)))
 
 }
+
+
+estimate.gamma.cpen <- function(formula, data,r = 1.0/1000.0,logn=log(1000.0),relat=c("cos","sigmoid","tanh","atan","sin","erf"))
+{
+  fparam<-NULL
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
+  sj<-(stri_count_fixed(str = fparam, pattern = "*"))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "+"))
+  for(rel in relat)
+    sj<-sj+(stri_count_fixed(str = fparam, pattern = rel))
+  #sj<-sj+1
+  tryCatch(capture.output({
+    out <- glm(formula = formula,data = data, family = gaussian)
+    # 1 for aic, 2 bic prior, else g.prior
+
+    mlik = (-(BIC(out) -2*log(r)*sum(sj))+1000)/2
+    waic = (out$deviance + 2*out$rank)+10000
+    dic =  (out$deviance + logn*out$rank)+10000
+    summary.fixed =list(mean = coefficients(out))
+
+  }, error = function(err) {
+    print(err)
+    mlik = -10000
+    waic = 10000
+    dic =  10000
+    summary.fixed =list(mean = array(0,dim=length(fparam)))
+  }))
+  return(list(mlik = mlik,waic = waic , dic = dic,summary.fixed =summary.fixed))
+
+}
+
 
 
 parallelize<-function(X,FUN)

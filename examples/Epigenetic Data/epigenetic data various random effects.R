@@ -26,12 +26,13 @@ system.time({
 
   formula1 = as.formula(paste(fobservs,"~ 1 +",paste0(fparams,collapse = "+")))
 
-  res = runemjmcmc(formula = formula1,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),recalc_margin = 199,estimator =estimate.inla.poisson,estimator.args =  list(data=data.example),save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 20, max.tree.size = 200000, Nvars.max = 15,p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 2,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 10,advanced.param = list(
+  res = runemjmcmc(formula = formula1,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),recalc_margin = 199,estimator =estimate.inla.poisson,estimator.args =  list(data=data.example),save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = 15,p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 2,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 10,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(1),                                                                                                                                                                                                                                                                                                      min.N=as.integer(1),
     printable = F))
-  print(res$p.post)
+  res1=mySearch$post_proceed_results_hash(hashStat)
+  print(res1$p.post)
 })
 
 res=mySearch$post_proceed_results_hash(hashStat)
@@ -53,6 +54,6 @@ formula2 <- as.formula("methylated_bases ~ 1+I(CHG)+I(CHG)+ f(data.example$pos,m
 
 
 # +f(data.example$pos2,model=\"rw2\")+f(data.example$pos3,model=\"crw2\")")
-estimate.inla.poisson(formula = formula2,data = data.example)
+estimate.inla.poisson(formula = formula2,data = data.example)$summary.fixed$mean
 summary(fm4)
 
