@@ -29,9 +29,9 @@ InvX<-function(x)
 troot<-function(x)abs(x)^(1/3)
 
 MM = 100
-M = 1
+M = 16
 NM= 1000
-compmax = 15
+compmax = 16
 th<-(10)^(-5)
 thf<-0.05
 
