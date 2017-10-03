@@ -51,4 +51,8 @@ mean(mliks.ess-mliks.mjm)
 var(mliks.ess-mliks.mjm)
 
 
-max(mliks.mjm)
+max(mliks.ess-mliks.mjm)
+min(mliks.ess-mliks.mjm)
+
+cor(mliks.ess,mliks.mjm)
+
