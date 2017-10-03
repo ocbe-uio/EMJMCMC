@@ -94,13 +94,13 @@ for(j in 1:1)
     data.example$pos3 = data.example$pos
 
 
-    fparams <-c(colnames(data.example )[-c(1,2,3)],"offset(log(total_bases))")#c(colnames(data.example )[c(8:10,12:17,21:24,29)],"f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")")
+    fparams <-c(colnames(data.example )[-c(1,2,3,18,19,20)],"offset(log(total_bases))")#c(colnames(data.example )[c(8:10,12:17,21:24,29)],"f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")")
     fobservs <- colnames(data.example)[2]
 
     formula1 = as.formula(paste(fobservs,"~ 1 +",paste0(fparams,collapse = "+")))
     # outgraphs=F
 
-    vect<-list(formula = formula1,outgraphs=F,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),estimator = estimate.inla.poisson,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = (compmax-1),p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1,outgraphs=F,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),estimator = estimate.inla.poisson,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = (compmax-1),p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -125,7 +125,7 @@ for(j in 1:1)
 
     gc()
     print(paste0("begin simulation ",j))
-    results<-parall.gmj(X = params, M = 4)
+    results<-parall.gmj(X = params, M = 3)
 
     print(results)
 
