@@ -64,13 +64,13 @@ for(j in 1:1)
       printable = F))
 
     length(vect)
-    
+
     params <- list(vect)[rep(1,M)]
 
-    
+
     for(i in 1:M)
     {
-  
+
       params[[i]]$cpu<-i*j
       params[[i]]$simul<-"scenario_epi_"
       params[[i]]$simid<-j
@@ -78,18 +78,18 @@ for(j in 1:1)
       params[[i]]$simlen<-22
     }
     gc()
-    
+
     gc()
     print(paste0("begin simulation ",j))
-    results<-parall.gmj(X = params, M = M)
+    results<-parall.gmj(X = params, M = 4)
 
     print(results)
-    
+
     resa<-array(data = 0,dim = c(compmax,M*3))
     post.popul <- array(0,M)
     max.popul <- array(0,M)
     nulls<-NULL
-    
+
     not.null<-1
     for(k in 1:M)
     {
@@ -107,10 +107,10 @@ for(j in 1:1)
       {
         not.null <- k
       }
-      
+
     }
-    
-    
+
+
     for(k in 1:M)
     {
       if(k %in% nulls)
@@ -133,13 +133,13 @@ for(j in 1:1)
         max.popul[k]<- -10^9
         post.popul[k]<- -10^9
       }
-      
+
     }
-    
-    
+
+
     gc()
     rm(results)
-    
+
     ml.max<-max(max.popul)
     post.popul<-post.popul*exp(-ml.max+max.popul)
     p.gen.post<-post.popul/sum(post.popul)
@@ -160,13 +160,13 @@ for(j in 1:1)
             else
               hfinal[[resa[jj,ii*3-2]]]<-hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
           }
-          
+
         }
       }
     }
-    
+
     posteriors<-values(hfinal)
-    
+
     #print(posteriors)
     clear(hfinal)
     rm(hfinal)
@@ -176,7 +176,7 @@ for(j in 1:1)
     posteriors<-as.data.frame(posteriors)
     posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
     posteriors$X<-as.character(posteriors$X)
-    
+
     tryCatch({
       res1<-simplifyposteriors(X = data.example,posteriors = posteriors, th,thf,resp = "methylated_bases")
       row.names(res1)<-1:dim(res1)[1]
