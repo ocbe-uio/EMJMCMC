@@ -62,8 +62,8 @@ mySearch$estimator.args = args
 mySearch$printable.opt = F
 
 #example of the underlying model within INLA
-formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +offset(log(total_bases))+f(data.example$pos,model=\"ar1\")")
-fm4<-do.call(inla, c(args,formula = formula2))
+formula2 <- as.formula("methylated_bases ~  1 + CHG + DT1 +I(offset(log(total_bases)))+f(data.example$pos,model=\"ar1\")")
+fm4<-do.call(inla, c(args,formula = formula2,data=data.example))
 summary(fm4)
 
 #estimate.inla.ar1(formula = formula2,args)

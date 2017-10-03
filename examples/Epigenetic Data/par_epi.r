@@ -7,6 +7,43 @@ library("RCurl")
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 
+
+simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2, resp)
+{
+  posteriors<-posteriors[-which(posteriors[,2]<th),]
+  rhash<-hash()
+  for(i in 1:length(posteriors[,1]))
+  {
+    expr<-posteriors[i,1]
+    #print(expr)
+    res<-model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
+    ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
+    if(!((ress[1] %in% values(rhash))))
+      rhash[[ress[1]]]<-ress
+    else
+    {
+      if(ress[1] %in% keys(rhash))
+      {
+        rhash[[ress[1]]][3]<- (as.numeric(rhash[[ress[1]]][3]) + as.numeric(ress[3]))
+        if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
+          rhash[[ress[1]]][4]<-expr
+      }
+    }
+
+  }
+  res<-as.data.frame(t(values(rhash)[c(3,4),]))
+  res$V1<-as.numeric(as.character(res$V1))
+  res<-res[which(res$V1>thf),]
+  res<-res[order(res$V1, decreasing = T),]
+  clear(rhash)
+  rm(rhash)
+  res[which(res[,1]>1),1]<-1
+  colnames(res)<-c("posterior","tree")
+  return(res)
+}
+
+
+
 cosi<-function(x)cos(x/180*pi)
 sini<-function(x)sin(x/180*pi)
 expi<-function(x)
@@ -45,18 +82,25 @@ for(j in 1:1)
 
     data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
     data.example<-data.example[sample.int(dim(data.example)[1],200),]
+
+
+    data.example<-data.example[,c(2,5,6,8:10,12:17,21,23,24,29)]
+    data.example$eg3000<-data.example$express_noisy>3000
+    data.example$eg10000<-data.example$express_noisy>10000
+    data.example$express_noisy<-NULL
+
     data.example$pos1 = data.example$pos
     data.example$pos2 = data.example$pos
     data.example$pos3 = data.example$pos
 
 
-    fparams <-c(colnames(data.example )[c(8:10,12:17,21:24,29)],"f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")")
-    fobservs <- colnames(data.example)[5]
+    fparams <-c(colnames(data.example )[-c(1,2,3)],"offset(log(total_bases))")#c(colnames(data.example )[c(8:10,12:17,21:24,29)],"f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")")
+    fobservs <- colnames(data.example)[2]
 
     formula1 = as.formula(paste(fobservs,"~ 1 +",paste0(fparams,collapse = "+")))
     # outgraphs=F
 
-    vect<-list(formula = formula1,outgraphs=F,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),estimator = estimate.inla.poisson,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1,outgraphs=F,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),estimator = estimate.inla.poisson,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = (compmax-1),p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
