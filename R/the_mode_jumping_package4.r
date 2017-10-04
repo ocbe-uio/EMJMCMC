@@ -3808,25 +3808,30 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        #print(add)
                                        #print(proposal)
-
-                                       if(add){
-                                       tryCatch(capture.output({
-                                         bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
-
-                                         if(is.na(bet.act[length(fparam[-ids.lat])+2]))
-                                         {
+                                       if(proposal %in% latnames)
+                                       { 
+                                         if((proposal %in% fparam[ids.lat]))
                                            add<-F
-                                         }else
-                                         {
-                                           #
-
-                                           idel<-idel+1
+                                       }else{
+                                         if(add){
+                                         tryCatch(capture.output({
+                                           bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
+  
+                                           if(is.na(bet.act[length(fparam[-ids.lat])+2]))
+                                           {
+                                             add<-F
+                                           }else
+                                           {
+                                             #
+  
+                                             idel<-idel+1
+                                           }
+                                         }, error = function(err) {
+                                           #print(err)
+                                           add<-F
+                                         }))
+  
                                          }
-                                       }, error = function(err) {
-                                         #print(err)
-                                         add<-F
-                                       }))
-
                                        }
 
                                        #print(add)
