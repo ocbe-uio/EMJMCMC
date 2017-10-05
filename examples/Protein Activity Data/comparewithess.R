@@ -99,9 +99,22 @@ for(i in 1:1000)
   ms<-c(ms,i*3000)
   mus<-c(mus,length(unique(models.ess[1:ms[i]])))
 }  
+
   
 plot(x = ms,y=ms)
 points(x=ms,y=mus)
+
+ms<-NULL
+mas<-NULL
+for(i in 1:1000)
+{
+  ms<-c(ms,i*3000)
+  mas<-c(mas,sum(exp(unique(models.ess[1:ms[i]]))))
+}  
+
+plot(x = ms,y=ms)
+points(x=ms,y=mas)
+
 
 #postscript("proteintop100000.hybrid.bash.basep.ps",width=13,height=5,horizontal=TRUE)
 boxplot(mat[,1:75],xaxt="n",ylab="log(Marginal Likelihood)",xlab="Replicates",ylim=c(27,42),horizontal=FALSE,pch=".",cex.lab=1.7,cex.axis=1.5,

@@ -260,13 +260,13 @@ for(i in 1:28)
     detlen<-length(detect.true.unique)
     totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
     
-    pow=detlen/40
+    pow=detlen/50
     print(pow)
     fdr=(totlen-detlen)/totlen
     print(fdr)
     j=j+1
     fps=fps+totlen-detlen
-    mis=mis+totlen-detlen + 40 - detlen
+    mis=mis+totlen-detlen + 50 - detlen
     fdr.tot = fdr.tot + fdr
     pow.tot = pow.tot + pow
     
