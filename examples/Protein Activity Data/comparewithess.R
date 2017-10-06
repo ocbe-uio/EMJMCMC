@@ -91,7 +91,7 @@ for(i in 1:10)
 
 mat <- cbind(top100000.mjmcmc,NA,top100000.bas.ep,NA,top100000.bas.unif,NA,top100000.rsthin.full,NA,top100000.bas.rst.rm,NA,top100000.bas.rst.mc,NA,top100000.ess)
 
-models.ess<- read.csv(paste0("Z:/ESS/Prot",10,"/Output/prot_Example_3000000_sweeps_output_models_history.txt"),header = T,sep = "\t",na.strings = " ")[,2]
+models.ess<- read.csv(paste0("Z:/ESS/Prot",10,"/Output/prot_Example_3000000_sweeps_output_models_history.txt"),header = T,sep = "\t",na.strings = " ")[,2]+174.6478 
 ms<-NULL
 mus<-NULL
 for(i in 1:1000)
@@ -112,7 +112,7 @@ for(i in 1:1000)
   mas<-c(mas,sum(exp(unique(models.ess[1:ms[i]]))))
 }  
 
-plot(x = ms,y=ms)
+plot(x = ms,y=mas)
 points(x=ms,y=mas)
 
 
