@@ -6,7 +6,7 @@ library(magrittr)
 
 setwd("/home/michaelh/SIMULATION_paper/")
 
-options("exppression" = 500000)
+options("exppression" = 20000)
 ##########################################
 #: Calculate True h^2 for each Scenario :#
 ##########################################
@@ -91,25 +91,40 @@ geno <- as.data.frame(mclapply(geno, as.numeric))
 
 
 
-estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
+
+estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
   if(size>u)
   {
-    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 0, dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
   }else{
     out <- lm(formula = formula,data = data)
-    logmarglik <- (2*logLik(out) - 2*out$rank* - 2*out$rank*log(m/c-1) + 2*log(factorial(out$rank)))/2
-    
-    sss<-summary(out)
-    her<-t(out$coefficients)%*%sss$cov.unscaled%*%(out$coefficients)*n/(sss$sigma^2*sss$df[2])
+    logmarglik <- (2*logLik(out) - out$rank*log(m*m*n/c) + 2*log(factorial(out$rank)))/2
     # use dic and aic as bic and aic correspondinly
-    return(list(mlik = logmarglik,waic = -her , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+    return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
   }
 }
 
-do.call.emjmcmc<-function(vect)
+estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24602, c = 4,u=170)
+{
+  size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
+  
+  if(size>u)
+  {
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000+ rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+  }else{
+    out <- lm(formula = formula,data = data)
+    logmarglik <- (2*logLik(out) - 2*out$rank - 2*out$rank*log(m/c-1) + 2*log(factorial(out$rank)))/2
+    #sss<-summary(out)
+    #her<-t(out$coefficients)%*%sss$cov.unscaled%*%(out$coefficients)*n/(sss$sigma^2*sss$df[2])
+    # use dic and aic as bic and aic correspondinly
+    return(list(mlik = logmarglik,waic = BIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  }
+}
+
+do.call.emjmcmc.maic2<-function(vect)
 {
   
   set.seed(as.integer(vect$cpu))
@@ -123,7 +138,7 @@ do.call.emjmcmc<-function(vect)
   rm(hashStat)
   rm(vals)
   gc()
-  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam,herac = sum(exp(values(hashStat)[1,][1:vect$NM]*(values(hashStat)[2,][1:vect$NM])))))
+  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))#,herac = sum(exp(values(hashStat)[1,][1:vect$NM]*(values(hashStat)[2,][1:vect$NM])))))
 }
 
 
@@ -141,7 +156,7 @@ data.example<-geno
 rm(geno)
 gc()
 
-M.cpu<-21
+M.cpu<-31
 
 simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = dataNeigbourhoodS2)
 {
@@ -216,13 +231,14 @@ for(j in 1:100)
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
 
     
-    vect<-list(locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 45, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 45, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(40),
       min.N.glob=as.integer(10),
       max.N=as.integer(2),
       min.N=as.integer(1),
       printable = F))
     
+    cov.names<-cov.names[sample.int(n = length(cov.names), size = length(cov.names), replace = F)]
     
     params <- list(vect)[rep(1,M)]
     
@@ -257,19 +273,29 @@ for(j in 1:100)
     results<-parall.gmj(X = params, M = M.cpu)
     
     selected <- NULL
+    p.posts<-NULL
     for(i in 1:M)
     {
-      selected<-c(selected,results[[i]]$fparam[which(results[[i]]$p.post>thf)])
+      p.posts<-c(p.posts,results[[i]]$p.post)
+    }
+    
+    thp=sort(p.posts,decreasing = T)[100]
+    
+    for(i in 1:M)
+    {
+      if(length(results[[i]])>1)
+        selected<-c(selected,results[[i]]$fparam[which(results[[i]]$p.post>=thf)])
     }
     selected<-stri_replace(str = selected,fixed = "I(",replacement = "")
     selected<-stri_replace(str = selected,fixed = ")",replacement = "")
     rm(results)
+    
     gc()
     formula1 <- as.formula(paste0("Y~1+",paste(selected,collapse = "+")))
     secondary <-names[-which(names %in% selected)]
     
     
-    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 75, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=T, locstop =F,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 75, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=F, locstop =F,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(130),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
@@ -420,10 +446,10 @@ for(j in 1:100)
       
       
       
-      write.csv(x =res1,row.names = F,file = paste0("post12SMJSIM_",j,".csv"))
+      write.csv(x =res1,row.names = F,file = paste0("post12ASMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
-      write.csv(x =posteriors,row.names = F,file = paste0("post12SEGMJSIM_",j,".csv"))
+      write.csv(x =posteriors,row.names = F,file = paste0("post12ASEGMJSIM_",j,".csv"))
     },finally = {
       
       print(paste0("end simulation ",j))

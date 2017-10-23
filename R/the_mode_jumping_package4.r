@@ -1,7 +1,8 @@
 #rm(list = ls(all = TRUE))
 
 #install the following packages if required!
-
+if(!("sp" %in% rownames(installed.packages())))
+  install.packages("sp")
 if(!("INLA" %in% rownames(installed.packages())))
   install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
 if(!("bigmemory" %in% rownames(installed.packages())))
@@ -22,8 +23,6 @@ if(!("BAS" %in% rownames(installed.packages())))
   install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/examples/BAS%20archive/BAS_0.91.tar.gz?raw=true", repos = NULL)
 if(!("BAS" %in% rownames(installed.packages())))
   install.packages("BAS")
-if(!("sp" %in% rownames(installed.packages())))
-  install.packages("sp")
 if(!("MASS" %in% rownames(installed.packages())))
   install.packages("MASS")
 if(!("parallel" %in% rownames(installed.packages())))
