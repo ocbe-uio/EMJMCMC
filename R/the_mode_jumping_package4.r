@@ -3728,7 +3728,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
 
                                            }, error = function(err) {
-                                             #print(proposal)
+                                             print(proposal)
                                              proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                            }))
                                            #print(proposal)
@@ -3816,7 +3816,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          tryCatch(capture.output({
                                            bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
   
-                                           if(is.na(bet.act[length(fparam[-ids.lat])+2])&& action.type!=4)
+                                           if(is.na(bet.act[length(fparam[-ids.lat])+2])&& (action.type!=4&&gen.prob[2]==0||gen.prob[2]!=0))
                                            {
                                              add<-F
                                            }else
