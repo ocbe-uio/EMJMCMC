@@ -184,9 +184,9 @@ fdr.tot=0
 pow.tot=0
 fps=0
 mis=0
-for(i in 1:7)
+for(i in 1:18)
 {
-  res1<-read.csv(paste0("post13SMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
+  res1<-read.csv(paste0("post13ASMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
   if(!is.null(res1$tree))
   {
     print(paste0("Converged Iteration ",i))
@@ -246,9 +246,9 @@ fdr.tot=0
 pow.tot=0
 fps=0
 mis=0
-for(i in 1:12)
+for(i in 1:18)
 {
-  res1<-read.csv(paste0("post4AGMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
+  res1<-read.csv(paste0("post14ASMJSIM_",i,".csv"),header = T,stringsAsFactors = F)
   if(!is.null(res1$tree))
   {
     print(paste0("Converged Iteration ",i))

@@ -3816,7 +3816,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          tryCatch(capture.output({
                                            bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
   
-                                           if(is.na(bet.act[length(fparam[-ids.lat])+2]))
+                                           if(is.na(bet.act[length(fparam[-ids.lat])+2])&& action.type!=4)
                                            {
                                              add<-F
                                            }else
