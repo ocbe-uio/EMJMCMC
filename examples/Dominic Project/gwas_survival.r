@@ -23,7 +23,7 @@ if(TRUE){
 
 ids<-NULL
 for(i in 1:length(screen))
-  if(screen[[i]]<=0.000002)
+  if(screen[[i]]<=0.000001)
     ids<-c(ids,i)
 
 #ids=read.csv("indeces.csv")
