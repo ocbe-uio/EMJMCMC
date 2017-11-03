@@ -92,22 +92,59 @@ geno <- as.data.frame(mclapply(geno, as.numeric))
 
 
 
-
-estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24602, c = 4,u=170)
+estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24592, c = 4,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
   if(size>u)
   {
-    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000+ rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
   }else{
-    out <- lm(formula = formula,data = data)
+    out <- lm(formula = formula,data = data,x = T)
     logmarglik <- (2*logLik(out) - 2*out$rank - 2*out$rank*log(m/c-1) + 2*log(factorial(out$rank)))/2
-    #sss<-summary(out)
-    #her<-t(out$coefficients)%*%sss$cov.unscaled%*%(out$coefficients)*n/(sss$sigma^2*sss$df[2])
-    # use dic and aic as bic and aic correspondinly
-    return(list(mlik = logmarglik,waic = BIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+    sss<-summary(out)
+    her  = 0
+    if(length(which(is.na(out$coefficients))>0))
+      cfs<-out$coefficients[-which(is.na(out$coefficients))]#[-1]
+    else
+      cfs<-out$coefficients#[-1]
+    
+    covs<-cov(out$x)
+    
+    #print(dim(covs)[1])
+    #print(length(cfs))
+    
+    if(length(cfs)==dim(covs)[1])
+     her<-(t(cfs)%*%covs%*%(cfs)*n/(sss$sigma^2*sss$df[2]))[1,1]
+    
+    if(is.na(her))
+      her  = 0
+    
+    if(her==0)
+    {
+      return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+    }
+  
+    return(list(mlik = logmarglik,waic = her , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
   }
+}
+
+do.call.emjmcmc<-function(vect)
+{
+  
+  set.seed(as.integer(vect$cpu))
+  do.call(runemjmcmc, vect[1:vect$simlen])
+  vals<-values(hashStat)
+  fparam<-mySearch$fparam
+  cterm<-max(vals[1,],na.rm = T)
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  post.populi<-sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
+  herac = sum(ppp$m.post*(values(hashStat)[2,]),na.rm = T)
+  #clear(hashStat)
+  #rm(hashStat)
+  rm(vals)
+  gc()
+  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam, herac = herac, herac2 = values(hashStat)[2,]))
 }
 
 MM = 10
@@ -197,6 +234,14 @@ for(j in 2:100)
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
     secondary <-names1[-which(names1 %in% cov.names)]
     
+    #her = 0
+    #for(i in 1:1000)
+    #{
+    #  est = estimate.lm.MAIC2(data = data.example,formula = as.formula(paste0("Y~1+",paste(cov.names[sample.int(n = length(cov.names),size = runif(1,1,length(cov.names)))],collapse = "+"))))$waic
+    #  her = her+est
+    #  print(est)
+    #}
+    #print(her/1000)    
     
     vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 120, p.add.default = 0.1, pool.cor.prob = T,secondary <-names1[-which(names1 %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(130),
@@ -229,11 +274,13 @@ for(j in 2:100)
     #length(which(!is.na(res$m.post)))
     #detected<-mySearch$fparam[which(res$p.post>0.1)]
     
+    #res =do.call(runemjmcmc, params[[3]][1:params[[3]]$simlen])
+    
     gc()
     print(paste0("begin simulation ",j))
     results<-parall.gmj(X = params, M = M)
     #print(results)
-    
+
     #wait()
     
     resa<-array(data = 0,dim = c(compmax,M*3))
@@ -288,8 +335,7 @@ for(j in 2:100)
     }
     
     
-    gc()
-    rm(results)
+  
     
     ml.max<-max(max.popul)
     post.popul<-post.popul*exp(-ml.max+max.popul)
@@ -315,6 +361,17 @@ for(j in 2:100)
         }
       }
     }
+    
+    her<-0
+    for(i in 1:M)
+    {
+      her<-her+results[[i]]$herac*p.gen.post[[i]]
+      print(results[[i]]$herac)
+    }
+    print(her)
+    
+    gc()
+    rm(results)
     
     posteriors<-values(hfinal)
     

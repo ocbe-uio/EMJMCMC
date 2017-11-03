@@ -70,7 +70,7 @@ estimate.lm.BIC <- function(formula, data, n = 1125, m = 1000, c = 16,u=150)
 }
 
 
-estimate.lm.MBIC2 <- function(formula, data, n = 883, m =434930, c = 16,u=170)
+estimate.lm.MBIC2 <- function(formula, data, n = 1125, m =434930, c = 16,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
@@ -86,7 +86,7 @@ estimate.lm.MBIC2 <- function(formula, data, n = 883, m =434930, c = 16,u=170)
     {
       return(list(mlik = (-50000 + rnorm(1,0,1)),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
     }
-    logmarglik <- (2*out$loglik[1] - size*log(m*m*n/c) + 2*log(factorial(size)))/2
+    logmarglik <- (-extractAIC(out,k=log(n)) - size*log(m*m/c) + 2*log(factorial(size)))/2
     # use dic and aic as bic and aic correspondinly
     return(list(mlik = logmarglik,waic =  -logmarglik , dic =   -logmarglik,summary.fixed =list(mean = c(0,out$coefficients))))
   }
@@ -114,6 +114,8 @@ do.call.emjmcmc<-function(vect)
 data.example = clinical
 rm(clinical)
 gc()
+
+
 
 
 MM = 63
@@ -257,7 +259,66 @@ posteriors<-as.data.frame(posteriors)
 posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
 posteriors$X<-as.character(posteriors$X)
 
+
 write.csv(x =posteriors,row.names = F,file = paste0("postFull_",1,".csv"))
 
-res1<-simplifyposteriors(X = data.example,posteriors = posteriors, resp = names(data.example)[5])
-write.csv(x =res1,row.names = F,file = paste0("postAnal_","survival",".csv"))
+
+posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)
+X = data.example
+nms<-names(X)
+names(X)=paste0(rep("I(",length(names(X))),names(X),rep(")",length(names(X))))
+X=X[,which(names(X)%in%posteriors[,1])]
+nam<-names(X)
+nms<-nms[which(names(X)%in%posteriors[,1])]
+names(X)<-nms
+X[,2]<-as.numeric(as.character(X[,2]))
+X[,3]<-as.numeric(as.character(X[,3]))
+cors<-cor(X)
+rhash<-hash()
+ready<-NULL
+for(i in 1:length(posteriors[,1]))
+{
+  if(i %in% ready)
+    next
+  else
+  {
+    id<-which(nam==posteriors[,1])
+    ids<-which(posteriors[,1]%in%rownames(cors)[which(abs(cors[,id])>0.2)])
+    #print(ids)
+    ready<-c(ready,i,which(abs(cors[,id])>0.2))
+    
+    posteriors[i,2]<-sum(posteriors[ids,2])
+    print( posteriors[i,2])
+    expr<-posteriors[i,1]
+    
+    #res<-model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
+    ress<-c(stri_flatten(round(rnorm(1,0,1),digits = 4),collapse = ""),stri_flatten(rnorm(1,0,1),collapse = ""),posteriors[i,2],expr)
+    if(!((ress[1] %in% values(rhash))))
+      rhash[[ress[1]]]<-ress
+    else
+    {
+      if(ress[1] %in% keys(rhash))
+      {
+        rhash[[ress[1]]][3]<- (as.numeric(rhash[[ress[1]]][3]) + as.numeric(ress[3]))
+        if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
+          rhash[[ress[1]]][4]<-expr
+      }
+    }
+  }
+}
+res<-as.data.frame(t(values(rhash)[c(3,4),]))
+res$V1<-as.numeric(as.character(res$V1))
+res<-res[which(res$V1>thf),]
+res<-res[order(res$V1, decreasing = T),]
+clear(rhash)
+rm(rhash)
+res[which(res[,1]>1),1]<-1
+colnames(res)<-c("posterior","tree")
+
+
+
+write.csv(x =res,row.names = F,file = paste0("postAnal_","survival",".csv"),sep = ';' )
+
+
+
+posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)

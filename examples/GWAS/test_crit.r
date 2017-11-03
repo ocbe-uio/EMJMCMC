@@ -17,7 +17,7 @@ estimate.lm.MBIC2(formula.best,data.example)
 
 for(i in 1:1000)
   print(estimate.lm.MBIC2(as.formula(paste0("Y~1+",paste(bests[sample.int(20,sample.int(20,1))],collapse = "+"))),data.example)$mlik)
-  
+
 # best for some subset corresponding to the runs detected<-results[[3]]$fparam with 90% of power
 # and best model found -7977.09000 
 
@@ -51,20 +51,20 @@ for(i in 1:100)
   print(estimate.lm.MBIC2(as.formula(paste0("Y~1+",paste(bests[sample.int(18,sample.int(18,1))],collapse = "+"))),data.example)$mlik)
 
 formula.best.mosgwa1<- (Y~1+
-+rs4916071
-+rs7515154
-+rs594249
-+rs1321108
-+rs13294
-+rs2841981
-+rs12404596
-+rs7522326
-+rs4520444
-+rs823130
-+rs1342590
-+rs1045287
-+rs10802802
-+rs10788764)
+                          +rs4916071
+                        +rs7515154
+                        +rs594249
+                        +rs1321108
+                        +rs13294
+                        +rs2841981
+                        +rs12404596
+                        +rs7522326
+                        +rs4520444
+                        +rs823130
+                        +rs1342590
+                        +rs1045287
+                        +rs10802802
+                        +rs10788764)
 
 estimate.lm.MBIC2(formula.best.mosgwa1,data.example)
 
@@ -88,8 +88,8 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=1700)
 
 system.time({
   
-estimate.lm.MBIC2(formula = formula1,data = data.example)
-
+  estimate.lm.MBIC2(formula = formula1,data = data.example)
+  
 })
 
 
@@ -109,7 +109,7 @@ estimate.fastlm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=1
 }
 
 system.time({
-estimate.fastlm.MBIC2(formula = formula1,data = data.example)
+  estimate.fastlm.MBIC2(formula = formula1,data = data.example)
 })
 
 
@@ -379,5 +379,4 @@ pow.tot/j
 fdr.tot/j
 fps/j
 mis/j
-
 

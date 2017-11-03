@@ -31,9 +31,11 @@ sigmoid<-function(x)exp(-x)
 #temp = list.files(pattern="posteriorsJA3_*")
 #myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
 
-details = file.info(list.files(pattern="*post3etaLOG_*"))
+details = file.info(list.files(pattern="postJA64S_*"))
 details = details[with(details, order(as.POSIXct(mtime),decreasing = T)), ]
 files = rownames(details)
+
+
 
 ids<-NULL
 nms<-NULL
@@ -59,7 +61,7 @@ X4$Y4<-Y4
 
 length(myfiles)
 
-#X<-read.csv("exa1.csv")
+X<-read.csv("exa1.csv")
 
 aggreg<-NULL
 for(i in 1:length(myfiles))
@@ -90,7 +92,7 @@ for(i in 1:min(100,N))
     {
       expr<-as.character(myfiles[[i]]$tree[j])
       print(expr)
-      res<-model.matrix(data=X4,object = as.formula(paste0("Y4~",expr)))
+      res<-model.matrix(data=X,object = as.formula(paste0("PeriodDays~",expr)))
       ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,1],collapse = ""),1,expr)
       if(!(ress[1] %in% values(rhash)))
         rhash[[ress[1]]]<-ress
@@ -116,7 +118,7 @@ for(i in 1:min(100,N))
 }
 
 
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expGMJLOG.csv",row.names = F,col.names = F)
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expDEEPSN.csv",row.names = F,col.names = F)
 
 
 
@@ -162,5 +164,5 @@ for(i in 1:min(100,N))
 }
 
 
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expJM1n1222.csv",row.names = F,col.names = F)
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expJMDEEPSN.csv",row.names = F,col.names = F)
 
