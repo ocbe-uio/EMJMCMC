@@ -31,7 +31,7 @@ sigmoid<-function(x)exp(-x)
 #temp = list.files(pattern="posteriorsJA3_*")
 #myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
 
-details = file.info(list.files(pattern="postJA64S_*"))
+details = file.info(list.files(pattern="postJA1_*"))
 details = details[with(details, order(as.POSIXct(mtime),decreasing = T)), ]
 files = rownames(details)
 
@@ -45,7 +45,7 @@ for(file in files)
   i<-i+1
   tmp<-strsplit(x = file,fixed = T,split = c("_","."))[[1]][2]
   tmp<-strsplit(x = tmp,fixed = T,split = ".")[[1]][1]
-  if(as.integer(tmp)<=150&&stri_count_fixed(str = file,pattern = "NEW")[[1]]==0&&stri_count_fixed(str = file,pattern = "REV")[[1]]==0)
+  if(as.integer(tmp)<=150&&stri_count_fixed(str = file,pattern = "new")[[1]]==0&&stri_count_fixed(str = file,pattern = "REV")[[1]]==0&&stri_count_fixed(str = file,pattern = "S")[[1]]==0)
   {
     ids<-c(ids,i)
     nms<-c(nms,tmp)
@@ -118,7 +118,7 @@ for(i in 1:min(100,N))
 }
 
 
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expDEEPSN.csv",row.names = F,col.names = F)
+write.csv(x = t(values(rhash)[c(3,4),]),file = "exppaap.csv",row.names = F,col.names = F)
 
 
 
@@ -129,10 +129,12 @@ N<-length(myfiles)
 alpha<-0.25
 clear(rhash)
 
+TPS<-c(stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("RadiusJpt~","I(troot(I(I(I(PeriodDays)*I(PeriodDays))*I(HostStarMassSlrMass))))")))[,2],digits = 4),collapse = ""),stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("RadiusJpt~","I(troot(I(I(I(HostStarRadiusSlrRad)*I(PeriodDays))*I(PeriodDays))))")))[,2],digits = 4),collapse = ""),stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("RadiusJpt~","I(troot(I(I(I(PeriodDays)*I(PeriodDays))*I(HostStarTempK))))")))[,2],digits = 4),collapse = ""))
 
 for(i in 1:min(100,N))
 {
-  for(j in 1:1)
+  j=1
+  while(j <= length(myfiles[[i]]$posterior))
   {
     if(myfiles[[i]]$posterior[j]>=alpha)
     {
@@ -140,6 +142,12 @@ for(i in 1:min(100,N))
       print(expr)
       res<-model.matrix(data=X,object = as.formula(paste0("RadiusJpt~",expr)))
       ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,1],collapse = ""),1,expr)
+      if(ress[1] %in% TPS)
+      {
+        j = length(myfiles[[i]]$posterior)+1
+        #print(ress[1])
+      }
+      
       if(!(ress[1] %in% values(rhash)))
         rhash[[ress[1]]]<-ress
       else
@@ -158,11 +166,8 @@ for(i in 1:min(100,N))
         }
       }
     }
-
+    j = j + 1
   }
 
 }
-
-
-write.csv(x = t(values(rhash)[c(3,4),]),file = "expJMDEEPSN.csv",row.names = F,col.names = F)
-
+write.csv(x = t(values(rhash)[c(3,4),]),file = "expJA1p2.csv",row.names = F,col.names = F)

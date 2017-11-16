@@ -2,7 +2,7 @@
 library(plyr)
 library(dplyr)
 library(magrittr)
-
+library(rootSolve)
 
 setwd("/home/michaelh/SIMULATION_paper/")
 
@@ -98,34 +98,41 @@ estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24592, c = 4,u=170)
   
   if(size>u)
   {
-    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic =  0,summary.fixed =list(mean = array(0,size+1))))
   }else{
     out <- lm(formula = formula,data = data,x = T)
     logmarglik <- (2*logLik(out) - 2*out$rank - 2*out$rank*log(m/c-1) + 2*log(factorial(out$rank)))/2
+    #sss<-summary(out)
+    #her  = summary(out)$r.squared
+    #ser  = ser<-2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
     sss<-summary(out)
-    her  = 0
     if(length(which(is.na(out$coefficients))>0))
       cfs<-out$coefficients[-which(is.na(out$coefficients))]#[-1]
     else
       cfs<-out$coefficients#[-1]
     
     covs<-cov(out$x)
-    
+    covb<-sss$cov.unscaled
     #print(dim(covs)[1])
     #print(length(cfs))
     
     if(length(cfs)==dim(covs)[1])
-     her<-(t(cfs)%*%covs%*%(cfs)*n/(sss$sigma^2*sss$df[2]))[1,1]
-    
+    {
+      her<-(t(cfs)%*%covs%*%(cfs)*n/(sss$sigma^2*sss$df[2]))[1,1]
+      ser<-sqrt(4*t(cfs)%*%covs%*%covb%*%(covs)%*%cfs*n*n/(sss$sigma^4*(sss$df[2]^2))) #the Gosha's version 2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+    }
     if(is.na(her))
+    {
       her  = 0
+      ser  = 0
+    }
     
     if(her==0)
     {
-      return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+      return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic = 0,summary.fixed =list(mean = array(0,size+1))))
     }
   
-    return(list(mlik = logmarglik,waic = her , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+    return(list(mlik = logmarglik,waic = her , dic =  ser,summary.fixed =list(mean = coef(out))))
   }
 }
 
@@ -137,14 +144,30 @@ do.call.emjmcmc<-function(vect)
   vals<-values(hashStat)
   fparam<-mySearch$fparam
   cterm<-max(vals[1,],na.rm = T)
+  ckey<-keys(hashStat)[which(vals[1,]==cterm)]
+  ckey<-fparam[stri_locate_all_fixed(str = ckey,pattern = "1")[[1]][,1]]
   ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
   post.populi<-sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
   herac = sum(ppp$m.post*(values(hashStat)[2,]),na.rm = T)
-  #clear(hashStat)
-  #rm(hashStat)
+  hers  = values(hashStat)[2,]
+  sers = values(hashStat)[3,]
+  f<-function(xu)
+  {
+    sum(pnorm(q = xu,mean = hers, sd = sers)*ppp$m.post)-1+0.025
+  }
+  hu<-uniroot(f = f,interval = c(-1000,1000), tol = 0.0001,extendInt="yes")$root
+  rm(f)
+  f<-function(xu)
+  {
+    sum(pnorm(q = xu,mean = hers, sd = sers)*ppp$m.post)-0.025
+  }
+  hl<-uniroot(f = f,interval = c(-1000,1000), tol = 0.0001,extendInt="yes")$root
+  clear(hashStat)
+  rm(hashStat)
   rm(vals)
+  rm(f)
   gc()
-  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam, herac = herac, herac2 = values(hashStat)[2,]))
+  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam, best = ckey, herac = herac,CI = c(hl,hu)))
 }
 
 MM = 10
@@ -205,7 +228,7 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = da
 
 j=1 
 
-for(j in 2:100)
+for(j in 22:100)
 {
   tryCatch({
     
@@ -234,14 +257,13 @@ for(j in 2:100)
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
     secondary <-names1[-which(names1 %in% cov.names)]
     
-    #her = 0
+    # her = 0
     #for(i in 1:1000)
     #{
-    #  est = estimate.lm.MAIC2(data = data.example,formula = as.formula(paste0("Y~1+",paste(cov.names[sample.int(n = length(cov.names),size = runif(1,1,length(cov.names)))],collapse = "+"))))$waic
-    #  her = her+est
-    #  print(est)
+    # est = estimate.lm.MAIC2(data = data.example,formula = as.formula(paste0("Y~1+",paste(cov.names[sample.int(n = length(cov.names),size = runif(1,1,length(cov.names)))],collapse = "+"))))
+    # print(c(est$waic-1.96*est$dic,est$waic,est$waic+1.96*est$dic))
     #}
-    #print(her/1000)    
+    # print(her/1000)
     
     vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 120, p.add.default = 0.1, pool.cor.prob = T,secondary <-names1[-which(names1 %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(130),
@@ -363,12 +385,22 @@ for(j in 2:100)
     }
     
     her<-0
+    heru<-0
+    herl<-0
     for(i in 1:M)
     {
       her<-her+results[[i]]$herac*p.gen.post[[i]]
-      print(results[[i]]$herac)
+      heru<-heru+results[[i]]$CI[2]*p.gen.post[[i]]
+      herl<-herl+results[[i]]$CI[1]*p.gen.post[[i]]
+      #print(results[[i]]$herac)
     }
-    print(her)
+    print(c(herl,her,heru))
+    
+    write.csv(x =c(herl,her,heru),row.names = F,file = paste0("herestgmjmcaic2_",j,".csv"))
+    
+    KMK<-which(max.popul==max(max.popul,na.rm = T))
+    
+    write.csv(x =c(results[[KMK]]$cterm,results[[KMK]]$best),row.names = F,file = paste0("bestmodgmjmcaic2_",j,".csv"))
     
     gc()
     rm(results)
