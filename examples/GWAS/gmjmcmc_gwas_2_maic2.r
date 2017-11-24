@@ -228,7 +228,7 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = da
 
 j=1 
 
-for(j in 22:100)
+for(j in 31:100)
 {
   tryCatch({
     

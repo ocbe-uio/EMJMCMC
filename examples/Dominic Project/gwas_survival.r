@@ -33,8 +33,31 @@ clinical<-clinical[,c(ids,14:18)]
 clinical<-clinical[-which(clinic2$stage4==1),]
 clinical<-clinical[-which(clinic2$neoadth==1),]
 
+#some clustering
+sel <- which(anno$chr=="chr9")
+clinical <- clinical[,c(1:18,(sel+18))]
+anno <- anno[sel,]
+sel1 <- order(anno$pos)
+clinical[,18:dim(clinical)[2]]<- clinical[,sel+18]
+anno <- anno[sel,]
+corri <- cor((clinical[,19:dim(clinical)[2]]),method="spearman")
+disti <- as.dist(1-abs(corri))
+clusti <- hclust(disti,method="complete")
+clustering <- cutree(clusti,h=0.85)
 
-dim(clinical)
+data.example <- clinical[,1:18]
+
+idclust<-unique(clustering)
+for(i in idclust)
+{
+  avg.id <- which(clustering==i)
+  if(length(avg.id)>1)
+    data.example[[paste0("clust",i)]]<- rowMeans(clinical[,18+avg.id])
+  else if(length(avg.id)==1)
+    data.example[[paste0("clust",i)]]<- clinical[,18+avg.id]
+}
+
+
 
 #options("expressions"=500000)
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
@@ -70,7 +93,7 @@ estimate.lm.BIC <- function(formula, data, n = 1125, m = 1000, c = 16,u=150)
 }
 
 
-estimate.lm.MBIC2 <- function(formula, data, n = 1125, m =434930, c = 16,u=170)
+estimate.lm.MBIC2 <- function(formula, data, n = dim(data.example)[1], m =dim(data.example)[2], c = 16,u=300)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
   
@@ -86,7 +109,7 @@ estimate.lm.MBIC2 <- function(formula, data, n = 1125, m =434930, c = 16,u=170)
     {
       return(list(mlik = (-50000 + rnorm(1,0,1)),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
     }
-    logmarglik <- (-extractAIC(out,k=log(n)) - size*log(m*m/c) + 2*log(factorial(size)))/2
+    logmarglik <- (2*out$loglik[1]- size*log(n) - size*log(m*m/c) + 2*log(factorial(size)))/2
     # use dic and aic as bic and aic correspondinly
     return(list(mlik = logmarglik,waic =  -logmarglik , dic =   -logmarglik,summary.fixed =list(mean = c(0,out$coefficients))))
   }
@@ -111,10 +134,12 @@ do.call.emjmcmc<-function(vect)
   return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
 }
 
-data.example = clinical
+#data.example = clinical
 rm(clinical)
 gc()
 
+
+formula=as.formula(paste0("Surv(fudays_35fu,crc_death_35fu)~1 + ",paste(names(data.example)[-c(14:18)],collapse = "+")))
 
 
 
@@ -128,7 +153,7 @@ thf<-0.001
 gc()
 M.cpu<-63
 
-vect<-list(formula = formula, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 75, p.add.default = 0.1, pool.cor.prob = T,secondary <- NULL, outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =F,estimator.args =  list(data = data.example, n= 1125, m = 222),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+vect<-list(formula = formula, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 75, p.add.default = 0.1, pool.cor.prob = T,secondary <- NULL, outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =F,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
   max.N.glob=as.integer(130),
   min.N.glob=as.integer(10),
   max.N=as.integer(5),
@@ -321,4 +346,4 @@ write.csv(x =res,row.names = F,file = paste0("postAnal_","survival",".csv"),sep 
 
 
 
-posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)
+#posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)
