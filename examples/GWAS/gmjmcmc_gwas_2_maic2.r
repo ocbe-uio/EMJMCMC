@@ -119,7 +119,9 @@ estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24592, c = 4,u=170)
     if(length(cfs)==dim(covs)[1])
     {
       her<-(t(cfs)%*%covs%*%(cfs)*n/(sss$sigma^2*sss$df[2]))[1,1]
-      ser<-sqrt(4*t(cfs)%*%covs%*%covb%*%(covs)%*%cfs*n*n/(sss$sigma^4*(sss$df[2]^2))) #the Gosha's version 2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+      #ser<-sqrt(4*t(cfs)%*%covs%*%covb%*%(covs)%*%cfs*n*n/(sss$sigma^4*(sss$df[2]^2))) #the Gosha's version 2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+      ser<-sqrt(4*her/((n-out$rank-1)))
+      #ser3<-2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
     }
     if(is.na(her))
     {
@@ -260,11 +262,12 @@ for(j in 31:100)
     # her = 0
     #for(i in 1:1000)
     #{
-    # est = estimate.lm.MAIC2(data = data.example,formula = as.formula(paste0("Y~1+",paste(cov.names[sample.int(n = length(cov.names),size = runif(1,1,length(cov.names)))],collapse = "+"))))
-    # print(c(est$waic-1.96*est$dic,est$waic,est$waic+1.96*est$dic))
+     #est = estimate.lm.MAIC2(data = data.example,formula = as.formula(paste0("Y~1+",paste(cov.names[sample.int(n = length(cov.names),size = runif(1,1,length(cov.names)))],collapse = "+"))))
+     #print(est$dic)
+     #print(c(est$waic-1.96*est$dic,est$waic,est$waic+1.96*est$dic))
     #}
     # print(her/1000)
-    
+
     vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 120, p.add.default = 0.1, pool.cor.prob = T,secondary <-names1[-which(names1 %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = T,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(130),
       min.N.glob=as.integer(10),
