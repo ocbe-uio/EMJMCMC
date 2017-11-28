@@ -195,7 +195,8 @@ lines(y=rep(0,N),x = (1:N),col=3)
 
 
 #select all of the hyperparameters making the positive reward in the initial simulations
-ids = which(results[,1111]>0)
+eps = 50000
+ids = which(results[,1111]>eps)
 lids = length(ids)
 #define the uniform prior probability for them to be addressed
 probs = array(1,lids)

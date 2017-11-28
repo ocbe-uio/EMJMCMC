@@ -285,7 +285,7 @@ posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
 posteriors$X<-as.character(posteriors$X)
 
 
-write.csv(x =posteriors,row.names = F,file = paste0("postFull_",1,".csv"))
+write.csv(x =posteriors,row.names = F,file = paste0("postFull_",9,".csv"))
 
 
 posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)
