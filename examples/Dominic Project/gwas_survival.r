@@ -1,13 +1,15 @@
-
-source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+#load survival R library with the Cox regression involved
 library("survival")
 
+#load the data
 load("/storage/edelmand/IMPACT2/Daten/betas_clinic_for_analysis.RData")
 
+#join epigenetic and clinical data
 clinical<-cbind(clinic2[,-1], t(betas_ges))
 
-
-if(TRUE){
+#perform prescreening from scrach or read the calculated p-values for the marginal tests
+screen.ind <- T
+if(screen.ind){
   #function to be used in screening
   coxscreen<-function(x) tryCatch(return(summary(coxph(Surv(V1,V2) ~1+V3,data = as.data.frame(cbind(clinical$fudays_35fu,clinical$death_event_35fu
   ,clinical[[x]]))))$logtest[3]),error = function(err) {print(err)
@@ -19,22 +21,21 @@ if(TRUE){
  screen<-read.csv(file = "pvalues.csv",header = F,row.names = F,col.names = F) 
 }
 
-
-
+#select the covariates based on the marginal tests
+th<-0.000001
 ids<-NULL
 for(i in 1:length(screen))
-  if(screen[[i]]<=0.000001)
+  if(screen[[i]]<=th)
     ids<-c(ids,i)
-
-#ids=read.csv("indeces.csv")
-
 clinical<-clinical[,c(ids,14:18)]
 
+#remove the stage 4 and nodeath individuals from the data
 clinical<-clinical[-which(clinic2$stage4==1),]
 clinical<-clinical[-which(clinic2$neoadth==1),]
 
-#some clustering
-sel <- which(anno$chr=="chr9")
+#perfrom the suggested clustering and work on a single chromosome of interest
+ch.id <- "chr9"
+sel <- which(anno$chr==ch.id)
 clinical <- clinical[,c(1:18,(sel+18))]
 anno <- anno[sel,]
 sel1 <- order(anno$pos)
@@ -44,10 +45,10 @@ corri <- cor((clinical[,19:dim(clinical)[2]]),method="spearman")
 disti <- as.dist(1-abs(corri))
 clusti <- hclust(disti,method="complete")
 clustering <- cutree(clusti,h=0.85)
-
 data.example <- clinical[,1:18]
-
 idclust<-unique(clustering)
+
+#aggregate the signal for the found clusters
 for(i in idclust)
 {
   avg.id <- which(clustering==i)
@@ -58,41 +59,11 @@ for(i in idclust)
 }
 
 
-
-#options("expressions"=500000)
+#load EMJMCMC package
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
-library("survival")
-#fla= paste0("Surv(fudays_35fu,crc_death_35fu)~1 + ",paste(names[-c(16680:16684)],collapse = "+"))
-
-formula=as.formula(paste0("Surv(fudays_35fu,crc_death_35fu)~1 + ",paste(names(clinical)[-c((length(clinical)-4):length(clinical))],collapse = "+")))
 
 
-#estimator function (for speed inla is not adressed here currently)
-
-#estimator function (for speed inla is not adressed here currently)
-estimate.lm.BIC <- function(formula, data, n = 1125, m = 1000, c = 16,u=150)
-{
-  size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
-  
-  if(size>u||size ==0)
-  {
-    return(list(mlik = (-50000 + rnorm(1,0,1)),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
-  }
-  out<-NULL
-  
-  capture.output(tryCatch({out <- (coxph(formula, data=data))}))
-  
-  if(is.null(out))
-  {
-    return(list(mlik = (-50000 + rnorm(1,0,1)),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
-  }
-  
-  
-  logmarglik <- (2*out$loglik[1]- size*log(n))/2# for mbic would be out$loglik[1] -  size*log(m*m*n/c) ) + 2*log(factorial(size)))/2#
-  return(list(mlik = logmarglik,waic = -logmarglik , dic = -logmarglik, summary.fixed = c(0,out$coefficients)))
-}
-
-
+#mbic2 based model estimator
 estimate.lm.MBIC2 <- function(formula, data, n = dim(data.example)[1], m =dim(data.example)[2], c = 16,u=300)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
@@ -109,14 +80,13 @@ estimate.lm.MBIC2 <- function(formula, data, n = dim(data.example)[1], m =dim(da
     {
       return(list(mlik = (-50000 + rnorm(1,0,1)),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
     }
-    logmarglik <- (2*out$loglik[1]- size*log(n) - size*log(m*m/c) + 2*log(factorial(size)))/2
-    # use dic and aic as bic and aic correspondinly
+    logmarglik <- (2*out$loglik[1] - size*log(n) - size*log(m*m/c) + 2*log(factorial(size)))/2
     return(list(mlik = logmarglik,waic =  -logmarglik , dic =   -logmarglik,summary.fixed =list(mean = c(0,out$coefficients))))
   }
 }
 
 
-
+#a function for calling the MJMCMC in parallel
 do.call.emjmcmc<-function(vect)
 {
   library("survival")  
@@ -139,10 +109,10 @@ rm(clinical)
 gc()
 
 
+#define the responses and potential explanatory variables
 formula=as.formula(paste0("Surv(fudays_35fu,crc_death_35fu)~1 + ",paste(names(data.example)[-c(14:18)],collapse = "+")))
 
-
-
+#define the simulation parameters and number of cores used
 MM = 63
 M = 63
 size.init=1000
@@ -153,6 +123,7 @@ thf<-0.001
 gc()
 M.cpu<-63
 
+#create tuning parameters' vector for MJMCMC
 vect<-list(formula = formula, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 75, p.add.default = 0.1, pool.cor.prob = T,secondary <- NULL, outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =F,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
   max.N.glob=as.integer(130),
   min.N.glob=as.integer(10),
@@ -175,24 +146,13 @@ for(i in 1:M)
   params[[i]]$simlen<-31
 }
 
-
+#run MJMCMC on M.cpu cpus
 gc()
 print(paste0("begin simulation ",1))
 results<-parall.gmj(X = params, M = M.cpu)
 
-
-compmax=length(results[[3]]$fparam)+1
-
-#res<-do.call(runemjmcmc,args = params[[3]][1:27])
-#res$p.post
-#length(which(!is.na(res$m.post)))
-#detected<-mySearch$fparam[which(res$p.post>0.1)]
-
-
-#print(results)
-
-#wait()
-
+#make the reduce step of make reduce
+compmax=length(names(data.example)[-c(14:18)])+1
 resa<-array(data = 0,dim = c(compmax,M*3))
 post.popul <- array(0,M)
 max.popul <- array(0,M)
@@ -272,9 +232,9 @@ for(ii in 1:M)
   }
 }
 
+#this includes posteriors for all of the addressed covariates
 posteriors<-values(hfinal)
 
-#print(posteriors)
 clear(hfinal)
 rm(hfinal)
 rm(resa)
@@ -284,10 +244,10 @@ posteriors<-as.data.frame(posteriors)
 posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
 posteriors$X<-as.character(posteriors$X)
 
+#write the results
+write.csv(x =posteriors,row.names = F,file = paste0("postFull_",1,".csv"))
 
-write.csv(x =posteriors,row.names = F,file = paste0("postFull_",9,".csv"))
-
-
+#this would add up the posteriors of the correlated covariates together (should be omitted if preliminarly clustering is done)
 posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)
 X = data.example
 nms<-names(X)
@@ -309,14 +269,12 @@ for(i in 1:length(posteriors[,1]))
   {
     id<-which(nam==posteriors[,1])
     ids<-which(posteriors[,1]%in%rownames(cors)[which(abs(cors[,id])>0.2)])
-    #print(ids)
     ready<-c(ready,i,which(abs(cors[,id])>0.2))
     
     posteriors[i,2]<-sum(posteriors[ids,2])
     print( posteriors[i,2])
     expr<-posteriors[i,1]
     
-    #res<-model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
     ress<-c(stri_flatten(round(rnorm(1,0,1),digits = 4),collapse = ""),stri_flatten(rnorm(1,0,1),collapse = ""),posteriors[i,2],expr)
     if(!((ress[1] %in% values(rhash))))
       rhash[[ress[1]]]<-ress
@@ -341,9 +299,7 @@ res[which(res[,1]>1),1]<-1
 colnames(res)<-c("posterior","tree")
 
 
-
+#write the added up posteriors
 write.csv(x =res,row.names = F,file = paste0("postAnal_","survival",".csv"),sep = ';' )
 
 
-
-#posteriors <- read.csv("postFull_1.csv",stringsAsFactors = F)
