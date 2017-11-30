@@ -15,7 +15,7 @@ library(reticulate)
 
 setwd("Z:/EMJMCMC2016/examples/reinforce bot")
 
-paramsim = list(seed = 1, n = 10, n.curs = 500,buypercent=0.9)
+paramsim = list(seed = 1, n = 10, n.curs = 50,buypercent=0.9)
 parambot = list(limit_trade_pairs  =50, min_buy_size = 0.001, ban_days_new_pair = 10,days_to_keep = 10, ban_days = 7, min_profit = 0.02, sell_loss = -0.35, min_currency_price = 0.000001,  trade_step = 999, balance = 10000, x.hist = lapply(FUN = function(x) {y = cumsum(sample(c(-10, 10),size = x, TRUE));rands = abs(rnorm(n = x,mean = 0,sd = 1));return(list(High= y + abs(min(y))+rands,Low =  y + abs(min(y))-rands, vol.high = runif(1,0,1000),vol.low = runif(1,0,1000) ))},X = rep(list(x = paramsim$n),paramsim$n.curs)))
 #simulate simplified bot trading (to be replaced with a real bot on real markets at the end)
 simulateAction=function(paramsim,parambot)
