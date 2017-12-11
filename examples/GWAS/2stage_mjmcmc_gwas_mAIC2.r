@@ -2,7 +2,7 @@
 library(plyr)
 library(dplyr)
 library(magrittr)
-
+#sshfs aliaksah@abel.uio.no:/usit/abel/u1/aliaksah/ /mn/sarpanitu/ansatte-u2/aliaksah/abeldata
 
 setwd("/home/michaelh/SIMULATION_paper/")
 

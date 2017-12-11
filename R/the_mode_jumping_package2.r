@@ -1,4 +1,4 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          #rm(list = ls(all = TRUE))
+#rm(list = ls(all = TRUE))
 
 #install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
 #install.packages("bigmemory")
@@ -322,11 +322,11 @@ simplify.formula<-function(fmla,names)
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 
 runemjmcmc<-function(formula, data,
-estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
-                                                                                                                                                                                                                                                                    0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
-                                                                                                                                                                                                                                                                    1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
-                                                                                                                                                                                                                                                                    14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
-                                                                                                                                                                                                                                                                    6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),  distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852))
+                     estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),  distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852))
 {
 
   #first create the object
@@ -453,12 +453,12 @@ estimator,estimator.args = "list",n.models, unique = F,save.beta=F,latent="",max
 
   if(outgraphs)
   {
-  	par(mar = c(10,4,4,2) + 4.1)
-  	barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg = mySearch$fparam,las=2)
-  	barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg = mySearch$fparam,las=2)
+    par(mar = c(10,4,4,2) + 4.1)
+    barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg = mySearch$fparam,las=2)
+    barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg = mySearch$fparam,las=2)
   }
 
-return(ppp)
+  return(ppp)
 }
 
 
@@ -670,18 +670,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              bittodec.alt = function(bit) #transform a binary vector into a natural number to correspond between vector of solutions and storage array
                              {
 
-                                 n<-length(bit)
-                                 dec <- 0
-                                 for(i in 1:n)
-                                 {
-                                   j<-n-i
-                                   dec <- dec + ((2)^j)*bit[i]
-                                 }
-                                 return(dec)
-                             },
-                             bittodec = function(bit) #transform a binary vector into a natural number to correspond between vector of solutions and storage array
-                             {
-                               if(!double.hashing){
                                n<-length(bit)
                                dec <- 0
                                for(i in 1:n)
@@ -689,8 +677,20 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  j<-n-i
                                  dec <- dec + ((2)^j)*bit[i]
                                }
-
                                return(dec)
+                             },
+                             bittodec = function(bit) #transform a binary vector into a natural number to correspond between vector of solutions and storage array
+                             {
+                               if(!double.hashing){
+                                 n<-length(bit)
+                                 dec <- 0
+                                 for(i in 1:n)
+                                 {
+                                   j<-n-i
+                                   dec <- dec + ((2)^j)*bit[i]
+                                 }
+
+                                 return(dec)
 
                                }
                                else
@@ -703,16 +703,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    #print(dec)
                                    sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -7:Nvars+1])*Nvars
                                    jjj<-1
-                                  while(!add.key(dec,bit,sum.one,T))
-                                  {
-                                    hash.level<-hash.level+1
-                                    bit1<- dectobit.alt(2654435761*(dec+97*sum.one+hash.level*36599)+hash.level*59+hash.level)
-                                    dec<- hashing(bit1)+1
-                                    #jjj<-jjj+1
-                                    #print(dec)
-                                  }
-                                  #print(jjj)
-                                  dec <- dec - 1
+                                   while(!add.key(dec,bit,sum.one,T))
+                                   {
+                                     hash.level<-hash.level+1
+                                     bit1<- dectobit.alt(2654435761*(dec+97*sum.one+hash.level*36599)+hash.level*59+hash.level)
+                                     dec<- hashing(bit1)+1
+                                     #jjj<-jjj+1
+                                     #print(dec)
+                                   }
+                                   #print(jjj)
+                                   dec <- dec - 1
                                  }
                                  else if(exists("statistics"))
                                  {
@@ -793,10 +793,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              },
                              hashing = function(bit)# a hash function to find where to place the key in the hash
                              {
-                                 n<-length(bit)
-                                 if(n<hash.length)
-                                   return(bittodec.alt(bit))
-                                 return(bittodec.alt(bit[(n-hash.length+1):n]))
+                               n<-length(bit)
+                               if(n<hash.length)
+                                 return(bittodec.alt(bit))
+                               return(bittodec.alt(bit[(n-hash.length+1):n]))
                              },
                              binlog = function (x) # bitwise logorithm (base 2) computations based on Al Kashi's algorithm
                              {
@@ -819,7 +819,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                # elsewhise
 
                                if(x[2]==0 && lx==2)
-                                  return(1)
+                                 return(1)
 
                                powto<-2^(-c(1:(lx-1)))
                                float.x<-sum(x[2:lx]*powto)
@@ -836,20 +836,20 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                while(fb > tol)
                                {
 
-                                x <- x*x
+                                 x <- x*x
 
-                               # update the index
-                               if (x >= 2)
-                               {
-                                 x <- x/2
-                                 y <- y + b
-                                 f <- log(exp(f)+exp(fb))
+                                 # update the index
+                                 if (x >= 2)
+                                 {
+                                   x <- x/2
+                                   y <- y + b
+                                   f <- log(exp(f)+exp(fb))
+                                 }
+                                 # scale for the next bit
+                                 b  <- b/2
+                                 fb <- (fb-log(2))
                                }
-                               # scale for the next bit
-                               b  <- b/2
-                               fb <- (fb-log(2))
-                              }
-                              return(list(y = y,z = lx -1, f = f))
+                               return(list(y = y,z = lx -1, f = f))
                              },
                              #transform decimal numbers to binary
                              dectobit = function(dec) #transform a natural number into a binary vector to correspond between vector of solutions and storage array
@@ -868,24 +868,24 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  return(bin)
                                }
 
-                              return(dehash(dec+1))
+                               return(dehash(dec+1))
 
 
                              },
                              dectobit.alt = function(dec) #transform a natural number into a binary vector to correspond between vector of solutions and storage array
                              {
 
-                                 if(dec == 0)
-                                   return(0)
-                                 q<-dec
-                                 bin<-NULL
-                                 while(q!=0)
-                                 {
-                                   r<-q/2
-                                   q=floor(r)
-                                   bin<-c(as.integer(2*(r-q)),bin)
-                                 }
-                                 return(bin)
+                               if(dec == 0)
+                                 return(0)
+                               q<-dec
+                               bin<-NULL
+                               while(q!=0)
+                               {
+                                 r<-q/2
+                                 q=floor(r)
+                                 bin<-c(as.integer(2*(r-q)),bin)
+                               }
+                               return(bin)
 
 
 
@@ -1207,10 +1207,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    #   formula <- as.formula(ifelse(length(covobs)>0,(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst,"+", stri_flatten(covobs, collapse=" + "))),(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst))))
                                    #
                                    # }
-                                    formula <- NULL
-                                    capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})}) ## not considered currently in RJMCMC, is only valid for model selection
-                                    if(is.null(formula)){
-                                      formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
+                                   formula <- NULL
+                                   capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})}) ## not considered currently in RJMCMC, is only valid for model selection
+                                   if(is.null(formula)){
+                                     formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
 
                                    }
 
@@ -1391,9 +1391,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                  }else if(exists("hashStat")){
                                    if(Nvars.max>Nvars)
-                                    idd<- as.character(paste(c(model$varcur,array(0,Nvars.max-Nvars)),collapse = ""))
+                                     idd<- as.character(paste(c(model$varcur,array(0,Nvars.max-Nvars)),collapse = ""))
                                    else
-                                    idd<- as.character(paste(c(model$varcur),collapse = ""))
+                                     idd<- as.character(paste(c(model$varcur),collapse = ""))
 
                                    if(!has.key(key = idd,hash = hashStat))
                                    {
@@ -1418,12 +1418,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        {
                                          if(fparam[1]=="Const")
                                          {
-                                            linx<-Nvars
-                                            inxx<-which(model$varcur==1)
+                                           linx<-Nvars
+                                           inxx<-which(model$varcur==1)
                                          }else
                                          {
-                                            linx<-Nvars + 1
-                                            inxx<-c(0,which(model$varcur==1))
+                                           linx<-Nvars + 1
+                                           inxx<-c(0,which(model$varcur==1))
                                          }
                                        }else
                                        {
@@ -1501,7 +1501,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    g.results[4,1] <- g.results[4,1]+1
                                    if(has.key(hash = hashStat,key=idd))
-                                    hasRes<- values(hashStat[idd])
+                                     hasRes<- values(hashStat[idd])
                                    else
                                      hasRes<-c(-10000,10000,10000)
                                    if(g.results[4,2]%%recalc.margin == 0)
@@ -1856,7 +1856,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(na.rm = T,exp(p.select.y)))-log(sum(na.rm = T,exp(p.select.z)))) + max.p.select.y - max.p.select.z )
                                    {
                                      mlikcur<-mlikcand
                                      if(printable.opt)print(paste("locMTMCMC update ratcur = ", mlikcand))
@@ -3140,8 +3140,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                if(glob.model$presearch)
                                {
-                                forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
-                                backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
+                                 forward_selection(list(varcur=rep(0,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
+                                 backward_selection(list(varcur=rep(1,length(fparam.example)),mlikcur=-Inf,waiccur =Inf,locstop = glob.model$locstop,statid=-1))
                                }
 
                                if(exists("statistics1")&&recalc.margin < 2^Nvars)
@@ -3174,8 +3174,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    print(paste("initial solution is set with mlik of ",mlikcur))
 
                                  }else{
-                                  vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
-                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
+                                   vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
+                                   varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                  }
                                }else if(length(glob.model$varcur[which(glob.model$varcur %in% c(0,1))])==Nvars)
                                {
@@ -3242,60 +3242,60 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(Nvars>Nvars.max || j==mutation_rate)
                                    {
                                      #do the stuff here
-                                       to.del <- which(p.add < p.allow.tree)
-                                       if(length(to.del)==Nvars)
-                                         to.del==to.del[-1]
-                                       print("Data filtered! Insignificant variables deleted!")
-                                       # keysarr <- as.array(keys(hashStat))
-                                       # keysarr.new<-NULL
-                                       # values.new<-values(hashStat)
-                                       # for(id.replace in to.del){
-                                       #   for(jjj in 1:length(keysarr))
-                                       #   {
-                                       #     if(!stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
-                                       #     {
-                                       #       keysarr.new<-c(keysarr.new,stri_sub(keysarr[jjj],from = 1, to = Nvars.max))
-                                       #     }
-                                       #     else
-                                       #     {
-                                       #
-                                       #     }
-                                       #   }
-                                       # }
-                                       # keysarr.new<-unique(keysarr.new)
-                                       if(length(to.del)>0)
-                                       {
-                                         clear(hashStat)
-                                         rm(hashStat)
-                                         gc()
-                                         #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
-                                         hashStat<<-hash()
-                                         fparam<<-fparam[-to.del]
-                                         Nvars<<-length(fparam)
-                                         Nvars.init<<-Nvars
-                                         p.add<<-p.add[-to.del]
-                                         p.post<-array(data = 1,dim = Nvars)
-                                         #print(paste("mutation happended ",proposal," tree  added"))
-                                         varcurb<-varcurb[1:Nvars]
-                                         varcand<-varcurb[1:Nvars]
-                                         varglob<-varcurb[1:Nvars]
-                                         p1 <- array(0,dim = (Nvars))
-                                         p2 <- array(1,dim = (Nvars))
-                                         acc_moves<-1
-                                         j.a<-1
-                                       }
+                                     to.del <- which(p.add < p.allow.tree)
+                                     if(length(to.del)==Nvars)
+                                       to.del==to.del[-1]
+                                     print("Data filtered! Insignificant variables deleted!")
+                                     # keysarr <- as.array(keys(hashStat))
+                                     # keysarr.new<-NULL
+                                     # values.new<-values(hashStat)
+                                     # for(id.replace in to.del){
+                                     #   for(jjj in 1:length(keysarr))
+                                     #   {
+                                     #     if(!stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                     #     {
+                                     #       keysarr.new<-c(keysarr.new,stri_sub(keysarr[jjj],from = 1, to = Nvars.max))
+                                     #     }
+                                     #     else
+                                     #     {
+                                     #
+                                     #     }
+                                     #   }
+                                     # }
+                                     # keysarr.new<-unique(keysarr.new)
+                                     if(length(to.del)>0)
+                                     {
+                                       clear(hashStat)
+                                       rm(hashStat)
+                                       gc()
+                                       #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
+                                       hashStat<<-hash()
+                                       fparam<<-fparam[-to.del]
+                                       Nvars<<-length(fparam)
+                                       Nvars.init<<-Nvars
+                                       p.add<<-p.add[-to.del]
+                                       p.post<-array(data = 1,dim = Nvars)
+                                       #print(paste("mutation happended ",proposal," tree  added"))
+                                       varcurb<-varcurb[1:Nvars]
+                                       varcand<-varcurb[1:Nvars]
+                                       varglob<-varcurb[1:Nvars]
+                                       p1 <- array(0,dim = (Nvars))
+                                       p2 <- array(1,dim = (Nvars))
+                                       acc_moves<-1
+                                       j.a<-1
+                                     }
                                    }
                                    else
                                    {
                                      if(Nvars>=Nvars.max)
                                      {
-                                      idmut<-(which(p.add[(Nvars.init+1):Nvars] <= p.allow.replace) + Nvars.init)
-                                      lidmut<-length(idmut) #maximal number of covariates that can die out
-                                      if(lidmut>0)
-                                      {
-                                        p.del<-(lidmut - sum(p.add[idmut]))/lidmut
-                                        lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
-                                      }
+                                       idmut<-(which(p.add[(Nvars.init+1):Nvars] <= p.allow.replace) + Nvars.init)
+                                       lidmut<-length(idmut) #maximal number of covariates that can die out
+                                       if(lidmut>0)
+                                       {
+                                         p.del<-(lidmut - sum(p.add[idmut]))/lidmut
+                                         lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                       }
                                      }else
                                      {
                                        idmut<-(Nvars+1):Nvars.max
@@ -3310,9 +3310,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        mother<-stri_sub(mother,from=2, to = ltreem)
 
                                        if(allow_offsprings==1)
-                                        sjm<-sum(stri_count_fixed(str = mother, pattern = c("&","|")))
+                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("&","|")))
                                        else
-                                        sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
 
                                        if(sjm<=max.tree.size)
                                        {
@@ -3361,7 +3361,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                                else
                                                  proposal<-stri_paste("I",mother)
                                              }
-                                              #proposal<-stri_paste("I",mother)
+                                             #proposal<-stri_paste("I",mother)
                                            }
                                            else
                                            {
@@ -3402,7 +3402,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            p.add<<-as.array(c(p.add,p.allow.replace))
                                            p.post<-as.array(c(p.post,1))
                                            if(printable.opt)
-                                            print(paste("mutation happended ",proposal," tree  added"))
+                                             print(paste("mutation happended ",proposal," tree  added"))
                                          }
                                          else if(!(proposal %in% fparam))
                                          {
@@ -3412,7 +3412,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            {
                                              id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
                                              if(printable.opt)
-                                              print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
+                                               print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                              fparam[id.replace]<<-proposal
                                              keysarr <- as.array(keys(hashStat))
                                              p.add[id.replace]<<-p.allow.replace
@@ -3433,14 +3433,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
                                      }
 
-                                   varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
-                                   varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
-                                   varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
-                                   p.post<- array(1,dim = (Nvars))
-                                   p1 = c(p1,array(0,dim = (Nvars -length(p1))))
-                                   p2 = c(p1,array(1,dim = (Nvars -length(p1))))
-                                   acc_moves<-1
-                                   j.a<-1
+                                     varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
+                                     varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
+                                     varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
+                                     p.post<- array(1,dim = (Nvars))
+                                     p1 = c(p1,array(0,dim = (Nvars -length(p1))))
+                                     p2 = c(p1,array(1,dim = (Nvars -length(p1))))
+                                     acc_moves<-1
+                                     j.a<-1
 
                                    }
                                  }
@@ -3707,7 +3707,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(na.rm = T,exp(p.select.y)))-log(sum(na.rm = T,exp(p.select.z)))) + max.p.select.y - max.p.select.z )
                                    {
                                      mlikcur<-mlikcand
                                      ratcur<-mlikcand
@@ -3948,7 +3948,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - MTMCMC.forw$log.prob.cur,MTMCMC.forw$log.prob.fix,MTMCMC.back$log.prob.cur,- MTMCMC.back$log.prob.fix,na.rm=T)
                                      if(log(runif(n = 1,min = 0,max = 1))<=thact)
-                                      {
+                                     {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
                                        #if(printable.opt)print(paste("update ratcur through MTMCMC = ", ratcur))
@@ -4540,81 +4540,81 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
 
 
-                               if(crit$mlik)
-                               {
-                                 if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(MID).jpg",sep = ""))
-                                 if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
-                                 capture.output({withRestarts(tryCatch(capture.output({
-                                   # further address subset of the set of the best solution of cardinality 1024
+                                 if(crit$mlik)
+                                 {
+                                   if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(MID).jpg",sep = ""))
+                                   if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
+                                   capture.output({withRestarts(tryCatch(capture.output({
+                                     # further address subset of the set of the best solution of cardinality 1024
 
-                                   if(lldd>mds_size)
-                                   {
-                                     lldd<-mds_size
-                                     quant<-(sort(statistics1[,1],decreasing = TRUE)[lldd+1])
-                                     indmds<-which(statistics1[,1]>quant)
-                                     length(indmds)
-
-                                   }else{
-                                     quant<- -Inf
-                                     indmds<-1:(lldd)
-                                   }
-
-
-
-
-
-                                   vec<-dectobit.alt(moddee-1)
-                                   varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
-                                   df = data.frame(varcur)
-
-
-                                   for(i in 1:(lldd-1))
-                                   {
-                                     if(i==moddee)
+                                     if(lldd>mds_size)
                                      {
-                                       next
+                                       lldd<-mds_size
+                                       quant<-(sort(statistics1[,1],decreasing = TRUE)[lldd+1])
+                                       indmds<-which(statistics1[,1]>quant)
+                                       length(indmds)
 
-                                     }else
-                                     {
-                                       vec<-dectobit.alt(indmds[i]-1)
-                                       varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
-                                       df<-cbind(df,varcur)
-                                       #colnames(x = df)[i] <- paste("solution ",i)
+                                     }else{
+                                       quant<- -Inf
+                                       indmds<-1:(lldd)
                                      }
-                                   }
-                                   df<-t(df)
 
 
-                                   x<-dist(x = df,method = "binary")
-
-                                   dists<-c(0,x[1:lldd-1])
-
-                                   fit.mds <- cmdscale(d = x,eig=FALSE, k=2) # k is the number of dim
 
 
-                                   #fit.mds # view results
-                                   x.mds <- fit.mds[,1]
-                                   y.mds <- fit.mds[,2]
-                                   jpeg(file=paste(workdir,template,"_mds_map_posteriors.jpg",sep = ""))
-                                   plot(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=2,pch = 10,cex= c(zyx[moddee],zyx[setdiff(indmds, moddee)])*50,0)
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=2,pch = 10,cex= c(zyx[moddee],zyx[setdiff(indmds, moddee)])*50,0)
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=7,pch = 19,cex= 0.4)
-                                   points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=1,pch = 19,cex= 0.01)
-                                   dev.off()
-                                 })), abort = function(){onerr<-TRUE})})
-                               }
+
+                                     vec<-dectobit.alt(moddee-1)
+                                     varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
+                                     df = data.frame(varcur)
+
+
+                                     for(i in 1:(lldd-1))
+                                     {
+                                       if(i==moddee)
+                                       {
+                                         next
+
+                                       }else
+                                       {
+                                         vec<-dectobit.alt(indmds[i]-1)
+                                         varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
+                                         df<-cbind(df,varcur)
+                                         #colnames(x = df)[i] <- paste("solution ",i)
+                                       }
+                                     }
+                                     df<-t(df)
+
+
+                                     x<-dist(x = df,method = "binary")
+
+                                     dists<-c(0,x[1:lldd-1])
+
+                                     fit.mds <- cmdscale(d = x,eig=FALSE, k=2) # k is the number of dim
+
+
+                                     #fit.mds # view results
+                                     x.mds <- fit.mds[,1]
+                                     y.mds <- fit.mds[,2]
+                                     jpeg(file=paste(workdir,template,"_mds_map_posteriors.jpg",sep = ""))
+                                     plot(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=2,pch = 10,cex= c(zyx[moddee],zyx[setdiff(indmds, moddee)])*50,0)
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=2,pch = 10,cex= c(zyx[moddee],zyx[setdiff(indmds, moddee)])*50,0)
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=5,pch = 8,cex= ifelse(c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])>0,c(statistics1[moddee,4],statistics1[setdiff(indmds, moddee),4])/norm1*50,0))
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=7,pch = 19,cex= 0.4)
+                                     points(x.mds[], y.mds[], xlab="Coordinate 1", ylab="Coordinate 2", main="Metric MDS", type="p",col=1,pch = 19,cex= 0.01)
+                                     dev.off()
+                                   })), abort = function(){onerr<-TRUE})})
+                                 }
                                }
                              },
                              #calculates posterior probabilities based on a current search
@@ -4759,13 +4759,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              },
                              forecast=function(covariates,nvars,link.g)
                              {
-                                ids<-which(!is.na(statistics1[,15]))
-                                res<-0
-                                for(i in ids)
-                                {
+                               ids<-which(!is.na(statistics1[,15]))
+                               res<-0
+                               for(i in ids)
+                               {
                                  res<-res + statistics1[i,15]*link.g(sum(statistics1[i,16:nvars]*covariates,na.rm = T))
-                                }
-                                return(list(forecast=res))
+                               }
+                               return(list(forecast=res))
 
                              },
                              forecast.matrix=function(covariates,link.g)
