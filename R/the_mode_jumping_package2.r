@@ -1856,7 +1856,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(na.rm = T,exp(p.select.y)))-log(sum(na.rm = T,exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(runif(n = 1,min = 0,max = 1)) < sum(na.rm = T,log(sum(na.rm = T,exp(p.select.y))),-log(sum(na.rm = T,exp(p.select.z))), max.p.select.y, - max.p.select.z ))
                                    {
                                      mlikcur<-mlikcand
                                      if(printable.opt)print(paste("locMTMCMC update ratcur = ", mlikcand))
@@ -3707,7 +3707,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(na.rm = T,exp(p.select.y)))-log(sum(na.rm = T,exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(runif(n = 1,min = 0,max = 1)) < sum(na.rm = T,log(sum(na.rm = T,exp(p.select.y))),-log(sum(na.rm = T,exp(p.select.z))), max.p.select.y, - max.p.select.z ))
                                    {
                                      mlikcur<-mlikcand
                                      ratcur<-mlikcand
