@@ -2108,7 +2108,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else
                                        {
                                          delta<-objcand - objcur
-                                         if(runif(n = 1,min = 0,max = 1) <= exp(x = -delta/t))
+                                         if(runif(n = 1,min = 0,max = 1) <= sum(na.rm = T, exp(x = -delta/t)))
                                          {
 
                                            model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = varcand,switch.type = model$switch.type,min.N = min.N,max.N = max.N)
@@ -2131,7 +2131,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                if(model$reverse == FALSE)
                                {
-                                 model.prob<-log(punif(q = exp(x = -delta/t),min = 0,max = 1)) +  probcur # log(P(Mk,Mk-1))
+                                 model.prob<-log(punif(q = sum(na.rm = T, exp(x = -delta/t)),min = 0,max = 1)) +  probcur # log(P(Mk,Mk-1))
                                  model.prob.fix<-log(punif(q = exp(x = delta/t),min = 0,max = 1)) + probrevcur # log(P(Mk-1,Mk))
 
                                  if(model$sa2 == TRUE)
@@ -2152,7 +2152,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
                                  model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = model$varold, switch.type = model$switch.type,min.N = min.N,max.N = max.N)
-                                 model.prob<-punif(q = exp(x = -delta/t),min = 0,max = 1,log.p = TRUE) +  model.probs$log.switch.forw.prob
+                                 model.prob<-punif(q = sum(na.rm = T, exp(x = -delta/t)),min = 0,max = 1,log.p = TRUE) +  model.probs$log.switch.forw.prob
                                  model.prob.fix<-punif(q = exp(x = delta/t),min = 0,max = 1,log.p = TRUE) + model.probs$log.switch.back.prob
 
                                  if(model.prob==-Inf)
