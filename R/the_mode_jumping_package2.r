@@ -3838,7 +3838,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(LocImprove == 0)
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,SA.back$log.prob.cur, - SA.back$log.prob.fix,na.rm=T)
-                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                       if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T, thact))
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -3875,7 +3875,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,vect[[mod_id]]$log.mod.switchback.prob, - vect[[mod_id]]$log.mod.switch.prob,na.rm=T)
-                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                       if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T,thact))
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -3947,7 +3947,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - MTMCMC.forw$log.prob.cur,MTMCMC.forw$log.prob.fix,MTMCMC.back$log.prob.cur,- MTMCMC.back$log.prob.fix,na.rm=T)
-                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                     if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T,thact))
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
@@ -4048,7 +4048,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - GREEDY.forw$log.prob.cur,GREEDY.forw$log.prob.fix,GREEDY.back$log.prob.cur,-GREEDY.back$log.prob.fix,na.rm=T)
-                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                     if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T,thact))
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
