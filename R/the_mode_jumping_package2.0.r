@@ -701,7 +701,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    hash.level<-0
                                    dec<- hashing(bit)+1
                                    #print(dec)
-                                   sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -7:Nvars+1])*Nvars
+                                   sum.one<- sum(bit)*which.max(na.rm = T,bit) + sum(bit[Nvars -7:Nvars+1])*Nvars
                                    jjj<-1
                                    while(!add.key(dec,bit,sum.one,T))
                                    {
@@ -718,7 +718,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    hash.level<-0
                                    dec<- hashing(bit)+1
-                                   sum.one<- sum(bit)*which.max(bit) + sum(bit[Nvars -7:Nvars +1])*Nvars
+                                   sum.one<- sum(bit)*which.max(na.rm = T,bit) + sum(bit[Nvars -7:Nvars +1])*Nvars
                                    while(!add.key(dec,bit,sum.one,F))
                                    {
                                      hash.level<-hash.level+1
@@ -1175,7 +1175,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    #if(printable.opt)print(varcur)
                                  }
 
-                                 #     for(g in 1:max(isobsbinary))
+                                 #     for(g in 1:max(na.rm = T,isobsbinary))
                                  #     {
                                  #       if(length(varcur[which(isobsbinary == g && varcur %in% c(1,3))])==length(which(isobsbinary == g)))
                                  #         varcur[which(isobsbinary == g && varcur %in% c(1,3))[1]]=0
@@ -1716,7 +1716,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    }
 
-                                   max.p.select.y <- max(p.select.y)
+                                   max.p.select.y <- max(na.rm = T,p.select.y)
                                    p.select.y<-p.select.y-max.p.select.y
 
                                    #if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
@@ -1851,12 +1851,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      p.select.z[mod_id] <- 100000000
                                    }
 
-                                   max.p.select.z <- max(p.select.z)
+                                   max.p.select.z <- max(na.rm = T,p.select.z)
                                    p.select.z<-p.select.z-max.p.select.z
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(runif(n = 1,min = 0,max = 1)) < sum(na.rm = T,sum(na.rm = T,log(sum(na.rm = T,exp(p.select.y))),-log(sum(na.rm = T,exp(p.select.z))), max.p.select.y, - max.p.select.z )))
                                    {
                                      mlikcur<-mlikcand
                                      if(printable.opt)print(paste("locMTMCMC update ratcur = ", mlikcand))
@@ -2108,7 +2108,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else
                                        {
                                          delta<-objcand - objcur
-                                         if(runif(n = 1,min = 0,max = 1) <= exp(x = -delta/t))
+                                         if(runif(n = 1,min = 0,max = 1) <= sum(na.rm = T, exp(x = -delta/t)))
                                          {
 
                                            model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = varcand,switch.type = model$switch.type,min.N = min.N,max.N = max.N)
@@ -2131,7 +2131,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                if(model$reverse == FALSE)
                                {
-                                 model.prob<-log(punif(q = exp(x = -delta/t),min = 0,max = 1)) +  probcur # log(P(Mk,Mk-1))
+                                 model.prob<-log(punif(q = sum(na.rm = T, exp(x = -delta/t)),min = 0,max = 1)) +  probcur # log(P(Mk,Mk-1))
                                  model.prob.fix<-log(punif(q = exp(x = delta/t),min = 0,max = 1)) + probrevcur # log(P(Mk-1,Mk))
 
                                  if(model$sa2 == TRUE)
@@ -2152,7 +2152,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
                                  model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = model$varold, switch.type = model$switch.type,min.N = min.N,max.N = max.N)
-                                 model.prob<-punif(q = exp(x = -delta/t),min = 0,max = 1,log.p = TRUE) +  model.probs$log.switch.forw.prob
+                                 model.prob<-punif(q = sum(na.rm = T, exp(x = -delta/t)),min = 0,max = 1,log.p = TRUE) +  model.probs$log.switch.forw.prob
                                  model.prob.fix<-punif(q = exp(x = delta/t),min = 0,max = 1,log.p = TRUE) + model.probs$log.switch.back.prob
 
                                  if(model.prob==-Inf)
@@ -3337,9 +3337,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              }
                                              else
                                              {
-                                               if(max(sjm,sjf)>1)
+                                               if(max(na.rm = T,sjm,sjf)>1)
                                                {
-                                                 t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
+                                                 t.d<-sample.int(size = 1,n = (max(na.rm = T,sjm,sjf)+1))
                                                  if(sjm>=sjf)
                                                  {
                                                    loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
@@ -3374,7 +3374,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          else
                                          {
 
-                                           t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
+                                           t.d<-sample.int(size = 1,n = (max(na.rm = T,sjm,sjf)+1))
                                            if(sjm>=sjf)
                                            {
                                              loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
@@ -3557,7 +3557,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    }
 
-                                   max.p.select.y <- max(p.select.y)
+                                   max.p.select.y <- max(na.rm = T,p.select.y)
                                    p.select.y<-p.select.y-max.p.select.y
 
                                    #if(printable.opt)print(paste("max log.w.y is ",max.p.select.y,"normilized log.w.n.y is ", paste(p.select.y,collapse = ", ")))
@@ -3702,12 +3702,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      p.select.z[mod_id] <- 100000000
                                    }
 
-                                   max.p.select.z <- max(p.select.z)
+                                   max.p.select.z <- max(na.rm = T,p.select.z)
                                    p.select.z<-p.select.z-max.p.select.z
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(runif(n = 1,min = 0,max = 1)) < sum(na.rm = T,sum(na.rm = T,sum(na.rm = T,log(sum(na.rm = T,exp(p.select.y))),-log(sum(na.rm = T,exp(p.select.z))), max.p.select.y, - max.p.select.z ))))
                                    {
                                      mlikcur<-mlikcand
                                      ratcur<-mlikcand
@@ -3838,7 +3838,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(LocImprove == 0)
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,SA.back$log.prob.cur, - SA.back$log.prob.fix,na.rm=T)
-                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                       if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T, thact))
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -3875,7 +3875,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,vect[[mod_id]]$log.mod.switchback.prob, - vect[[mod_id]]$log.mod.switch.prob,na.rm=T)
-                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                       if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T,thact))
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -3947,7 +3947,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - MTMCMC.forw$log.prob.cur,MTMCMC.forw$log.prob.fix,MTMCMC.back$log.prob.cur,- MTMCMC.back$log.prob.fix,na.rm=T)
-                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                     if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T,thact))
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
@@ -4048,7 +4048,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - GREEDY.forw$log.prob.cur,GREEDY.forw$log.prob.fix,GREEDY.back$log.prob.cur,-GREEDY.back$log.prob.fix,na.rm=T)
-                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                     if(log(runif(n = 1,min = 0,max = 1))<=sum(na.rm = T,thact))
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
@@ -4192,19 +4192,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(length(ids)!=0)
                                {
                                  if(crit$mlik)
-                                   mlik.lim<-c(min(statistics1[-ids,1],na.rm = TRUE),max(statistics1[-ids,1],na.rm = TRUE))
+                                   mlik.lim<-c(min(statistics1[-ids,1],na.rm = TRUE),max(na.rm = T,statistics1[-ids,1],na.rm = TRUE))
                                  if(crit$waic)
-                                   waic.lim<-c(min(statistics1[-ids,2],na.rm = TRUE),max(statistics1[-ids,2],na.rm = TRUE))
+                                   waic.lim<-c(min(statistics1[-ids,2],na.rm = TRUE),max(na.rm = T,statistics1[-ids,2],na.rm = TRUE))
                                  if(crit$dic)
-                                   dic.lim<-c(min(statistics1[-ids,3],na.rm = TRUE),max(statistics1[-ids,3],na.rm = TRUE))
+                                   dic.lim<-c(min(statistics1[-ids,3],na.rm = TRUE),max(na.rm = T,statistics1[-ids,3],na.rm = TRUE))
                                }else
                                {
                                  if(crit$mlik)
-                                   mlik.lim<-c(min(statistics1[,1],na.rm = TRUE),max(statistics1[,1],na.rm = TRUE))
+                                   mlik.lim<-c(min(statistics1[,1],na.rm = TRUE),max(na.rm = T,statistics1[,1],na.rm = TRUE))
                                  if(crit$waic)
-                                   waic.lim<-c(min(statistics1[,2],na.rm = TRUE),max(statistics1[,2],na.rm = TRUE))
+                                   waic.lim<-c(min(statistics1[,2],na.rm = TRUE),max(na.rm = T,statistics1[,2],na.rm = TRUE))
                                  if(crit$dic)
-                                   dic.lim<-c(min(statistics1[,3],na.rm = TRUE),max(statistics1[,3],na.rm = TRUE))
+                                   dic.lim<-c(min(statistics1[,3],na.rm = TRUE),max(na.rm = T,statistics1[,3],na.rm = TRUE))
                                }
 
                                norm<-0.5*sqrt(sum(statistics1[,4],na.rm = TRUE))
@@ -4338,13 +4338,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                xyz<-which(!is.na(statistics1[,1]))
                                xyz<-intersect(xyz,which(statistics1[,1]!=-10000))
-                               moddee<-which(statistics1[,1]==max(statistics1[,1],na.rm = TRUE))[1]
+                               moddee<-which(statistics1[,1]==max(na.rm = T,statistics1[,1],na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = 2 ^(Nvars)+1)
                                nconsum<-sum(exp(-statistics1[moddee,1]+statistics1[xyz,1]),na.rm = TRUE)
                                if( nconsum > 0)
                                {
                                  zyx[xyz]<-exp(statistics1[xyz,1]-statistics1[moddee,1])/nconsum
-                                 y.post.lim<-c(0,max(zyx[xyz]))
+                                 y.post.lim<-c(0,max(na.rm = T,zyx[xyz]))
                                }else{
 
                                  zyx[xyz]<-statistics1[xyz,3]/norm1
@@ -4353,7 +4353,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
                                if(is.nan(y.post.lim[2]))
-                                 y.post.lim[2]<-max(statistics1[,3]/norm1,na.rm = TRUE)
+                                 y.post.lim[2]<-max(na.rm = T,statistics1[,3]/norm1,na.rm = TRUE)
                                if(is.nan(y.post.lim[2]))
                                  y.post.lim[2]<-1
 
@@ -4435,9 +4435,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  capture.output({withRestarts(tryCatch(capture.output({
                                    lldd<-2^(Nvars)+1
 
-                                   moddee<-which(zyx==max(zyx,na.rm = TRUE))
-                                   iidr<-which(statistics1[moddee,1]==max(statistics1[moddee,1],na.rm = TRUE))
-                                   iidr<-which(statistics1[moddee[iidr],3]==max(statistics1[moddee[iidr],3],na.rm = TRUE))
+                                   moddee<-which(zyx==max(na.rm = T,zyx,na.rm = TRUE))
+                                   iidr<-which(statistics1[moddee,1]==max(na.rm = T,statistics1[moddee,1],na.rm = TRUE))
+                                   iidr<-which(statistics1[moddee[iidr],3]==max(na.rm = T,statistics1[moddee[iidr],3],na.rm = TRUE))
                                    moddee<-moddee[iidr]
                                    if(length(moddee)>1)
                                      moddee<-moddee[1]
@@ -4624,7 +4624,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                xyz<-which(!is.na(statistics1[,1]))
                                g.results[4,2] <- length(xyz)
                                xyz<-intersect(xyz,which(statistics1[,1]!=-10000))
-                               moddee<-which(statistics1[,1]==max(statistics1[,1],na.rm = TRUE))[1]
+                               moddee<-which(statistics1[,1]==max(na.rm = T,statistics1[,1],na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = length(statistics1[,1]))
                                nconsum<-sum(exp(-statistics1[moddee,1]+statistics1[xyz,1]),na.rm = TRUE)
 
@@ -4695,7 +4695,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
                                xyz<-which(mliks!=-10000)
                                g.results[4,2] <- lHash
-                               moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                               moddee<-which( mliks ==max(na.rm = T, mliks ,na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = lHash)
                                nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
 
@@ -4820,7 +4820,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    betas[which(is.na(betas))]<-0
                                    xyz<-which(mliks!=-10000)
                                    g.results[4,2] <- lHash
-                                   moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                   moddee<-which( mliks ==max(na.rm = T, mliks ,na.rm = TRUE))[1]
                                    zyx<-array(data = NA,dim = lHash)
                                    nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
 
@@ -4905,7 +4905,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  ids<-which(na.br==0)
                                  mliks<-mliks.in
                                  xyz<-which(mliks!=-10000)
-                                 moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                 moddee<-which( mliks ==max(na.rm = T, mliks ,na.rm = TRUE))[1]
                                  zyx<-array(data = NA,dim = length(mliks))
                                  nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
                                  betas1<-betas
@@ -4971,7 +4971,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      return(-1)
                                    }
                                    xyz<-which(mliks!=-10000)
-                                   moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                   moddee<-which( mliks ==max(na.rm = T, mliks ,na.rm = TRUE))[1]
                                    zyx<-array(data = NA,dim = length(mliks))
                                    nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
                                    betas1<-betas[-w.ids,]
@@ -5031,7 +5031,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  ids<-which(na.br==0)
                                  mliks<-mliks.in
                                  xyz<-which(mliks!=-10000)
-                                 moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                                 moddee<-which( mliks ==max(na.rm = T, mliks ,na.rm = TRUE))[1]
                                  zyx<-array(data = NA,dim = lHash)
                                  nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
                                  betas1<-betas
@@ -5078,7 +5078,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  return(-1)
                                }
                                xyz<-which(mliks!=-10000)
-                               moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
+                               moddee<-which( mliks ==max(na.rm = T, mliks ,na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = length(mliks))
                                nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
                                betas1<-betas[-w.ids,]
