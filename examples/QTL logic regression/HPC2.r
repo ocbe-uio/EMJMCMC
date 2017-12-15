@@ -2,7 +2,7 @@
 # scp -r  /usit/abel/u1/aliaksah/simulations/  aliaksah@pittheus.uio.no://mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations
 # cat slurm-16078690.out
 # squeue -u aliaksah
-# qlogin --account=nn9244k --nodes=1 --exclusive --mem-per-cpu=4000 --time 20:00:00
+# qlogin --account=nn9244k --nodes=1 --exclusive --mem-per-cpu=4000 --time 60:00:00
 # source /cluster/bin/jobsetup
 
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package2.r")
@@ -82,7 +82,7 @@ runpar<-function(vect)
 }
   
 
-for(j in 3:MM)
+for(j in 1:100)
 {
   
   set.seed(j)

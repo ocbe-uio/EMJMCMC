@@ -32,6 +32,46 @@ require(stats)
 #compile INLA
 
 
+
+estimate.logic.lm.tCCH.fixed.phi <- function(formula = Y1~-1., data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1)
+{
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  if(fmla.proc[2]=="-1")
+    return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
+  X <- model.matrix(object = formula,data = data)
+  if(dim(X)[2]>1)
+    X[,2:dim(X)[2]]<-X[,2:dim(X)[2]]-colMeans(X)[-1]
+  out <- lm(formula = as.formula(paste0(fobserved,"~X+0")))
+  p <- out$rank
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  sj<-sj+1
+  Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
+  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  p.v = (n+1)/(p+1)
+  beta = coef(out)[-1]
+  sout = summary(out)
+  J.a.hat = sout$cov.unscaled[1,1]
+  if(length(beta)>0&&length(beta)==(dim(sout$cov.unscaled)[1]-1)&&length(which(is.na(beta)))==0)
+  {
+    Q = t(beta)%*%solve(sout$cov.unscaled[-1,-1])%*%beta
+  }else Q = NA
+  if(is.na(Q)||is.na(J.a.hat))
+    mlik=-10000
+  else
+    mlik = (logLik(out) - 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k)) - log(phi1(p.b/2,p.r,(p.a+p.b)/2,p.s/2/p.v,1-p.k))+log(Jprior) + p*log(r)+n)
+  if(mlik==-Inf||is.na(mlik)||is.nan(mlik))
+    mlik = -10000
+  #if(mlik== -Inf)
+  #  mlik = 10000
+  #print(mlik)
+  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+}
+
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
 

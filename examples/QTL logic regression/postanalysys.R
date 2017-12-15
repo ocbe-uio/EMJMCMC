@@ -1,9 +1,9 @@
 library(hash)
 library(stringi)
-#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations/simulations")
+#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/logic-g-prior/scenario1")
 
 #experiment i
-temp = list.files(pattern="postLog3etaOld_*")
+temp = list.files(pattern="post1etaG_*")
 temp<-temp[which(stri_length(temp)<stri_length("post3etaOld_100.csv")|temp=="post3etaOld_100.csv")]
 myfiles = lapply(FUN = read.csv,X = temp)
 
@@ -57,7 +57,7 @@ res<-res[order(res$V1, decreasing = T),]
 colnames(res)<-c("posterior","tree")
 
 
-write.csv(x = values(rhash),file = "explog3.csv",row.names = F,col.names = F)
+write.csv(x = values(rhash),file = "explog1.csv",row.names = F,col.names = F)
 
 
 

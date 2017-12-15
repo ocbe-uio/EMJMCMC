@@ -1,15 +1,15 @@
 library(hash)
 library(stringi)
-#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations/simulations")
+#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/logic-g-prior/scenario1")
 
 #experiment i
-temp = list.files(pattern="post3etaOld_*")
+temp = list.files(pattern="post1etaG_*")
 myfiles = lapply(FUN = read.csv,X = temp)
 
 X<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
 rhash<-hash()
 
-scenairo=7
+scenairo=4
 if(scenairo == 1|2)
 {
   tps<-array(data = 0, dim =c(1000,3))

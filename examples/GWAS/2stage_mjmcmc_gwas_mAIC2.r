@@ -90,8 +90,6 @@ geno$Y<-pheno$V1
 geno <- as.data.frame(mclapply(geno, as.numeric))
 
 
-
-
 estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
