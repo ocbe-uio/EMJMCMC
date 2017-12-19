@@ -1,9 +1,9 @@
 library(hash)
 library(stringi)
-#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/logic-g-prior/scenario1")
+#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/logic-g-prior/scenario3")
 
 #experiment i
-temp = list.files(pattern="post1etaG_*")
+temp = list.files(pattern="post3etaG_*")
 temp<-temp[which(stri_length(temp)<stri_length("post3etaOld_100.csv")|temp=="post3etaOld_100.csv")]
 myfiles = lapply(FUN = read.csv,X = temp)
 
