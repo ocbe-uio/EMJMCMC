@@ -68,7 +68,7 @@ for(ii in 1:100)
 
     set.seed(ii)
 
-    idss<-which(abs(cor(x = train[1:785],y=train[785+dig]))>0.2)
+    idss<-which(abs(cor(x = train[1:785],y=train[785+dig]))>0.1)
 
     formula1 = as.formula(paste(colnames(train)[785+dig],"~ 1 +",paste0(colnames(train)[idss],collapse = "+")))
     #set.seed(runif(1,1,10000))

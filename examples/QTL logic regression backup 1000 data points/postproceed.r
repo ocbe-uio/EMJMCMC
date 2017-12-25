@@ -122,7 +122,7 @@ res<-as.data.frame(t(values(rhash)[c(4,3),]))
 res$V1<-as.numeric(as.character(res$V1))
 res<-res[order(res$V1, decreasing = T),]
 colnames(res)<-c("posterior","tree")
-write.csv(x = values(rhash),file = "expn3.csv",row.names = F)
+write.csv(x = t(values(rhash)[3:4,]),file = "expn3.csv",row.names = F,col.names = F)
 
 
 

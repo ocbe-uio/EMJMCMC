@@ -1,14 +1,30 @@
-#compare on Asteroids
-library(RCurl)
-library(caret)
+
 
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 
 
+estimate.glm.cpen.slow <- function(formula, data, family, logn,r = 0.1,relat =c("gone","gthird","sigmoid","tanh","atan","erf","gfifth","grelu"))
+{
+  
+  capture.output({out <- glm(family = family,formula = formula,data = data)})
+  fmla.proc<-as.character(formula)[2:3]
+  fobserved <- fmla.proc[1]
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  sj<-2*(stri_count_fixed(str = fmla.proc[2], pattern = "*"))
+  sj<-sj+1*(stri_count_fixed(str = fmla.proc[2], pattern = "+"))
+  for(rel in relat)
+    sj<-sj+2*(stri_count_fixed(str = fmla.proc[2], pattern = rel))
+  mlik = ((-out$deviance +2*log(r)*sum(sj)))/2
+  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+  
+}
+
 estimate.glm.cpen <- function(formula, data, family, logn,r = 0.1,relat =c("gone","gthird","sigmoid","tanh","atan","erf","gfifth","grelu"))
 {
   
+  #capture.output({out <- speedglm::speedglm(family = family,formula = formula,data = data)})
   capture.output({out <- glm(family = family,formula = formula,data = data)})
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
@@ -39,7 +55,7 @@ digits$Y9<-as.integer(digits$label==9)
 digits$Y10<-as.integer(digits$label==10)
 
 
-digits<-digits[,-which(colSums(digits)==0)]
+#digits<-digits[,-which(colSums(digits)==0)]
 
 
 g<-function(x)
@@ -48,7 +64,7 @@ g<-function(x)
 }
 
 
-index <- createDataPartition(digits$label, p = 0.01, list = FALSE)
+index <- sample.int(n = dim(digits)[1],size = dim(digits)[1]*0.025,replace = F)
 
 test <- digits[-index, ]
 train <- digits[index, ]
@@ -71,7 +87,7 @@ runpar<-function(vect)
   lHash<-length(hashStat)
   mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
   betas <- values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
-  cterm<-max(vals[1,],na.rm = T)
+  cterm<-max(values(hashStat)[1,],na.rm = T)
   post.populi<-sum(exp(values(hashStat)[1,][1:1000]-cterm),na.rm = T)
   for(i in 1:(Nvars-1))
   {
@@ -81,7 +97,7 @@ runpar<-function(vect)
   
   t<-system.time({
     
-    res<-mySearch$forecast.matrix.na(link.g = g, cterm = cterm, post.populi = post.populi, covariates = (vect$test),betas = betas,mliks.in = mliks)$forecast
+    res<-mySearch$forecast.matrix.na(link.g = g, covariates = (vect$test),betas = betas,mliks.in = mliks)$forecast
     
   })
   
@@ -103,15 +119,16 @@ gthird<-function(x)as.integer(abs(x)^(1/3))
 gfifth<-function(x)as.integer(abs(x)^(1/5))
 grelu<-function(x)as.integer(x*(x>0))
 
-total = array(0,dim = c(10,3))
+total = array(0,dim = c(10,10,3))
 
 M<-32
-for(dig in 1:10)
+for(dig in 9:1)
 {
-  idss<-which(abs(cor(x = train[1:785],y=train[785+dig]))>0.1)
+  print(dig)
+  idss<-which(abs(cor(x = train[1:785],y=train[785+dig]))>0.01)
   formula1 = as.formula(paste(colnames(train)[785+dig],"~ 1 +",paste0(colnames(train)[idss][-1],collapse = "+")))
   
-  vect<-list(formula = formula1,data = data.example,estimator =estimate.glm.cpen,estimator.args =  list(data = data.example,family = binomial(), logn = log(dim(train)[1]),r=exp(-0.5)),recalc_margin = 95,locstop=T,presearch=F,save.beta = T,interact = T,relations = c("gone","gthird","sigmoid","tanh","atan","erf","gfifth","grelu"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2500, max.tree.size = 20, Nvars.max =70,p.allow.replace=0.3,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 30000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+  vect<-list(formula = formula1,data = data.example,estimator =estimate.glm.cpen,estimator.args =  list(data = data.example,family = binomial(), logn = log(dim(train)[1]),r=exp(-0.5)),recalc_margin = 95,locstop=T,presearch=F,save.beta = T,interact = T,relations = c("gone","gthird","sigmoid","tanh","atan","erf","gfifth","grelu"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=2500, max.tree.size = 20, Nvars.max =200,p.allow.replace=0.7,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 30000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -138,6 +155,7 @@ for(dig in 1:10)
   
   post.popul <- array(0,M)
   max.popul <- array(0,M)
+  nulls = NULL
   for(k in 1:M)
   {
     if(length(results[[k]])==1||length(results[[k]]$cterm)==0)
@@ -166,33 +184,38 @@ for(dig in 1:10)
   post.popul<-post.popul*exp(-ml.max+max.popul)
   p.gen.post<-post.popul/sum(post.popul)
 
+  res1 = array(0,dim = length(results[[1]]$res))
   for(i in 1:M)
   {
+    if(length(which(is.na(results[[i]]$res)))>0)
+      next
+    res1<-res1+results[[i]]$res*p.gen.post[i]
     
-    res<-res+results[[i]]$res*p.gen.post[i]
-  
   }  
   
-  res = as.integer(res>0.1)
-  prec<-(1-sum(abs(res-test[,785+dig]),na.rm = T)/length(res))
-  
-  #FNR
-  ps<-which(test[,785+dig]==1)
-  fnr<-sum(abs(res[ps]-test[,785+dig][ps]))/(sum(abs(res[ps]-test[,785+dig][ps]))+length(ps))
-  
-  #FPR
-  ns<-which(test[,785+dig]==0)
-  fpr<-sum(abs(res[ns]-test[,785+i][ns]))/(sum(abs(res[ns]-test[,785+i][ns]))+length(ns))
+  for(jjjj in 1:10)
+  {
+    res = as.integer(res1>=0.1*jjjj)
+    prec<-(1-sum(abs(res-test[,785+dig]),na.rm = T)/length(res))
     
-  total[dig,1]=prec
-  total[dig,2]=fnr
-  total[dig,3]=fpr
-  
+    #FNR
+    ps<-which(test[,785+dig]==1)
+    fnr<-sum(abs(res[ps]-test[,785+dig][ps]))/(sum(abs(res[ps]-test[,785+dig][ps]))+length(ps))
+    
+    #FPR
+    ns<-which(test[,785+dig]==0)
+    fpr<-sum(abs(res[ns]-test[,785+dig][ns]))/(sum(abs(res[ns]-test[,785+dig][ns]))+length(ns))
+      
+    total[dig,jjjj,1]=prec
+    total[dig,jjjj,2]=fnr
+    total[dig,jjjj,3]=fpr
+    
+    
+    print(prec)
+  }
+  write.csv(file ="results.csv",x=total)
+  write.csv(file =paste0("res",dig,".csv"),x=res1)
   rm(results)
   gc()
-  print(prec)
-  
-  
-
 }
 

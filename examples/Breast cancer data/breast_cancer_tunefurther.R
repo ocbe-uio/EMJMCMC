@@ -68,10 +68,13 @@ gmedi<-function(x)as.integer(x>median(x))
 cosi<-function(x)cos(x/180*pi)
 gmean<-function(x)as.integer(x>mean(x))
 gone<-function(x)as.integer(x>1)
-gzero<-function(x)as.integer(abs(x)^(1/3))
+gthird<-function(x)as.integer(abs(x)^(1/3))
+gfifth<-function(x)as.integer(abs(x)^(1/5))
+grelu<-function(x)as.integer(x*(x>0))
+
 h2o.removeAll()
 
-for(ii in 1:100)
+for(ii in 97:100)
 {
   print(paste("iteration ",ii))
   #capture.output({withRestarts(tryCatch(capture.output({
@@ -83,7 +86,7 @@ for(ii in 1:100)
 
     formula1 = as.formula(paste(colnames(data.example)[31],"~ 1 +",paste0(colnames(data.example)[-31],collapse = "+")))
     #gen.prob =c(1,1,1,1,1)
-    res = runemjmcmc(formula = formula1,data = data.example,gen.prob = c(1,1,1,1,1),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(),yid=31, logn = log(143),r=exp(-0.5)),recalc_margin = 95, save.beta = T,interact = T,relations = c("sigmoid","sigmoid","gzero","gone","gone"),relations.prob =c(0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=1000, max.tree.size = 6, Nvars.max = 20,p.allow.replace=0.5,p.allow.tree=0.4,p.nor=0.3,p.and = 0.9),n.models = 7000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,gen.prob = c(1,1,1,1,1),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(),yid=31, logn = log(143),r=exp(-0.5)),recalc_margin = 95, save.beta = T,interact = T,relations = c("sigmoid","grelu","gone","gthird","gfifth"),relations.prob =c(0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=1000, max.tree.size = 6, Nvars.max = 20,p.allow.replace=0.5,p.allow.tree=0.4,p.nor=0.3,p.and = 0.9),n.models = 7000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -594,5 +597,5 @@ for(i in 1:15)
 
 }
 
-write.csv(x = round(summary.results,4),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/e1 p2/bcans.csv")
-
+write.csv(x = train,file = "/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/breast cancer/train.csv")
+write.csv(x = test,file = "/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/breast cancer/test.csv")
