@@ -3953,7 +3953,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    {
                                      clear(hashStat)
                                      rm(hashStat)
-                                     gc()
+                                     #gc()
                                      #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                      clear(hashStat)
                                      #hashStat<<-hash()
