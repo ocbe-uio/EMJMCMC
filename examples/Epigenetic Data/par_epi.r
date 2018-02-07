@@ -66,7 +66,7 @@ InvX<-function(x)
 troot<-function(x)abs(x)^(1/3)
 
 MM = 100
-M = 16
+M = 12
 NM= 1000
 compmax = 16
 th<-(10)^(-5)
@@ -81,7 +81,7 @@ for(j in 1:1)
     set.seed(j)
 
     data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
-    data.example<-data.example[sample.int(dim(data.example)[1],200),]
+    data.example<-data.example[sample.int(dim(data.example)[1],500),]
 
 
     data.example<-data.example[,c(2,5,6,8:10,12:17,21,23,24,29)]
@@ -100,7 +100,7 @@ for(j in 1:1)
     formula1 = as.formula(paste(fobservs,"~ 1 +",paste0(fparams,collapse = "+")))
     # outgraphs=F
 
-    vect<-list(formula = formula1,outgraphs=F,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")","offset(log(total_bases))"),estimator = estimate.inla.poisson,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = (compmax-1),p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
+    vect<-list(formula = formula1,outgraphs=F,max.time = 180,data = data.example,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")","offset(log(total_bases))"),estimator = estimate.inla.poisson,estimator.args =  list(data = data.example),recalc_margin = 199, save.beta = F,interact = T,relations=c("cos","sigmoid","tanh","atan","sin","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = (compmax-1),p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -119,13 +119,14 @@ for(j in 1:1)
       params[[i]]$simul<-"scenario_epi_"
       params[[i]]$simid<-j
       params[[i]]$NM<-1000
-      params[[i]]$simlen<-22
+      params[[i]]$simlen<-23
     }
     gc()
 
     gc()
     print(paste0("begin simulation ",j))
-    results<-parall.gmj(X = params, M = 16)
+
+    results<-parall.gmj(X = params, M = 3)
 
     print(results)
 

@@ -1,14 +1,16 @@
 library("RCurl")
 #define the working directory
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+
 
 workdir<-""
 
 # get the data
 M<-5
 size<-1
-
+set.seed(1)
 data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
-data.example<-data.example[sample.int(dim(data.example)[1],200),]
+data.example<-data.example[sample.int(dim(data.example)[1],500),]
 
 
 data.example$pos1 = data.example$pos
@@ -21,13 +23,13 @@ fobservs <- colnames(data.example)[5]
 #create MySearch object with default parameters. N/B default estimator is INLA!
 args<-list(family = "poisson",control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
 
-source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+#source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 system.time({
 
   formula1 = as.formula(paste(fobservs,"~ 1 +",paste0(fparams,collapse = "+")))
 
-  res = runemjmcmc(formula = formula1,data = data.example,max.time = 80,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")"),recalc_margin = 199,estimator =estimate.inla.poisson,estimator.args =  list(data=data.example),save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = 15,p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 2,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 10,advanced.param = list(
+  res = runemjmcmc(formula = formula1,data = data.example,max.time = 120,latnames = c("f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")","offset(log(total_bases))"),recalc_margin = 199,estimator =estimate.inla.poisson,estimator.args =  list(data=data.example),save.beta = F,interact = T,relations = c("sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 200, last.mutation = 2000,max.tree.size = 200000, Nvars.max = 15,p.allow.replace=0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 2,create.table = F,create.hash = T,pseudo.paral = F,burn.in = 100,print.freq = 10,advanced.param = list(
     max.N.glob=as.integer(10),
     min.N.glob=as.integer(5),
     max.N=as.integer(1),                                                                                                                                                                                                                                                                                                      min.N=as.integer(1),
