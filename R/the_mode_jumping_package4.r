@@ -3666,9 +3666,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    # now having chosen the candidates to be deleted we can propose new variables
                                    idel<-1
-
-                                   while(idel <= lidmut){
-
+                                   repsd = 1
+                                   while(idel <= lidmut && repsd <=lidmut*100){
+                                     repsd = repsd +1
                                      #gen.prob<-c(1,1,1,1,1)#just uniform for now
                                      action.type <- sample.int(n = 5,size = 1,prob = gen.prob)
 
