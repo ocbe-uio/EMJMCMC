@@ -106,7 +106,7 @@ grelu<-function(x)as.integer(x*(x>0))
 total = array(0,dim = c(10,3))
 
 M<-32
-for(dig in 1:10)
+for(dig in 4:1)
 {
   idss<-which(abs(cor(x = train[1:785],y=train[785+dig]))>0.1)
   formula1 = as.formula(paste(colnames(train)[785+dig],"~ 1 +",paste0(colnames(train)[idss][-1],collapse = "+")))

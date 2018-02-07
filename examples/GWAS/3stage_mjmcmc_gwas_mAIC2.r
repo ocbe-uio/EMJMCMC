@@ -3,15 +3,14 @@ library(plyr)
 library(dplyr)
 library(magrittr)
 
+#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata1/gwassim/")
 
-setwd("/home/michaelh/SIMULATION_paper/")
-
-options("exppression" = 20000)
+#options("exppression" = 20000)
 ##########################################
 #: Calculate True h^2 for each Scenario :#
 ##########################################
 simPars <- 
-  read.table("scripts/simulationParameters_new.txt", 
+  read.table("scripts/simulationParameters.txt", 
              header = TRUE, 
              stringsAsFactors = FALSE) %>%
   select(SNPId = SNP_causal, Pos = BP_causal, MAF = MAF_causal, S1, S2, S3, S4)
@@ -21,7 +20,7 @@ causSNPsS2 <- with(simPars, SNPId[S2 != 0])
 causSNPsS3 <- with(simPars, SNPId[S3 != 0]) 
 causSNPsS4 <- with(simPars, SNPId[S4 != 0]) 
 
-genoData <- read.table("data/CHR1_NFBC.raw",
+genoData <- read.table("data-geno/CHR1_NFBC.raw",
                        header = TRUE,
                        stringsAsFactors = FALSE)
 names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)
@@ -41,13 +40,13 @@ explainedVar <- apply(expectedData, 2, function(x) var(x)/(var(x)+1)) # True h^2
 distance_cutoff <- 1e6
 corr_cutoff <- .3
 
-physMap <- read.table("data/CHR1_NFBC.bim",
+physMap <- read.table("data-geno/CHR1_NFBC.bim",
                       header = FALSE,
                       stringsAsFactors = FALSE)[c(2, 4)] %>%
   select(SNPid = V2, pos = V4) %>%
   filter(!grepl('^cnv', SNPid))	   
 
-genoData <- read.table("data/CHR1_NFBC.raw", 
+genoData <- read.table("data-geno/CHR1_NFBC.raw", 
                        header = TRUE, 
                        stringsAsFactors = FALSE)
 names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)	 
@@ -81,7 +80,7 @@ gc()
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
 
-pheno<-read.csv(paste0("data_S3_nocausal_5402/pimass/data.recode.pheno_",1,".txt"),header = F)
+pheno<-read.csv(paste0("data_S3_nocausal_5402/pimass/data.recode.pheno_",1),header = F)
 geno<-t(read.csv("data_S3_nocausal_5402/pimass/data.recode.mean.geno.txt",header = F,stringsAsFactors = F))
 names<-geno[1,]
 geno<-as.data.frame(geno[-c(1,2,3),])
@@ -208,7 +207,7 @@ for(j in 1:100)
     
     set.seed(j)
     
-    pheno<-read.csv(paste0("data_S3_nocausal_5402/pimass/data.recode.pheno_",j,".txt"),header = F)
+    pheno<-read.csv(paste0("data_S3_nocausal_5402/pimass/data.recode.pheno_",j),header = F)
     data.example$Y<-as.numeric(pheno$V1)
     rm(pheno)
     cors<-cor(data.example$Y,data.example[,1:(dim(data.example)[2]-1)])
@@ -446,10 +445,10 @@ for(j in 1:100)
       
       
       
-      write.csv(x =res1,row.names = F,file = paste0("post13ASMJSIM_",j,".csv"))
+      write.csv(x =res1,row.names = F,file = paste0("MJRES/post13ASMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
-      write.csv(x =posteriors,row.names = F,file = paste0("post13ASEGMJSIM_",j,".csv"))
+      write.csv(x =posteriors,row.names = F,file = paste0("MJRES/post13ASEGMJSIM_",j,".csv"))
     },finally = {
       
       print(paste0("end simulation ",j))

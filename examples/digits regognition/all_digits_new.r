@@ -122,7 +122,7 @@ grelu<-function(x)as.integer(x*(x>0))
 total = array(0,dim = c(10,10,3))
 
 M<-32
-for(dig in 9:1)
+for(dig in 4:1)
 {
   print(dig)
   idss<-which(abs(cor(x = train[1:785],y=train[785+dig]))>0.01)

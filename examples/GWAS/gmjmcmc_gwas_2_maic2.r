@@ -4,9 +4,9 @@ library(dplyr)
 library(magrittr)
 library(rootSolve)
 
-setwd("/home/michaelh/SIMULATION_paper/")
+#setwd("/home/michaelh/SIMULATION_paper/")
 
-options("exppression" = 500000)
+#options("exppression" = 500000)
 ##########################################
 #: Calculate True h^2 for each Scenario :#
 ##########################################
@@ -399,11 +399,11 @@ for(j in 31:100)
     }
     print(c(herl,her,heru))
     
-    write.csv(x =c(herl,her,heru),row.names = F,file = paste0("herestgmjmcaic2_",j,".csv"))
+    write.csv(x =c(herl,her,heru),row.names = F,file = paste0("herestcmjmcaic2_",j,".csv"))
     
     KMK<-which(max.popul==max(max.popul,na.rm = T))
     
-    write.csv(x =c(results[[KMK]]$cterm,results[[KMK]]$best),row.names = F,file = paste0("bestmodgmjmcaic2_",j,".csv"))
+    write.csv(x =c(results[[KMK]]$cterm,results[[KMK]]$best),row.names = F,file = paste0("bestmodcmjmcaic2_",j,".csv"))
     
     gc()
     rm(results)

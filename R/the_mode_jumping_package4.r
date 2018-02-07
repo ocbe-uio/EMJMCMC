@@ -3609,9 +3609,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    {
                                      clear(hashStat)
                                      rm(hashStat)
-                                     gc()
+                                     #gc()
                                      #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
-                                     rm(hashStat)
+                                     #rm(hashStat)
                                      hashStat<<-hash()
                                      #clear(hashStat)
                                      #hashStat<<-hash()
@@ -3791,7 +3791,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                        sj <- 0
                                      }else if(is.na(proposal)||is.na(sj))
-                                     {  
+                                     {
                                        proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                        sj <- 0
                                      }
@@ -3799,7 +3799,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      {
                                        proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
                                      }
-                                    
+
 
                                      add<-T
 
@@ -3818,7 +3818,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      #print(add)
                                      #print(proposal)
                                      if(proposal %in% latnames)
-                                     { 
+                                     {
                                        if((proposal %in% fparam[ids.lat]))
                                          add<-F
                                      }else{
