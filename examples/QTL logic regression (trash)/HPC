@@ -1,0 +1,71 @@
+
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package2.r")
+
+parall.gmj <<- mclapply
+
+# ssh -X -Y -l aliaksah abel.uio.no
+# scp -r  /usit/abel/u1/aliaksah/simulations/scenario1  aliaksah@pittheus.uio.no://mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/simulations
+
+setwd("simulations")
+setwd("scenario1")
+
+M=100
+paral<-function(X,FUN)
+{
+    return(mclapply(X = X,FUN = FUN,mc.preschedule = T, mc.cores = 32))
+}
+
+runpar<-function(vect)
+{
+	
+    set.seed(vect[22])
+    do.call(runemjmcmc, vect[1:21])
+    vals<-values(hashStat)
+    fparam<-mySearch$fparam
+    write.csv(x = vals,file = paste0(vect[22],vect[23],vect[24],"values.csv"))
+    write.csv(x = fparam,file = paste0(vect[22],vect[23],vect[24],"fparam.csv"))
+}
+
+
+for(j in 1:M)
+{
+
+	NM= 1000
+	set.seed(j)
+	X1<- as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = runif(n = 50*1000,0,1)),dim = c(1000,50)))
+	Y1<-rnorm(n = 1000,mean = 1+0.7*(X1$V1*X1$V4) + 0.8896846*(X1$V8*X1$V11)+1.434573*(X1$V5*X1$V9),sd = 1)
+	X1$Y1<-Y1
+
+	formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(51)],collapse = "+")))
+	data.example = as.data.frame(X1)
+
+	vect<-list(formula = formula1,data = X1,estimator = estimate.logic.lm,estimator.args =  list(data = data.example,n = 1000, m = 50),recalc_margin = 250, save.beta = F,interact = T,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,mutation_rate = 300,last.mutation = 5000, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.2,p.nor=0,p.and = 0.9),n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,outgraphs=F,print.freq = 1000,advanced.param = list(
+	      max.N.glob=as.integer(10),
+	      min.N.glob=as.integer(5),
+	      max.N=as.integer(3),
+	      min.N=as.integer(1),
+	      printable = F))
+
+	params <- list(vect)[rep(1,32)]
+
+	for(i in 1:32)
+	{
+	    params[[i]]$cpu<-i
+	    params[[i]]$simul<-"scenario_1_"
+	    params[[i]]$simid<-j
+	}
+	gc()
+	print(paste0("begin simulation ",j))
+	results<-parall.gmj(X = params,FUN = runpar,mc.preschedule = T, mc.cores = 32)
+	rm(results)
+	rm(X1)
+	rm(data.example)
+	rm(vect)
+	rm(params)
+	gc()
+	print(paste0("end simulation ",j))
+	
+}
+
+
+

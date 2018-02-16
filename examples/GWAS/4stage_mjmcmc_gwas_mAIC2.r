@@ -3,23 +3,23 @@ library(plyr)
 library(dplyr)
 library(magrittr)
 
+#setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/gwassim/")
 
-#setwd("/home/michaelh/SIMULATION_paper/")
 
-#options("exppression" = 20000)
+options("exppression" = 200000)
 ##########################################
 #: Calculate True h^2 for each Scenario :#
 ##########################################
-simPars <- 
-  read.table("scripts/simulationParameters.txt", 
-             header = TRUE, 
+simPars <-
+  read.table("scripts/simulationParameters.txt",
+             header = TRUE,
              stringsAsFactors = FALSE) %>%
   select(SNPId = SNP_causal, Pos = BP_causal, MAF = MAF_causal, S1, S2, S3, S4)
 
 causSNPsS1 <- with(simPars, SNPId[S1 != 0])
-causSNPsS2 <- with(simPars, SNPId[S2 != 0]) 
-causSNPsS3 <- with(simPars, SNPId[S3 != 0]) 
-causSNPsS4 <- with(simPars, SNPId[S4 != 0]) 
+causSNPsS2 <- with(simPars, SNPId[S2 != 0])
+causSNPsS3 <- with(simPars, SNPId[S3 != 0])
+causSNPsS4 <- with(simPars, SNPId[S4 != 0])
 
 genoData <- read.table("data-geno/CHR1_NFBC.raw",
                        header = TRUE,
@@ -28,7 +28,7 @@ names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)
 
 genoData <- genoData[c("FID", "IID", simPars$SNPId)]
 
-expectedData <- data.frame(as.matrix(genoData[-(1:2)]) %*% as.matrix(simPars[c('S1', 'S2', 'S3', 'S4')])) 
+expectedData <- data.frame(as.matrix(genoData[-(1:2)]) %*% as.matrix(simPars[c('S1', 'S2', 'S3', 'S4')]))
 
 explainedVar <- apply(expectedData, 2, function(x) var(x)/(var(x)+1)) # True h^2
 
@@ -45,12 +45,12 @@ physMap <- read.table("data-geno/CHR1_NFBC.bim",
                       header = FALSE,
                       stringsAsFactors = FALSE)[c(2, 4)] %>%
   select(SNPid = V2, pos = V4) %>%
-  filter(!grepl('^cnv', SNPid))	   
+  filter(!grepl('^cnv', SNPid))
 
-genoData <- read.table("data-geno/CHR1_NFBC.raw", 
-                       header = TRUE, 
+genoData <- read.table("data-geno/CHR1_NFBC.raw",
+                       header = TRUE,
                        stringsAsFactors = FALSE)
-names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)	 
+names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)
 
 findNeigbour <- function(causSNP) {
   #causSNP <- "rs1498308"
@@ -72,7 +72,7 @@ rm(genoData)
 rm(expectedData)
 rm(physMap)
 rm(simPars)
-rm(causSNPsS4)
+rm(causSNPsS2)
 rm(causSNPsS3)
 rm(causSNPsS1)
 rm(findNeigbour)
@@ -91,11 +91,10 @@ geno <- as.data.frame(mclapply(geno, as.numeric))
 
 
 
-
-estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24592, c = 16,u=170)
+estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
-  
+
   if(size>u)
   {
     return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
@@ -106,41 +105,87 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24592, c = 16,u=170)
     return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
   }
 }
-
 estimate.lm.MAIC2 <- function(formula, data, n = 5402, m = 24592, c = 4,u=170)
 {
   size<-stri_count_fixed(str = as.character(formula)[3],pattern = "+")
-  
+
   if(size>u)
   {
-    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000+ rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
+    return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic =  0,summary.fixed =list(mean = array(0,size+1))))
   }else{
-    out <- lm(formula = formula,data = data)
+    out <- lm(formula = formula,data = data,x = T)
     logmarglik <- (2*logLik(out) - 2*out$rank - 2*out$rank*log(m/c-1) + 2*log(factorial(out$rank)))/2
+    #sss<-summary(out)
+    #her  = summary(out)$r.squared
+    #ser  = ser<-2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
     sss<-summary(out)
-    her<-t(out$coefficients[-which(is.na(out$coefficients))])%*%sss$cov.unscaled%*%(out$coefficients[-which(is.na(out$coefficients))])*n/(sss$sigma^2*sss$df[2])
-    # use dic and aic as bic and aic correspondinly
-    return(list(mlik = logmarglik,waic = her , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+    if(length(which(is.na(out$coefficients))>0))
+      cfs<-out$coefficients[-which(is.na(out$coefficients))]#[-1]
+    else
+      cfs<-out$coefficients#[-1]
+
+    covs<-cov(out$x)
+    covb<-sss$cov.unscaled
+    #print(dim(covs)[1])
+    #print(length(cfs))
+    her = NA
+    if(length(cfs)==dim(covs)[1])
+    {
+      her<-(t(cfs)%*%covs%*%(cfs)*n/(sss$sigma^2*sss$df[2]))[1,1]
+      #ser<-sqrt(4*t(cfs)%*%covs%*%covb%*%(covs)%*%cfs*n*n/(sss$sigma^4*(sss$df[2]^2))) #the Gosha's version 2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+      ser<-sqrt(4*her/((n-out$rank-1)))
+      #ser3<-2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+    }
+    if(is.na(her))
+    {
+      her  = 0
+      ser  = 0
+    }
+
+    if(her==0)
+    {
+      return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic = 0,summary.fixed =list(mean = array(0,size+1))))
+    }
+
+    return(list(mlik = logmarglik,waic = her , dic =  ser,summary.fixed =list(mean = coef(out))))
   }
 }
 
 do.call.emjmcmc<-function(vect)
 {
-  
+
   set.seed(as.integer(vect$cpu))
   do.call(runemjmcmc, vect[1:vect$simlen])
   vals<-values(hashStat)
   fparam<-mySearch$fparam
   cterm<-max(vals[1,],na.rm = T)
+  ckey<-keys(hashStat)[which(vals[1,]==cterm)]
+  ckey<-fparam[stri_locate_all_fixed(str = ckey,pattern = "1")[[1]][,1]]
   ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
   post.populi<-sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
-  herac = sum(exp(values(hashStat)[1,][1:vect$NM]*(values(hashStat)[2,][1:vect$NM])))
+  herac = sum(ppp$m.post*(values(hashStat)[2,]),na.rm = T)
+  hers  = values(hashStat)[2,]
+  sers = values(hashStat)[3,]
+  f<-function(xu)
+  {
+    sum(pnorm(q = xu,mean = hers, sd = sers)*ppp$m.post)-1+0.025
+  }
+  hu<-uniroot(f = f,interval = c(-1000,1000), tol = 0.0001,extendInt="yes")$root
+  rm(f)
+  f<-function(xu)
+  {
+    sum(pnorm(q = xu,mean = hers, sd = sers)*ppp$m.post)-0.025
+  }
+  hl<-uniroot(f = f,interval = c(-1000,1000), tol = 0.0001,extendInt="yes")$root
   clear(hashStat)
   rm(hashStat)
   rm(vals)
+  rm(f)
   gc()
-  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam, herac = herac))
+  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam, best = ckey, herac = herac,CI = c(hl,hu)))
 }
+
+
 
 
 MM = 10
@@ -188,7 +233,7 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = da
         rhash[[key]][2]<- (as.numeric(rhash[[key]][2]) + posteriors[i,2])
       }
     }
-    
+
   }
   res<-as.data.frame(t(values(rhash)[c(2,1),]))
   res$V1<-as.numeric(as.character(res$V1))
@@ -201,14 +246,14 @@ simplifyposteriors<-function(posteriors,th=0.0001,thf=0.2, dataNeigbourhood = da
   return(res)
 }
 
-j=1 
+j=1
 
-for(j in 1:100)
+for(j in 100:70)
 {
-  tryCatch({
-    
+  #tryCatch({
+
     set.seed(j)
-    
+
     pheno<-read.csv(paste0("data_S4_nocausal_5402/pimass/data.recode.pheno_",j),header = F)
     data.example$Y<-as.numeric(pheno$V1)
     rm(pheno)
@@ -222,27 +267,27 @@ for(j in 1:100)
     detect.true<-which(detected %in% dataNeigbourhoodS4$SNPid)
     detlen<-length(detect.true.unique)
     totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
-    print(detlen/50)
+    print(detlen/40)
     print((totlen-detlen)/totlen)
     gc()
-    
+
     batch.size <- as.integer(length(cov.names)/M)
-    
-    
+
+
     formula1 <- as.formula(paste0("Y~1+",paste(cov.names,collapse = "+")))
-    
-    
+
+
     vect<-list(locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 45, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MBIC2,presearch=F, locstop =T,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(40),
       min.N.glob=as.integer(10),
       max.N=as.integer(2),
       min.N=as.integer(1),
       printable = F))
-    
+
     cov.names<-cov.names[sample.int(n = length(cov.names), size = length(cov.names), replace = F)]
-    
+
     params <- list(vect)[rep(1,M)]
-    
+
     for(i in 1:M)
     {
       #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
@@ -261,51 +306,51 @@ for(j in 1:100)
       params[[i]]$NM<-NM
       params[[i]]$simlen<-31
     }
-    
+
     gc()
-    
+
     #res<-do.call(runemjmcmc,args = params[[3]][1:27])
     #res$p.post
     #length(which(!is.na(res$m.post)))
     #detected<-mySearch$fparam[which(res$p.post>0.1)]
-    
+
     gc()
     print(paste0("begin simulation ",j))
     results<-parall.gmj(X = params, M = M.cpu)
-    
+
     selected <- NULL
     p.posts<-NULL
     for(i in 1:M)
     {
       p.posts<-c(p.posts,results[[i]]$p.post)
     }
-    
-    thp=sort(p.posts,decreasing = T)[400]
-    
+
+    thp=sort(p.posts,decreasing = T)[100]
+
     for(i in 1:M)
     {
       if(length(results[[i]])>1)
-        selected<-c(selected,results[[i]]$fparam[which(results[[i]]$p.post>=thp)])
+        selected<-c(selected,results[[i]]$fparam[which(results[[i]]$p.post>=thf)])
     }
     selected<-stri_replace(str = selected,fixed = "I(",replacement = "")
     selected<-stri_replace(str = selected,fixed = ")",replacement = "")
     rm(results)
-    
+
     gc()
     formula1 <- as.formula(paste0("Y~1+",paste(selected,collapse = "+")))
     secondary <-names[-which(names %in% selected)]
-    
-    
+
+
     vect<-list(formula = formula1, locstop.nd = T, keep.origin = F,p.add = 0.1,max.time = 75, p.add.default = 0.1, pool.cor.prob = T,secondary <-names[-which(names %in% cov.names)], outgraphs=F,data = data.example,estimator = estimate.lm.MAIC2,presearch=F, locstop =F,estimator.args =  list(data = data.example),recalc_margin = 999,gen.prob = c(1,0,0,0,0), save.beta = F,interact = F,relations=c("cos"),relations.prob =c(0.1),interact.param=list(allow_offsprings=3,mutation_rate = 1000, last.mutation = 15000, max.tree.size = 4, Nvars.max =(compmax-1),p.allow.replace=0.7,p.allow.tree=0.25,p.nor=0,p.and = 0.9),n.models = 25000,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 50,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(130),
       min.N.glob=as.integer(10),
       max.N=as.integer(5),
       min.N=as.integer(1),
       printable = F))
-    
-    
+
+
     params <- list(vect)[rep(1,M)]
-    
+
     for(i in 1:M)
     {
       #cov.names<-names[sample.int(n = length(names),size = size.init,prob = abs(cors))]
@@ -319,29 +364,28 @@ for(j in 1:100)
       params[[i]]$NM<-NM
       params[[i]]$simlen<-31
     }
-    
+
     print("begin the second stage")
     results<-parall.gmj(X = params, M = M.cpu)
-    
+
     gc()
-    
-    compmax=length(results[[1]]$fparam)+1
-    
+
+    #compmax=length(results[[1]]$fparam)+1
+
     #res<-do.call(runemjmcmc,args = params[[3]][1:27])
     #res$p.post
     #length(which(!is.na(res$m.post)))
     #detected<-mySearch$fparam[which(res$p.post>0.1)]
-    
-    
+
+
     #print(results)
-    
+
     #wait()
-    
-    resa<-array(data = 0,dim = c(compmax,M*3))
-    post.popul <- array(0,M)
-    max.popul <- array(0,M)
+
+
     nulls<-NULL
-    
+
+    nulls<-NULL
     not.null<-1
     for(k in 1:M)
     {
@@ -359,23 +403,31 @@ for(j in 1:100)
       {
         not.null <- k
       }
-      
+
     }
-    
-    
+
+    compmax=length(results[[not.null]]$fparam)+1
+
+    resa<-array(data = 0,dim = c(compmax,M*3))
+    post.popul <- array(0,M)
+    max.popul <- array(0,M)
+
+
+
     for(k in 1:M)
     {
       if(k %in% nulls)
       {
         results[[k]]<-results[[not.null]]
       }
-      max.popul[k]<-results[[k]]$cterm
-      post.popul[k]<-results[[k]]$post.populi
+
       if(length(resa[,k*3-2])==(length(results[[k]]$fparam)+1))
       {
         resa[,k*3-2]<-c(results[[k]]$fparam,"Post.Gen.Max")
         resa[,k*3-1]<-c(results[[k]]$p.post,results[[k]]$cterm)
         resa[,k*3]<-rep(post.popul[k],length(results[[k]]$p.post)+1)
+        max.popul[k]<-results[[k]]$cterm
+        post.popul[k]<-results[[k]]$post.populi
       }else
       {
         #idsx<-order(results[[k]]$p.post,decreasing = T,na.last = T)
@@ -385,13 +437,11 @@ for(j in 1:100)
         max.popul[k]<- -10^9
         post.popul[k]<- -10^9
       }
-      
+
     }
-    
-    
-    gc()
-    rm(results)
-    
+
+
+
     ml.max<-max(max.popul)
     post.popul<-post.popul*exp(-ml.max+max.popul)
     p.gen.post<-post.popul/sum(post.popul)
@@ -412,13 +462,33 @@ for(j in 1:100)
             else
               hfinal[[resa[jj,ii*3-2]]]<-hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
           }
-          
+
         }
       }
     }
-    
+
+    her<-0
+    heru<-0
+    herl<-0
+    for(i in 1:M)
+    {
+      her<-her+results[[i]]$herac*p.gen.post[[i]]
+      heru<-heru+results[[i]]$CI[2]*p.gen.post[[i]]
+      herl<-herl+results[[i]]$CI[1]*p.gen.post[[i]]
+      #print(results[[i]]$herac)
+    }
+    print(c(herl,her,heru))
+
+    write.csv(x =c(herl,her,heru),row.names = F,file = paste0("MJRES/herest14ASMJSIM_",j,".csv"))
+
+    KMK<-which(max.popul==max(max.popul,na.rm = T))[[1]]
+
+    write.csv(x =c(results[[KMK]]$cterm,results[[KMK]]$best),row.names = F,file = paste0("MJRES/bestmod14ASMJSIM_",j,".csv"))
+
+    rm(results)
     posteriors<-values(hfinal)
-    
+
+
     #print(posteriors)
     clear(hfinal)
     rm(hfinal)
@@ -428,50 +498,51 @@ for(j in 1:100)
     posteriors<-as.data.frame(posteriors)
     posteriors<-data.frame(X=row.names(posteriors),x=posteriors$posteriors)
     posteriors$X<-as.character(posteriors$X)
-    tryCatch({
+    #tryCatch({
       res1<-simplifyposteriors(posteriors = posteriors, th,0.05)
       row.names(res1)<-1:dim(res1)[1]
-      
+
       detected<-res1$tree
       detected<-stri_replace(str = detected,fixed = "I(",replacement = "")
       detected<-stri_replace(str = detected,fixed = ")",replacement = "")
-      
+
       detect.true.unique<-unique(dataNeigbourhoodS4$causSNPid[which(dataNeigbourhoodS4$SNPid %in% detected)])
       detect.true<-which(detected %in% dataNeigbourhoodS4$SNPid)
-      
+
       detlen<-length(detect.true.unique)
       totlen<-length(detected)-length(detect.true)+length(detect.true.unique)
-      
-      print(detlen/50)
+
+      print(detlen/40)
       print((totlen-detlen)/totlen)
-      
-      
-      
+
+
+
       write.csv(x =res1,row.names = F,file = paste0("MJRES/post14ASMJSIM_",j,".csv"))
-    },error = function(err){
-      print("error")
-      write.csv(x =posteriors,row.names = F,file = paste0("MJRES/post14ASEGMJSIM_",j,".csv"))
-    },finally = {
-      
-      print(paste0("end simulation ",j))
-      
-    })
+    #},error = function(err){
+    #  print("error")
+    #  write.csv(x =posteriors,row.names = F,file = paste0("MJRES/post13ASEGMJSIM_",j,".csv"))
+    #},finally = {
+    #
+    #  print(paste0("end simulation ",j))
+
+    #})
     #rm(data.example)
     rm(vect)
     rm(params)
     gc()
     print(paste0("end simulation ",j))
-  },error = function(err){
-    print("error")
-    j=j-1
-    print(paste0("repeat  simulation ",j))
-  },finally = {
-    
-    print(paste0("end simulation ",j))
-    gc()
-  })
-  
+  #},error = function(err){
+  #  print("error")
+  #  j=j-1
+  #  print(paste0("repeat  simulation ",j))
+  #},finally = {
+  #
+  #  print(paste0("end simulation ",j))
+  #  gc()
+  #})
+
 }
+
 
 
 

@@ -21,7 +21,7 @@ causSNPsS2 <- with(simPars, SNPId[S2 != 0])
 causSNPsS3 <- with(simPars, SNPId[S3 != 0]) 
 causSNPsS4 <- with(simPars, SNPId[S4 != 0]) 
 
-genoData <- read.table("deta-geno/CHR1_NFBC.raw",
+genoData <- read.table("data-geno/CHR1_NFBC.raw",
                        header = TRUE,
                        stringsAsFactors = FALSE)
 names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)
@@ -41,13 +41,13 @@ explainedVar <- apply(expectedData, 2, function(x) var(x)/(var(x)+1)) # True h^2
 distance_cutoff <- 1e6
 corr_cutoff <- .3
 
-physMap <- read.table("deta-geno/CHR1_NFBC.bim",
+physMap <- read.table("data-geno/CHR1_NFBC.bim",
                       header = FALSE,
                       stringsAsFactors = FALSE)[c(2, 4)] %>%
   select(SNPid = V2, pos = V4) %>%
   filter(!grepl('^cnv', SNPid))	   
 
-genoData <- read.table("deta-geno/CHR1_NFBC.raw", 
+genoData <- read.table("data-geno/CHR1_NFBC.raw", 
                        header = TRUE, 
                        stringsAsFactors = FALSE)
 names(genoData) <- gsub("_.$", "", names(genoData)) %>% gsub("\\.", "-", .)	 
@@ -99,13 +99,74 @@ estimate.lm.MBIC2 <- function(formula, data, n = 5402, m = 24602, c = 16,u=170)
   {
     return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic = 50000 + rnorm(1,0,1), dic =  50000+ rnorm(1,0,1),summary.fixed =list(mean = array(0,size+1))))
   }else{
-    out <- lm(formula = formula,data = data)
+    out <- lm(formula = formula,data = data,x = T)
     logmarglik <- (2*logLik(out) - out$rank*log(m*m*n/c) + 2*log(factorial(out$rank)))/2
-    # use dic and aic as bic and aic correspondinly
-    return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+    sss<-summary(out)
+    if(length(which(is.na(out$coefficients))>0))
+      cfs<-out$coefficients[-which(is.na(out$coefficients))]#[-1]
+    else
+      cfs<-out$coefficients#[-1]
+    
+    covs<-cov(out$x)
+    covb<-sss$cov.unscaled
+    #print(dim(covs)[1])
+    #print(length(cfs))
+    
+    if(length(cfs)==dim(covs)[1])
+    {
+      her<-(t(cfs)%*%covs%*%(cfs)*n/(sss$sigma^2*sss$df[2]))[1,1]
+      #ser<-sqrt(4*t(cfs)%*%covs%*%covb%*%(covs)%*%cfs*n*n/(sss$sigma^4*(sss$df[2]^2))) #the Gosha's version 2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+      ser<-sqrt(4*her/((n-out$rank-1)))
+      #ser3<-2*her*(1-her*her)*(n-out$rank-1)/sqrt((n*n-1)*(3+n))
+    }
+    if(is.na(her))
+    {
+      her  = 0
+      ser  = 0
+    }
+    
+    if(her==0)
+    {
+      return(list(mlik = (-50000 + rnorm(1,0,1) - size*log(m*m*n/c) + 2*log(factorial(size+1))),waic =0, dic = 0,summary.fixed =list(mean = array(0,size+1))))
+    }
+    
+    return(list(mlik = logmarglik,waic = her , dic =  ser,summary.fixed =list(mean = coef(out))))
   }
 }
 
+do.call.emjmcmc<-function(vect)
+{
+  
+  set.seed(as.integer(vect$cpu))
+  do.call(runemjmcmc, vect[1:vect$simlen])
+  vals<-values(hashStat)
+  fparam<-mySearch$fparam
+  cterm<-max(vals[1,],na.rm = T)
+  ckey<-keys(hashStat)[which(vals[1,]==cterm)]
+  ckey<-fparam[stri_locate_all_fixed(str = ckey,pattern = "1")[[1]][,1]]
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  post.populi<-sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
+  herac = sum(ppp$m.post*(values(hashStat)[2,]),na.rm = T)
+  hers  = values(hashStat)[2,]
+  sers = values(hashStat)[3,]
+  f<-function(xu)
+  {
+    sum(pnorm(q = xu,mean = hers, sd = sers)*ppp$m.post)-1+0.025
+  }
+  hu<-uniroot(f = f,interval = c(-1000,1000), tol = 0.0001,extendInt="yes")$root
+  rm(f)
+  f<-function(xu)
+  {
+    sum(pnorm(q = xu,mean = hers, sd = sers)*ppp$m.post)-0.025
+  }
+  hl<-uniroot(f = f,interval = c(-1000,1000), tol = 0.0001,extendInt="yes")$root
+  clear(hashStat)
+  rm(hashStat)
+  rm(vals)
+  rm(f)
+  gc()
+  return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam, best = ckey, herac = herac,CI = c(hl,hu)))
+}
 
 MM = 10
 M = 31
@@ -340,9 +401,7 @@ for(j in 1:100)
     }
     
     
-    gc()
-    rm(results)
-    
+   
     ml.max<-max(max.popul)
     post.popul<-post.popul*exp(-ml.max+max.popul)
     p.gen.post<-post.popul/sum(post.popul)
@@ -367,6 +426,27 @@ for(j in 1:100)
         }
       }
     }
+    
+    her<-0
+    heru<-0
+    herl<-0
+    for(i in 1:M)
+    {
+      her<-her+results[[i]]$herac*p.gen.post[[i]]
+      heru<-heru+results[[i]]$CI[2]*p.gen.post[[i]]
+      herl<-herl+results[[i]]$CI[1]*p.gen.post[[i]]
+      #print(results[[i]]$herac)
+    }
+    print(c(herl,her,heru))
+    
+    write.csv(x =c(herl,her,heru),row.names = F,file = paste0("herestcmjmcbic2_",j,".csv"))
+    
+    KMK<-which(max.popul==max(max.popul,na.rm = T))
+    
+    write.csv(x =c(results[[KMK]]$cterm,results[[KMK]]$best),row.names = F,file = paste0("bestmodcmjmcbic2_",j,".csv"))
+    
+    gc()
+    rm(results)
     
     posteriors<-values(hfinal)
     
@@ -401,6 +481,7 @@ for(j in 1:100)
       write.csv(x =res1,row.names = F,file = paste0("MJRES/post12SMJSIM_",j,".csv"))
     },error = function(err){
       print("error")
+      print(err)
       write.csv(x =posteriors,row.names = F,file = paste0("MJRES/post12SEGMJSIM_",j,".csv"))
     },finally = {
       

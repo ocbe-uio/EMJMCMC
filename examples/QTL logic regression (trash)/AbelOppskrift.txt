@@ -1,0 +1,229 @@
+
+
+#kjekt å vite: 
+#rm -rf katalog		sletter folder og alt inni
+#mv  -v filer* tilKatalog/	flytter filer til ny katakog. 
+
+
+
+
+# info på: http://www.uio.no/english/services/it/research/hpc/abel/help/faq/#toc10
+
+
+
+1) logg inn på abel, ssh tonjegl@abel.uio.no
+2) gå inn i riktig mappe jeg ønsker å kjøre alt fra. 
+3) overfør .R fil, datasett.txt og andre filer jeg trenger til kjøringa. 
+	scp from to
+	scp tonjegl@ninatta.uio.no:"/run/media/…/abel/SGL.slurm" . 
+4) lag en fil "noe.slurm" som er søknadden til abel skyen, og som innholder alle ting som skal gjøres. 
+5) start kjøring rett fra terminal vinduet: sbatch noe.slurm
+6) Se på jobbene mine:     squeue -u  tonjegl
+7) Se på utskrifter/print fra .R fila: cat slurm-xxxxx.out (denne fila først når jobben har begynt å kjøre)
+7) kanseler en job: scancel jobid
+
+
+
+
+-------------------------------"noe.slurm"---------------------- (viktig å starte uten blank linje først, ha noen ekstra blanke linjer på slutten)
+#!/bin/bash
+
+# Job name:
+#SBATCH --job-name=alanyticTest
+# Project:
+#SBATCH --account=uio
+# Wall clock limit:
+#SBATCH --time=48:00:10
+#
+# Max memory usage per task:
+#SBATCH --mem-per-cpu=40G
+#
+# Number of tasks:
+#SBATCH --ntasks=1
+
+name=$(basename $1)
+
+## Set up job environment:
+source /cluster/bin/jobsetup
+
+chkfile pValNr$name.txt $SUBMITDIR
+
+## Copy program to the work directory:
+cp analyticTest.R $SCRATCH
+cp X_methyl.txt  $SCRATCH
+cp X_gene.txt    $SCRATCH
+
+## Do the work:
+cd $SCRATCH
+
+module load R
+Rscript analyticTest.R $name
+
+cp pValNr$name.txt $SUBMITDIR			
+
+
+
+############################
+### Passing arguments to R in terminal vindu
+### http://stackoverflow.com/questions/14167178/passing-command-line-arguments-to-r-cmd-batch
+##############################
+
+args <- commandArgs(trailingOnly = TRUE)
+numbr = as.numeric(args)
+cat(paste( "------------------------- This is file number ", numbr, " --------------- \n " ) )
+
+sections = round(seq(from=1, to=220867, length=21),0)
+start_i = sections[-21]
+stop_i = sections[-1]-1
+loops = cbind(start_i, stop_i)
+all_i = seq(from=loops[numbr,1], to=loops[numbr,2], by=1)
+
+X_gene   = as.matrix(read.table("X_gene.txt"))
+X_methyl_subset = as.matrix(read.table("X_methyl.txt"))[ all_i ,]
+
+pVal = matrix(NA, ncol=dim(X_gene)[1], nrow=dim(X_methyl_subset)[1])
+colnames(pVal)=rownames(X_gene)
+rownames(pVal)=rownames(X_methyl_subset)
+
+for(i in 1:dim(X_methyl_subset)[1] ){
+    print(i)
+    for(j in 1:dim(X_gene)[1] ){
+        xen=X_methyl_subset[i,]
+        yen=X_gene[j,]
+        
+        corTest = cor.test(xen, yen, alternative="two.sided", method="pearson")
+        pVal[i,j] = corTest$p.value
+    }
+}
+write.table(pVal, file=paste("pValNr", numbr, ".txt", sep=""))
+
+print("The job is finished")
+
+
+#############################
+#### sett på slurm filer med stigene parametere
+#############################
+for nr in {1..30}
+do
+sbatch analyticTest.slurm ${nr}
+done
+
+
+for nr in {2..30}
+do
+sbatch ridgeVekterTrans.slurm ${nr}
+done
+
+
+for nr in {1..37}
+do
+sbatch SGL.slurm ${nr}
+done
+
+
+
+for data in datcenFarkas 
+do
+for sparsitySetting in 1 2 3
+do
+sbatch sim.slurm ${data} ${sparsitySetting} 10 10
+done
+done
+
+for data in datcenVerlaat 
+do
+for sparsitySetting in 1 2 3 4 5 6 7
+do
+sbatch sim.slurm ${data} ${sparsitySetting} 3 10
+done
+done
+
+
+
+#############################
+####  til R for å samle resultatene
+############################# 
+n er antall slurm filer som er kjøre i abel
+
+n=37
+results_allFiles = matrix(NA, nrow=n, ncol=4)
+nrCovWithEachGr = list()
+for(i in 1:n){
+	resultsFile_i = as.matrix(eval(parse(text = paste(" read.table(file=\"YgrLasso", i, ".txt\") ", sep=""))))
+	results_allFiles[i,] = resultsFile_i
+
+	nrCovWithEachGr_i = as.matrix(eval(parse(text = paste(" read.table(file=\"nrCovWithEachGr", i, ".txt\") ", sep=""))))
+	nrCovWithEachGr[[i]] = nrCovWithEachGr_i
+} 
+colnames(results_allFiles) = colnames(resultsFile_i)
+write.table(results_allFiles, file="Yhat_grLasso_stdF.txt")
+write.table(nrCovWithEachGr, file="nrCovWithEachGr_grLasso_stdF.txt")
+
+
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
+
+
+## kjøre R i parallell: 
+http://www.uio.no/english/services/it/research/hpc/abel/help/software/R.html
+http://www.uio.no/english/services/it/research/hpc/abel/help/user-guide/job-scripts.html#A_Simple_Serial_Job
+
+
+#The following is a simple illustration of how to use the package to run a calculation as an MPI job on Abel:
+
+# make an R script : test_parallel_MPI.R
+————————————————————————————————————
+library(parallel)
+
+## Start the MPI worker processes:
+numWorkers <- as.numeric(Sys.getenv("SLURM_NTASKS")) - 1
+myCluster <- makeCluster(numWorkers, type = "MPI")
+
+## If needed, load any libraries, etc. on the workers:
+clusterEvalQ(myCluster, library(SGL))
+clusterExport(myCluster, c("var1", "var2"))			## Export variables var1 and var2 to all workers: dataen
+
+## Define a worker function:					## kjører cvSGL og SGL, returnerer YgrLasso og 
+workerFunc <- function(n) {
+    return(n^2)
+}
+
+## Define an list or vector to use it on:
+values <- 1:100
+
+## Apply workerFunc to values in parallel:
+results <- parLapply(myCluster, values, workerFunc)
+print(unlist(results))
+
+## Exit cleanly:
+stopCluster(myCluster)
+mpi.exit()                              # or mpi.quit(), which quits R as well
+————————————————————————————————————
+
+# In abel make a Slurm script:
+—————————————————————
+#!/bin/bash
+
+#SBATCH --ntasks=NumberOfProcesses
+#SBATCH --account=MyAccount --time=hh:mm:ss --mem-per-cpu=megabytes
+
+source /cluster/bin/jobsetup
+
+module load openmpi.intel/1.8
+module load R/3.1.0
+
+mpirun -n 1 R --slave < test_parallel_MPI.R
+
+—————————————————————
+
+Run the slurm script!! 
+
+
+
+
+
+
+
+

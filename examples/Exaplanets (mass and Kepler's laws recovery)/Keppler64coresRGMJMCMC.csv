@@ -1,0 +1,6 @@
+"V1","V2"
+"2","I(troot(I(I(I(PeriodDays)*I(HostStarTempK))*I(PeriodDays))))"
+"1","I(I(HostStarMetallicity)*I(PeriodDays))"
+"1","I(troot(I(I(PeriodDays)*I(PeriodDays))))"
+"45","I(troot(I(I(I(HostStarRadiusSlrRad)*I(PeriodDays))*I(PeriodDays))))"
+"52","I(troot(I(I(HostStarMassSlrMass)*I(I(PeriodDays)*I(PeriodDays)))))"

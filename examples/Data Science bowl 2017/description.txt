@@ -1,0 +1,21 @@
+The submission consists of the corresponding files:
+1) main.py - python code for extracting features based on the pretrained MXNet.
+2) MXnet.zip - pretrained weights of MXnet used as external data.
+3) picToXlogRes.r - r code for morphological segmentation of a given slice (in all three directions face, profile and head) and features extraction from the segmented mask of a given slice. 
+4) prepare_head_logres.r - segmenting of all of the patients from head direction, the slice is then selected with respect to a pretrained logistic regression from paper "Probability of Cancer in Pulmonary Nodules
+Detected on First Screening CT" mentioned in the tutorial video
+5) prepare_face_logres.r - segmenting of all of the patients from face direction, the slice is then selected with respect to a pretrained logistic regression from paper "Probability of Cancer in Pulmonary Nodules
+Detected on First Screening CT" mentioned in the tutorial video
+6) prepare_profile_logres.r - segmenting of all of the patients from profile direction, the slice is then selected with respect to a pretrained logistic regression from paper "Probability of Cancer in Pulmonary Nodules
+Detected on First Screening CT" mentioned in the tutorial video
+7) finalres.r - training posterior model probabilities by MJMCMC algorithm and making predictions as Bayesian model averaged  predictions of individual Bayesian logistic regressions (not biased to leadrer-board).
+8) finalresbiased.r - training posterior model probabilities by MJMCMC algorithm and making predictions as Bayesian model averaged  predictions of individual Bayesian logistic regressions (biased to stage 1 leadrer-board). We have increased n.models = 25000 as the tuning parameter to improve Stage 2 results. The grater n.models - the better the results since the better approximations of posterior model probabilities.
+9) train.csv - train features from the pretrained MXnet.
+10) test.csv - test features from the pretrained MXnet.
+11) data_head.csv - features extracted from the head direction by our extractor prepare_head_logres.r
+12) data_face.csv - features extracted from the face direction by our extractor prepare_face_logres.r
+13) data_profile.csv - features extracted from the profile direction by our extractor prepare_profile_logres.r
+14) labels known.csv - the known labels for stage 1 data
+15) stage1_sample_submission_fin.csv - out best submission to test new submissions against
+16) stage1_sample_submission_21.csv - our final submission without overfitting
+17) stage1_sample_submission_2.csv
