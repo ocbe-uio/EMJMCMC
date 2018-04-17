@@ -37,7 +37,7 @@ data.example = train
 
 
 
-
+attach(data.example)
 
 results<-array(0,dim = c(11,100,5))
 #GMJMCMC

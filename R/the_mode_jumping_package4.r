@@ -3719,7 +3719,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        }else{
-                                         withRestarts(tryCatch(capture.output({
+                                         capture.output(withRestarts(tryCatch({
                                          #print(as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+"))))
                                          # get the projection coefficients as the posterior mode of the fixed effects
                                            if(deep.method == 1){
