@@ -8,76 +8,22 @@ library(BAS)
 workdir<-""
 
 
-estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("cosi","sigmoid","tanh","atan","erf"))
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+# define the function estimating individual DBRM models
+estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat=c("cosi","sigmoid","tanh","atan","sini","troot"))
 {
-
-  #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data)
-  capture.output({out <- bayesglm.fit(x = X, y = data[,yid], family=family,coefprior=prior)})
+  capture.output({out <- glm(family = family,formula = formula,data = data)})
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  #fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
-  #sj<-(stri_count_fixed(str = fparam, pattern = "("))
   sj<-2*(stri_count_fixed(str = fmla.proc[2], pattern = "*"))
   sj<-sj+1*(stri_count_fixed(str = fmla.proc[2], pattern = "+"))
   for(rel in relat)
     sj<-sj+2*(stri_count_fixed(str = fmla.proc[2], pattern = rel))
-  #sj<-sj+1
-
   mlik = ((-out$deviance +2*log(r)*sum(sj)))/2
-
-  #print(sj)
-  #print(sum(sj))
   return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
-
 }
-
-estimate.bas.glm.cpen(formula = neo~I(I(sigmoid(eccentricity))*I(rms_residual))+I(I(cosi(mean_motion))*I(I(tanh(mean_motion))*I(longitude_of_the_ascending.node))),prior = aic.prior(),data = data.example,family = binomial(), logn = log(64),r=exp(-0.5))
-
-
-
-estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("cosi","sigmoid","tanh","atan","erf","m(") )
-{
-
-  #only poisson and binomial families are currently adopted
-  capture.output({out <- bayesglm.fit(formula = formula, family=family,data = data)})
-  fmla.proc<-as.character(formula)[2:3]
-  fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "*"))
-  for(rel in relat)
-    sj<-sj+(stri_count_fixed(str = fparam, pattern = rel))
-  sj<-sj+1
-  mlik = ((-deviance(out) +2*log(r)*sum(sj)))/2
-
-  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
-
-}
-
-
-
-estimate.bas.glm.cpen <- function(formula, data, family, prior, logn,r = 0.1,yid=1)
-{
-
-  #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data)
-  capture.output({out <- bayesglm.fit(x = X, y = data[,yid], family=family,coefprior=prior)})
-  fmla.proc<-as.character(formula)[2:3]
-  fobserved <- fmla.proc[1]
-  #fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  #fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  #fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (-(out$deviance -2*log(r)*sum(sj)))/2
-
-  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
-
-}
-
 
 #prepare the test set data
 simx <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NEAs.txt"),sep = ",",header = T,fill=TRUE)
@@ -112,18 +58,33 @@ for(i in 1:length(transform))
 
 gc()
 
-
 results<-array(0,dim = c(11,100,5))
 #GMJMCMC
 
 
+
+troot<-function(x)abs(x)^(1/3)
+sini<-function(x)sin(x/180*pi)
+logi<-function(x)log(abs(x+0.1))
+gfquar<-function(x)as.integer(x<quantile(x,probs = 0.25))
+glquar<-function(x)as.integer(x>quantile(x,probs = 0.75))
+gmedi<-function(x)as.integer(x>median(x))
 cosi<-function(x)cos(x/180*pi)
+gmean<-function(x)as.integer(x>mean(x))
+gone<-function(x)as.integer(x>0)
+gthird<-function(x)as.integer(abs(x)^(1/3))
+gfifth<-function(x)as.integer(abs(x)^(1/5))
+grelu<-function(x)as.integer(x*(x>0))
 # h2o initiate
 h2o.init(nthreads=-1, max_mem_size = "6G")
 
 h2o.removeAll()
 
 #Sys.sleep(5*60*60)
+
+featgmj = hash()
+featrgmj = hash()
+
 
 for(ii in 1:100)
 {
@@ -137,7 +98,7 @@ for(ii in 1:100)
 
     formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
     #gen.prob =c(1,1,1,1,1)
-    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-0.5)),gen.prob =c(1,1,1,1,0),recalc_margin = 95, save.beta = T,interact = T,relations = c("cosi","sigmoid","tanh","atan","erf"),relations.prob =c(0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=500, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.1,p.allow.tree=0.18,p.nor=0.3,p.and = 0.7),n.models = 7000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-0.5)),gen.prob =c(1,1,1,1,0),recalc_margin = 95, save.beta = T,interact = T,relations = c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=500, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.1,p.allow.tree=0.18,p.nor=0.3,p.and = 0.7),n.models = 7000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -152,6 +113,14 @@ for(ii in 1:100)
 
   mySearch$g.results[,]
   mySearch$fparam
+
+  for(i in which(ppp$p.post>0.1))
+  {  if(!has.key(hash = featgmj,key =  mySearch$fparam[i]))
+      featgmj[[mySearch$fparam[i]]] = as.numeric(1) else{
+        featgmj[[mySearch$fparam[i]]] =as.numeric(featgmj[[mySearch$fparam[i]]]) + 1
+      }
+  }
+
 
   g<-function(x)
   {
@@ -201,6 +170,89 @@ for(ii in 1:100)
   ns<-which(data.example1$neo==0)
   results[1,ii,3]<-sum(abs(res[ns]-data.example1$neo[ns]))/(sum(abs(res[ns]-data.example1$neo[ns]))+length(ns))
 
+
+
+  #RGMJMCMC
+
+  #set.seed(runif(1,1,10000))
+  t<-system.time({
+
+    formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
+    #gen.prob =c(1,1,1,1,1)
+    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-0.5)),gen.prob =c(1,1,1,1,0),recalc_margin = 95, save.beta = T,interact = T,relations = c("cosi","sigmoid","tanh","atan","sini","troot"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 100,last.mutation=500, max.tree.size = 4, Nvars.max =15,p.allow.replace=0.1,p.allow.tree=0.18,p.nor=0.3,p.and = 0.7),n.models = 7000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+      max.N.glob=as.integer(10),
+      min.N.glob=as.integer(5),
+      max.N=as.integer(3),
+      min.N=as.integer(1),
+      printable = F))
+  })
+
+  results[11,ii,4]<-t[3]
+
+  ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
+  ppp$p.post
+
+  mySearch$g.results[,]
+  mySearch$fparam
+
+  for(i in which(ppp$p.post>0.1))
+  {  if(!has.key(hash = featrgmj,key =  mySearch$fparam[i]))
+    featrgmj[[mySearch$fparam[i]]] = as.numeric(1) else{
+      featrgmj[[mySearch$fparam[i]]] =as.numeric(featrgmj[[mySearch$fparam[i]]]) + 1
+    }
+  }
+
+
+  g<-function(x)
+  {
+    return((x = 1/(1+exp(-x))))
+  }
+
+  Nvars<-mySearch$Nvars
+  linx <-mySearch$Nvars+4
+  lHash<-length(hashStat)
+  mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+  betas <- values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
+  for(i in 1:(Nvars-1))
+  {
+    betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
+  }
+  betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
+
+
+  t<-system.time({
+
+    res<-mySearch$forecast.matrix.na(link.g = g,covariates = (data.example1[1:20702,-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)]),betas = betas,mliks.in = mliks)$forecast
+
+  })
+
+  results[11,ii,5]<-t[3]
+
+  summary(res)
+
+  length(res)
+  res<-as.integer(res>=0.5)
+  length(which(res>=0.5))
+  length(which(res<0.5))
+  length(res)
+  length(which(data.example1$neo==1))
+
+  #(1-sum(abs(res-data.example1$neo),na.rm = T)/20702)
+
+  results[11,ii,1]<-(1-sum(abs(res-data.example1$neo),na.rm = T)/20702)
+  print(results[11,ii,1])
+  gc()
+
+  #FNR
+  ps<-which(data.example1$neo==1)
+  results[11,ii,2]<-sum(abs(res[ps]-data.example1$neo[ps]))/(sum(abs(res[ps]-data.example1$neo[ps]))+length(ps))
+
+  #FPR
+  ns<-which(data.example1$neo==0)
+  results[11,ii,3]<-sum(abs(res[ns]-data.example1$neo[ns]))/(sum(abs(res[ns]-data.example1$neo[ns]))+length(ns))
+
+  gc()
+
   gc()
   })), abort = function(){onerr<-TRUE;out<-NULL})})
 }
@@ -210,7 +262,7 @@ for(ii in 1:100)
 
     formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-c(1,2,4,5,13,14,15,16,17,19,20,21,22,23,24,25,37,38)],collapse = "+")))
 
-    res = runemjmcmc(formula = formula1,data = data.example,estimator =estimate.bas.glm,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64)),recalc_margin = 50, save.beta = T,interact = F,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=2,last.mutation=1000,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 16,p.allow.replace=0.1,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 450,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,estimator = estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),family = binomial(), logn = log(64),r=exp(-0.5)),recalc_margin = 50, save.beta = T,interact = F,relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),interact.param=list(allow_offsprings=1,last.mutation=1000,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 16,p.allow.replace=0.1,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7),n.models = 450,unique = T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),
@@ -575,41 +627,9 @@ for(ii in 1:100)
   ns<-which(data.example1$neo==0)
   results[10,ii,3]<-sum(abs(out[ns]-data.example1$neo[ns]))/(sum(abs(out[ns]-data.example1$neo[ns]))+length(ns))
 
-  #h2o kmeans
 
-  t<-system.time({
-    neo.nb <- h2o.kmeans(x = c(features,"neo"),k=2,
-                             training_frame = train1,
-                             seed = 12341)
-  })
-  results[11,ii,4]<-t[3]
-
-  # now make a prediction
-
-
-  test2 <- h2o.assign(as.h2o(test), "test2.hex")
-
-  t<-system.time({
-    out<-h2o.predict(neo.dl,as.h2o(test2))[,1]
-  })
-  results[11,ii,5]<-t[3]
-  out<-as.data.frame(out)
-
-  out<-as.integer(as.numeric(as.character(out$predict)))
-
-
-  print(results[11,ii,1]<-(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
-
-  #FNR
-  ps<-which(data.example1$neo==1)
-  results[11,ii,2]<-sum(abs(out[ps]-data.example1$neo[ps]))/(sum(abs(out[ps]-data.example1$neo[ps]))+length(ps))
-
-  #FPR
-  ns<-which(data.example1$neo==0)
-  results[11,ii,3]<-sum(abs(out[ns]-data.example1$neo[ns]))/(sum(abs(out[ns]-data.example1$neo[ns]))+length(ns))
-
-  gc()
   })), abort = function(){onerr<-TRUE;out<-NULL})})
+print(results[,ii,1])
 }
 
 ids<-NULL
@@ -644,5 +664,10 @@ for(i in 1:15)
 
 }
 
-write.csv(x = round(summary.results,4),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/e1 p2/asteroids3.csv")
+write.csv(x = round(summary.results,4),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/neo classification/asteroidsfinal.csv")
 
+write.csv(x = cbind(keys(featgmj),values(featgmj)),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/neo classification/asteroidfeatgmj.csv")
+write.csv(x = cbind(keys(featrgmj),values(featrgmj)),file = "/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/neo classification/asteroidfeatrgmj.csv")
+
+
+featgmj
