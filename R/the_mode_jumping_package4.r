@@ -3898,7 +3898,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          add<-F
                                      }else{
                                        if(add){
-                                       tryCatch(capture.output({
+                                         withRestarts(tryCatch(capture.output({
                                          bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
 
                                          if(is.na(bet.act[length(fparam[-ids.lat])+2])&& (action.type!=4&&gen.prob[2]==0||gen.prob[2]!=0))
@@ -3906,14 +3906,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            add<-F
                                          }else
                                          {
-                                           #
-
                                            idel<-idel+1
                                          }
                                        }, error = function(err) {
-                                         #print(err)
                                          add<-F
-                                       }))
+                                       },finally = {}
+                                       )))
 
                                        }
                                      }
@@ -4377,19 +4375,20 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      add<-T
 
-                                     tryCatch(capture.output({
-                                     bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                     withRestarts(tryCatch(capture.output({
+                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam[-ids.lat],proposal),collapse = "+")))))$summary.fixed$mean
 
-                                     if(is.na(bet.act[length(fparam)+2]))
-                                     {
-                                       add<-F
-                                     }else
-                                     {
-                                       idel<-idel+1
-                                     }
+                                       if(is.na(bet.act[length(fparam[-ids.lat])+2])&& (action.type!=4&&gen.prob[2]==0||gen.prob[2]!=0))
+                                       {
+                                         add<-F
+                                       }else
+                                       {
+                                         idel<-idel+1
+                                       }
                                      }, error = function(err) {
                                        add<-F
-                                     }))
+                                     },finally = {}
+                                     )))
 
 
                                      if(add & Nvars<Nvars.max)# alternative restricted to correlation: if((max(cor(eval(parse(text = proposal),envir = data.example),sapply(fparam, function(x) eval(parse(text=x),envir = data.example))))<0.9999) && Nvars<Nvars.max)
