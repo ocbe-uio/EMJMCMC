@@ -37,7 +37,7 @@ data.example = train
 
 
 
-attach(data.example)
+
 
 results<-array(0,dim = c(11,100,5))
 #GMJMCMC
@@ -81,7 +81,7 @@ for(ii in 1:100)
 
     formula1 = as.formula(paste(colnames(data.example)[58],"~ 1 +",paste0(colnames(data.example)[-58],collapse = "+")))
     #gen.prob =c(1,1,1,1,1)
-    res = runemjmcmc(formula = formula1,data = data.example,gen.prob = c(1,1,1,1,0),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),link = "sigmoid", distribution = "binomial" ,family = binomial(),yid=58, logn = log(155),r=exp(-0.5)),recalc_margin = 95, save.beta = T, deep.method = 3,interact = T,relations = c("cosi","sigmoid","tanh","atan","sin","contrelu"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=1000, max.tree.size = 60, Nvars.max = 100,p.allow.replace=0.5,p.allow.tree=0.4,p.nor=0.3,p.and = 0.9),n.models = 20000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
+    res = runemjmcmc(formula = formula1,data = data.example,gen.prob = c(1,1,1,1,0),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = aic.prior(),link = "sigmoid", distribution = "binomial" ,family = binomial(),yid=58, logn = log(155),r=exp(-0.5)),recalc_margin = 95, save.beta = T, deep.method = 4,interact = T,relations = c("cosi","sigmoid","tanh","atan","sin","contrelu"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 100,last.mutation=1000, max.tree.size = 60, Nvars.max = 100,p.allow.replace=0.5,p.allow.tree=0.4,p.nor=0.3,p.and = 0.9),n.models = 20000,unique =F,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 100,advanced.param = list(
       max.N.glob=as.integer(20),
       min.N.glob=as.integer(5),
       max.N=as.integer(3),

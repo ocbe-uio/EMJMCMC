@@ -3756,7 +3756,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
                                              proposal<-stri_paste("I(",cursigma,"(",proposal,"))",sep = "")
 
-                                           }else{
+                                           }else if(deep.method == 3){
 
                                              cursigma = sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)]
                                              forstr = stri_paste("~",estimator.args$link,"(",cursigma,"(","m(0,1) +",paste0("m(",rnorm(length(actvars),0,1),",",fparam[actvars],")",collapse = "+"),"))")
@@ -3784,6 +3784,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                              proposal<-forstr
 
+                                           }
+                                           else{
+                                             bet.act <- rnorm(n = (length(actvars)+1),mean = 0,sd = 1)
+                                             nab<-which(is.na(bet.act))
+                                             if(length(nab)>0)
+                                               bet.act[nab]<-0
+                                             bet.act<-round(bet.act, digits = 8)
+                                             bet.act<-stri_paste("m(",bet.act,",",sep = "")
+                                             # make a projection
+                                             bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
+                                             bet.act<-stri_paste("I(",bet.act,")",sep = "")
+                                             proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                            }
 
 
