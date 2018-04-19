@@ -339,7 +339,7 @@ for(ii in 1:100)
 ids<-NULL
 for(i in 1:100)
 {
-  if(min(results[2,i,1])>0)
+  if(min(results[4,i,1])>0)
     ids<-c(ids,i)
 
 }

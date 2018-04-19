@@ -28,6 +28,7 @@ idss<-which(abs(cor(x = X,y=X$Y))>0.0)
 gc()
 nms<-names(X)
 Y<-0.4 -9*(X[nms[4]]*X[nms[17]]*X[nms[30]]*X[nms[10]]) + 9*(X[nms[7]]*X[nms[20]]*X[nms[12]]) - 5*(X[nms[9]]*X[nms[2]])
+paste0("0.4 -9*(",nms[4],"*",nms[17],"*",nms[30],"*",nms[10],") + 9*(",nms[7],"*",nms[20],"*",nms[12],") - 5*(",nms[9],"*",nms[2],")")
 
 X$label<-(round(1.0/(1.0+exp(-Y$v))))
 
@@ -63,13 +64,13 @@ h2o.removeAll()
 
 X$Y<-NULL
 
-for(ii in c(8,10))
+for(ii in 3:3)
 {
   print(paste("iteration ",ii))
   capture.output({withRestarts(tryCatch(capture.output({
 
 
-  set.seed(ii)
+  set.seed(ii*5)
 
     index <- createDataPartition(X[,46], p = 0.5, list = FALSE)
 

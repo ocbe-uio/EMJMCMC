@@ -4228,18 +4228,94 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal <- fparam[1]
 
                                        }else{
-                                         # get the projection coefficients as the posterior mode of the fixed effects
-                                         bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
-                                         nab<-which(is.na(bet.act))
-                                         if(length(nab)>0)
-                                           bet.act[nab]<-0
-                                         bet.act<-round(bet.act, digits = 2)
-                                         bet.act<-stri_paste("m(",bet.act,",",sep = "")
-                                         # make a projection
-                                         bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
-                                         bet.act<-stri_paste("I(",bet.act,")",sep = "")
-                                         proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
-                                         proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                         capture.output(withRestarts(tryCatch({
+                                           #print(as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+"))))
+                                           # get the projection coefficients as the posterior mode of the fixed effects
+                                           if(deep.method == 1){
+                                             bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
+                                             nab<-which(is.na(bet.act))
+                                             if(length(nab)>0)
+                                               bet.act[nab]<-0
+                                             bet.act<-round(bet.act, digits = 8)
+                                             bet.act<-stri_paste("m(",bet.act,",",sep = "")
+                                             # make a projection
+                                             bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
+                                             bet.act<-stri_paste("I(",bet.act,")",sep = "")
+                                             proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                             #print(proposal)
+                                           }else if(deep.method == 2){
+
+                                             cursigma = sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)]
+                                             bet.act = gnlr(y=data.example[[fobserved]],
+                                                            distribution = estimator.args$distribution,
+                                                            mu =  as.formula(stri_paste("~",estimator.args$link,"(",cursigma,"(","b0 +",paste0("b",1:length(actvars),"*",fparam[actvars],collapse = "+"),"))")),
+                                                            pmu = rep(0,length(actvars)+1))$coefficients
+
+
+                                             nab<-which(is.na(bet.act))
+                                             if(length(nab)>0)
+                                               bet.act[nab]<-0
+                                             #bet.act<-round(bet.act, digits = 2)
+                                             bet.act<-round(bet.act, digits = 8)
+                                             bet.act<-stri_paste("m(",bet.act,",",sep = "")
+                                             # make a projection
+                                             bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
+                                             bet.act<-stri_paste("I(",bet.act,")",sep = "")
+                                             proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                             proposal<-stri_paste("I(",cursigma,"(",proposal,"))",sep = "")
+
+                                           }else if(deep.method == 3){
+
+                                             cursigma = sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)]
+                                             forstr = stri_paste("~",estimator.args$link,"(",cursigma,"(","m(0,1) +",paste0("m(",rnorm(length(actvars),0,1),",",fparam[actvars],")",collapse = "+"),"))")
+                                             forstr = stri_replace_all_fixed(str = forstr,pattern = c("m(-"),replacement = "m(")
+                                             forstr = stri_replace_all_fixed(str = forstr,pattern = c("m("),replacement = "m(b_")
+                                             #print(as.formula(forstr))
+
+                                             nlrr = gnlr(y=data.example[[fobserved]],
+                                                         distribution = estimator.args$distribution,
+                                                         mu =  as.formula(forstr),
+                                                         pmu = rnorm(stri_count_fixed(str = forstr,pattern = "m("),0,0.0001))#$coefficients
+                                             beg.rep = stri_locate_all(str = forstr,fixed = "m(b")[[1]][,2]
+                                             end.rep = stri_locate_all(str = forstr,fixed = "," )[[1]][,2]
+
+                                             bet.act = nlrr$coefficients
+
+                                             nab<-which(is.na(bet.act))
+                                             if(length(nab)>0)
+                                               bet.act[nab]<-0
+                                             bet.act<-round(bet.act, digits = 8)
+                                             torepl = stri_sub(str = forstr,from = beg.rep,to = end.rep)
+                                             for(i in 1:length(bet.act))
+                                               forstr = stri_replace_all_fixed(str = forstr,pattern =torepl[i],replacement = stri_paste(bet.act[i],","))
+                                             forstr = stri_replace_all_fixed(str = forstr,pattern =paste0("~",estimator.args$link),replacement = "I")
+
+                                             proposal<-forstr
+
+                                           }
+                                           else{
+                                             bet.act <- rnorm(n = (length(actvars)+1),mean = 0,sd = 1)
+                                             nab<-which(is.na(bet.act))
+                                             if(length(nab)>0)
+                                               bet.act[nab]<-0
+                                             bet.act<-round(bet.act, digits = 8)
+                                             bet.act<-stri_paste("m(",bet.act,",",sep = "")
+                                             # make a projection
+                                             bet.act<-stri_paste(bet.act,c("1",fparam[actvars]),")",sep = "")
+                                             bet.act<-stri_paste("I(",bet.act,")",sep = "")
+                                             proposal<-stri_paste("I(",stri_paste(bet.act,collapse = "+"),")",collapse = "")
+                                             proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
+                                           }
+
+
+                                         }, error = function(err) {
+                                           #print(err)
+                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                         },finally = {
+                                           proposal = proposal
+                                         })))
+                                         #print(proposal)
 
                                          if(is.na(proposal))
                                          {
