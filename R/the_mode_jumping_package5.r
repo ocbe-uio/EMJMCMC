@@ -3784,7 +3784,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                              proposal<-forstr
                                              print(proposal)
-
                                            }
                                            else{
                                              bet.act <- rnorm(n = (length(actvars)+1),mean = 0,sd = 1)
