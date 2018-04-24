@@ -3783,7 +3783,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              forstr = stri_replace_all_fixed(str = forstr,pattern =paste0("~",estimator.args$link),replacement = "I")
 
                                              proposal<-forstr
-                                             print(proposal)
 
                                            }
                                            else{
