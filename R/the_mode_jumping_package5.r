@@ -370,7 +370,7 @@ parall.gmj <- function(X,M=16,preschedule = F) mclapply(X = X, FUN = do.call.emj
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0), latnames="",
-                   estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5, unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,deep.method =1,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,0),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
+                   estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5, unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,deep.method =1,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(0,0,10,10,0),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
@@ -3719,7 +3719,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        }else{
-                                         capture.output(withRestarts(tryCatch({
+                                         #capture.output(withRestarts(tryCatch({
                                          #print(as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+"))))
                                          # get the projection coefficients as the posterior mode of the fixed effects
                                            if(deep.method == 1){
@@ -3759,19 +3759,21 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            }else if(deep.method == 3){
 
                                              cursigma = sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)]
-                                             forstr = stri_paste("~",estimator.args$link,"(",cursigma,"(","m(0,1) +",paste0("m(",rnorm(length(actvars),0,1),",",fparam[actvars],")",collapse = "+"),"))")
+                                             forstr = stri_paste("~",estimator.args$link,"(",cursigma,"(","m(",round(rnorm(1,10,1000),digits = 4),",1) +",paste0("m(",round(rnorm(length(actvars),10,1000),digits = 4),",",fparam[actvars],")",collapse = "+"),"))")
                                              forstr = stri_replace_all_fixed(str = forstr,pattern = c("m(-"),replacement = "m(")
                                              forstr = stri_replace_all_fixed(str = forstr,pattern = c("m("),replacement = "m(b_")
-                                             #print(as.formula(forstr))
-
+                                             print(as.formula(forstr))
+                                             lbeta = stri_count_fixed(str = forstr,pattern = "m(")
                                              nlrr = gnlr(y=data.example[[fobserved]],
                                                             distribution = estimator.args$distribution,
                                                             mu =  as.formula(forstr),
-                                                            pmu = rnorm(stri_count_fixed(str = forstr,pattern = "m("),0,0.0001))#$coefficients
+                                                            pmu = rnorm(lbeta ,0,0.0001))#$coefficients
                                              beg.rep = stri_locate_all(str = forstr,fixed = "m(b")[[1]][,2]
                                              end.rep = stri_locate_all(str = forstr,fixed = "," )[[1]][,2]
 
-                                             bet.act = nlrr$coefficients
+                                             bet.act = nlrr$coefficients[1:lbeta]
+
+                                             print(bet.act)
 
                                              nab<-which(is.na(bet.act))
                                              if(length(nab)>0)
@@ -3800,12 +3802,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            }
 
 
-                                        }, error = function(err) {
-                                           #print(err)
-                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
-                                        },finally = {
-                                           proposal = proposal
-                                        })))
+                                        #}, error = function(err) {
+                                        #   #print(err)
+                                        #   proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                        #},finally = {
+                                        #   proposal = proposal
+                                        #})))
                                          #print(proposal)
 
                                          if(is.na(proposal))
