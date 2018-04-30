@@ -3719,7 +3719,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        }else{
-                                         #capture.output(withRestarts(tryCatch({
+                                         capture.output(withRestarts(tryCatch({
                                          #print(as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+"))))
                                          # get the projection coefficients as the posterior mode of the fixed effects
                                            if(deep.method == 1){
@@ -3762,7 +3762,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              forstr = stri_paste("~",estimator.args$link,"(",cursigma,"(","m(",round(rnorm(1,10,1000),digits = 4),",1) +",paste0("m(",round(rnorm(length(actvars),10,1000),digits = 4),",",fparam[actvars],")",collapse = "+"),"))")
                                              forstr = stri_replace_all_fixed(str = forstr,pattern = c("m(-"),replacement = "m(")
                                              forstr = stri_replace_all_fixed(str = forstr,pattern = c("m("),replacement = "m(b_")
-                                             print(as.formula(forstr))
+                                             #print(as.formula(forstr))
                                              lbeta = stri_count_fixed(str = forstr,pattern = "m(")
                                              nlrr = gnlr(y=data.example[[fobserved]],
                                                             distribution = estimator.args$distribution,
@@ -3773,7 +3773,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                              bet.act = nlrr$coefficients[1:lbeta]
 
-                                             print(bet.act)
+                                             #print(bet.act)
 
                                              nab<-which(is.na(bet.act))
                                              if(length(nab)>0)
@@ -3785,7 +3785,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              forstr = stri_replace_all_fixed(str = forstr,pattern =paste0("~",estimator.args$link),replacement = "I")
 
                                              proposal<-forstr
-                                             print(proposal)
+                                             #print(proposal)
                                            }
                                            else{
                                              bet.act <- rnorm(n = (length(actvars)+1),mean = 0,sd = 1)
@@ -3802,12 +3802,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            }
 
 
-                                        #}, error = function(err) {
-                                        #   #print(err)
-                                        #   proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
-                                        #},finally = {
-                                        #   proposal = proposal
-                                        #})))
+                                        }, error = function(err) {
+                                           #print(err)
+                                           proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
+                                        },finally = {
+                                           proposal = proposal
+                                        })))
                                          #print(proposal)
 
                                          if(is.na(proposal))
