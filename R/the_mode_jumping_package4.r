@@ -4217,9 +4217,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(action.type==4){
 
 
-                                       # select a subset for the projection
-
-                                       actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
+                                       # select a sparse subset for the projection
+                                       
+                                       spad = sum(p.add)
+                                       actvars <- which(rbinom(n = length(fparam),size = 1,prob = p.add/spad+p.epsilon)==1)
+                                       
+                                       #actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
 
                                        if(length(actvars)<=1)
                                        {

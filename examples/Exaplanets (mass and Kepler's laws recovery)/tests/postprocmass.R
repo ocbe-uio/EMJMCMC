@@ -1,6 +1,6 @@
 library(hash)
 library(stringi)
-setwd("/mn/sarpanitu/ansatte-u2/aliaksah/abeldata/simulations/simulations/simulations")
+setwd(" simulations/simulations")
 
 
 cosi<-function(x)cos(x/180*pi)
@@ -40,7 +40,7 @@ to35<-function(x)abs(x)^(3.5)
 #temp = list.files(pattern="posteriorsJA3_*")
 #myfiles = lapply(FUN = read.csv,X = temp,stringsAsFactors=F)
 
-details = file.info(list.files(pattern="postJA1_*"))
+details = file.info(list.files(pattern="postJM1new*"))
 details = details[with(details, order(as.POSIXct(mtime),decreasing = T)), ]
 files = rownames(details)
 
@@ -54,7 +54,7 @@ for(file in files)
   i<-i+1
   tmp<-strsplit(x = file,fixed = T,split = c("_","."))[[1]][2]
   tmp<-strsplit(x = tmp,fixed = T,split = ".")[[1]][1]
-  if(as.integer(tmp)<=150&&stri_count_fixed(str = file,pattern = "new")[[1]]==0&&stri_count_fixed(str = file,pattern = "REV")[[1]]==0&&stri_count_fixed(str = file,pattern = "S")[[1]]==0)
+  if(as.integer(tmp)<=150&&stri_count_fixed(str = file,pattern = "new")[[1]]>=0&&stri_count_fixed(str = file,pattern = "REV")[[1]]==0&&stri_count_fixed(str = file,pattern = "S")[[1]]==0)
   {
     ids<-c(ids,i)
     nms<-c(nms,tmp)
@@ -123,7 +123,7 @@ clear(rhash)
 #       }
 #     }
 # 
-#   }
+#   }  
 # 
 # }
 # 
@@ -139,7 +139,7 @@ N<-length(myfiles)
 alpha<-0.25
 clear(rhash)
 
-TPS<-c(stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("RadiusJpt~","I(troot(I(I(I(PeriodDays)*I(PeriodDays))*I(HostStarMassSlrMass))))")))[,2],digits = 4),collapse = ""),stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("RadiusJpt~","I(troot(I(I(I(HostStarRadiusSlrRad)*I(PeriodDays))*I(PeriodDays))))")))[,2],digits = 4),collapse = ""),stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("RadiusJpt~","I(troot(I(I(I(PeriodDays)*I(PeriodDays))*I(HostStarTempK))))")))[,2],digits = 4),collapse = ""))
+TPS<-stri_flatten(round(model.matrix(data=X,object = as.formula(paste0("PlanetaryMassJpt~","I(RadiusJpt*RadiusJpt*RadiusJpt*PlanetaryDensJpt)")))[,2],digits = 4),collapse = "")
 
 stats = array(0,dim = c(min(100,N),3))
 
@@ -154,7 +154,7 @@ for(i in 1:min(100,N))
     {
       expr<-as.character(myfiles[[i]]$tree[j])
       print(expr)
-      res<-model.matrix(data=X,object = as.formula(paste0("RadiusJpt~",expr)))
+      res<-model.matrix(data=X,object = as.formula(paste0("PlanetaryMassJpt~",expr)))
       ress<-c(stri_flatten(round(res[,2],digits = 4),collapse = ""),stri_flatten(res[,1],collapse = ""),1,expr)
       if(ress[1] %in% TPS)
       {
@@ -195,6 +195,5 @@ for(i in 1:min(100,N))
 }
 write.csv(x = t(values(rhash)[c(3,4),]),file = "findings.csv",row.names = F,col.names = F)
 write.csv(x = t(c(mean(stats[,1]),mean(stats[,2]),mean(stats[,3]))),file = "stats.csv",row.names = F,col.names = F)
-
 
 print(t(c(mean(stats[,1]),mean(stats[,2]),mean(stats[,3]))))
