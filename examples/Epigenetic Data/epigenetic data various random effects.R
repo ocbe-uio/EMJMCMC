@@ -1,27 +1,26 @@
+#load a required library
 library("RCurl")
-#define the working directory
+#read in the package most recent version
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
-
-
-workdir<-""
+workdir=""
 
 # get the data
-M<-5
-size<-1
+M=5
+size=1
 set.seed(1)
-data.example <- read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
-data.example<-data.example[sample.int(dim(data.example)[1],500),]
+data.example = read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/Epigenetic%20Data/epigen.txt"),sep = ",",header = T)[,2:30]
+data.example=data.example[sample.int(dim(data.example)[1],500),]
 
 
 data.example$pos1 = data.example$pos
 data.example$pos2 = data.example$pos
 data.example$pos3 = data.example$pos
 
-fparams <-c(colnames(data.example )[c(8:10,12:17,21:24,29)],"f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")")
+fparams =c(colnames(data.example )[c(8:10,12:17,21:24,29)],"f(data.example$pos,model=\"ar1\")","f(data.example$pos1,model=\"rw1\")","f(data.example$pos2,model=\"iid\")","f(data.example$pos3,model=\"ou\")")
 
-fobservs <- colnames(data.example)[5]
+fobservs = colnames(data.example)[5]
 #create MySearch object with default parameters. N/B default estimator is INLA!
-args<-list(family = "poisson",control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
+args=list(family = "poisson",control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE))
 
 #source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
@@ -46,14 +45,14 @@ mySearch$fparam
 # specify some INLA realted parameters
 mySearch$estimator = inla
 
-data.example$pos1<-data.example$pos
-data.example$pos2<-data.example$pos
-data.example$pos3<-data.example$pos
+data.example$pos1=data.example$pos
+data.example$pos2=data.example$pos
+data.example$pos3=data.example$pos
 
 lambda = c(inla.pc.ar.lambda(p = 2, b = 0.5), rep(1, 10))
 initial = c(inla.models()$latent$ar$hyper$theta2$to.theta(pacf), rep(0, 10))
 #example of the underlying model within INLA
-formula2 <- as.formula("methylated_bases ~ 1+I(CHG)+I(CHG)+ f(data.example$pos,model=\"ar1\")+f(data.example$pos2,model=\"iid\")")#  +f(data.example$pos1,model=\"rw1\")+f(data.example$pos2,model=\"iid\")")
+formula2 = as.formula("methylated_bases ~ 1+I(CHG)+I(CHG)+ f(data.example$pos,model=\"ar1\")+f(data.example$pos2,model=\"iid\")")#  +f(data.example$pos1,model=\"rw1\")+f(data.example$pos2,model=\"iid\")")
 
 
 # +f(data.example$pos2,model=\"rw2\")+f(data.example$pos3,model=\"crw2\")")

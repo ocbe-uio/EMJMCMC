@@ -1,0 +1,3 @@
+"posterior","tree"
+0.528215536208047,"I(troot(I(I(HostStarRadiusSlrRad)*I(I(PeriodDays)*I(PeriodDays)))))"
+0.464401291769451,"I(troot(I(I(I(PeriodDays)*I(HostStarMassSlrMass))*I(PeriodDays))))"

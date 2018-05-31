@@ -1,0 +1,6 @@
+"posterior","tree"
+0.999999999999995,"I(to23(I(logi(I(I(PlanetaryDensJpt)*I(to23(I(RadiusJpt))))))))"
+0.304311203267135,"I(RadiusJpt)"
+0.0942258253038808,"I(SemiMajorAxisAU)"
+0.0880352306779211,"I(PeriodDays)"
+0.0595422942435759,"I(PlanetaryDensJpt)"

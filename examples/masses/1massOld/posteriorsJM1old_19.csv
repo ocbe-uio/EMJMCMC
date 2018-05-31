@@ -1,0 +1,16 @@
+"X","x"
+"I(Eccentricity)",0.00342172594170719
+"I(expi(I(PlanetaryDensJpt)))",0.446900159093961
+"I(HostStarMassSlrMass)",0.00164188415037033
+"I(HostStarMetallicity)",0.0042510469374948
+"I(HostStarRadiusSlrRad)",0.00337864524050819
+"I(I(HostStarMassSlrMass)*I(PeriodDays))",0.0871255199544464
+"I(I(SemiMajorAxisAU)*I(PlanetaryDensJpt))",0.807135892618911
+"I(PeriodDays)",0.128880152355977
+"I(PlanetaryDensJpt)",0.999999999775623
+"I(RadiusJpt)",0.999999999499261
+"I(SemiMajorAxisAU)",0.981318289614301
+"I(sigmoid(I(troot(I(PlanetaryDensJpt)))))",0.000423866797523634
+"I(sini(I(RadiusJpt)))",0.999999997788003
+"I(troot(I(PlanetaryDensJpt)))",0.380540992226362
+"I(troot(I(TypeFlag)))",2.06939610838982e-05

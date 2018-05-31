@@ -1,0 +1,8 @@
+"posterior","tree"
+0.999999999999997,"I(PeriodDays)"
+0.999999998341591,"I(logi(I(PeriodDays)))"
+0.999722367327387,"I(logi(I(to23(I(troot(I(troot(I(PeriodDays)))))))))"
+0.347287254590297,"I(HostStarMetallicity)"
+0.222085721524292,"I(HostStarMassSlrMass)"
+0.221537178941906,"I(HostStarTempK)"
+0.184054830821768,"I(RadiusJpt)"

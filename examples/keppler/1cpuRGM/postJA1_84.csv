@@ -1,0 +1,3 @@
+"posterior","tree"
+0.978361847946385,"I(PeriodDays)"
+0.966785413747388,"I(I(I(sini(I(PeriodDays)))*I(Eccentricity))*I(sini(I(PeriodDays))))"

@@ -1,0 +1,4 @@
+"posterior","tree"
+0.999999999999991,"I(PeriodDays)"
+0.99994895917365,"I(I(logi(I(PeriodDays)))*I(PeriodDays))"
+0.995484442136443,"I(I(PeriodDays)*I(HostStarMetallicity))"

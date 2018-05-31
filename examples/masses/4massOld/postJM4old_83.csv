@@ -1,0 +1,4 @@
+"posterior","tree"
+1,"I(I(RadiusJpt)*I(I(I(RadiusJpt)*I(PlanetaryDensJpt))*I(HostStarMassSlrMass)))"
+0.51992979613912,"I(SemiMajorAxisAU)"
+0.459472521998708,"I(PeriodDays)"

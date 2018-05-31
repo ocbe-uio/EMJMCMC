@@ -1,0 +1,6 @@
+"posterior","tree"
+0.458461360225271,"I(troot(I(I(I(HostStarTempK)*I(PeriodDays))*I(I(HostStarTempK)*I(PeriodDays)))))"
+0.419945573245578,"I(troot(I(I(PeriodDays)*I(PeriodDays))))"
+0.313458623822445,"I(I(PeriodDays)*I(PlanetaryMassJpt))"
+0.119899194792,"I(I(troot(I(I(PeriodDays)*I(PeriodDays))))*I(HostStarTempK))"
+0.104485229532437,"I(I(PeriodDays)*I(HostStarMetallicity))"

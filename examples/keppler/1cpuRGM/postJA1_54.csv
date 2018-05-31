@@ -1,0 +1,3 @@
+"posterior","tree"
+0.945726512718653,"I(I(troot(I(I(PeriodDays)*I(HostStarTempK))))*I(troot(I(PeriodDays))))"
+0.0522468788014505,"I(to23(I(troot(I(I(PeriodDays)*I(HostStarTempK))))))"

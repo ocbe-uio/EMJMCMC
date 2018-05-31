@@ -1,0 +1,5 @@
+"V1","V2"
+"19","I(I(PlanetaryDensJpt)*I(to35(I(RadiusJpt))))"
+"1","I(I(I(PlanetaryDensJpt)*I(to23(I(RadiusJpt))))*I(RadiusJpt))"
+"79","I(I(I(I(PlanetaryDensJpt)*I(RadiusJpt))*I(RadiusJpt))*I(RadiusJpt))"
+"1","I(I(to23(I(RadiusJpt)))*I(PlanetaryDensJpt))"

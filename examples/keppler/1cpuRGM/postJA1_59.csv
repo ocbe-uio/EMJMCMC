@@ -1,0 +1,4 @@
+"posterior","tree"
+0.52227643183951,"I(sini(I(I(PeriodDays)*I(HostStarMetallicity))))"
+0.477723764856577,"I(troot(I(I(PeriodDays)*I(PeriodDays))))"
+0.471028731349653,"I(I(PeriodDays)*I(HostStarMetallicity))"

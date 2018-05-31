@@ -1,0 +1,7 @@
+"posterior","tree"
+0.999999999999995,"I(I(I(I(RadiusJpt)*I(PlanetaryDensJpt))*I(RadiusJpt))*I(logi(I(RadiusJpt))))"
+0.212713853820501,"I(SemiMajorAxisAU)"
+0.206221592570638,"I(HostStarMassSlrMass)"
+0.201288677447018,"I(HostStarTempK)"
+0.196679154990405,"I(HostStarRadiusSlrRad)"
+0.185791793335018,"I(HostStarMetallicity)"

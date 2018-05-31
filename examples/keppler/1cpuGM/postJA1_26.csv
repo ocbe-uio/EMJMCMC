@@ -1,0 +1,4 @@
+"posterior","tree"
+0.999999999999997,"I(PeriodDays)"
+0.999999996173264,"I(I(PeriodDays)*I(PeriodDays))"
+0.992004823816669,"I(I(PeriodDays)*I(PlanetaryDensJpt))"

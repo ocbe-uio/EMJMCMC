@@ -1,0 +1,3 @@
+"posterior","tree"
+0.977311685552612,"I(troot(I(I(PeriodDays)*I(PeriodDays))))"
+0.342608494610422,"I(PeriodDays)"

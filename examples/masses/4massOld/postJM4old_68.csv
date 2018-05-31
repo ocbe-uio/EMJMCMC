@@ -1,0 +1,4 @@
+"posterior","tree"
+1,"I(I(HostStarMassSlrMass)*I(I(I(I(RadiusJpt)*I(RadiusJpt))*I(RadiusJpt))*I(PlanetaryDensJpt)))"
+0.236069076035159,"I(HostStarMassSlrMass)"
+0.0880123165981632,"I(HostStarTempK)"

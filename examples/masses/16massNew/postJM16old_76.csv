@@ -1,0 +1,3 @@
+"posterior","tree"
+0.556222899462465,"I(I(to35(I(RadiusJpt)))*I(PlanetaryDensJpt))"
+0.415579826195971,"I(I(I(RadiusJpt)*I(I(PlanetaryDensJpt)*I(RadiusJpt)))*I(RadiusJpt))"

@@ -1,0 +1,4 @@
+"posterior","tree"
+0.999999999999997,"I(PeriodDays)"
+0.999918699232046,"I(I(PeriodDays)*I(PeriodDays))"
+0.99826975914028,"I(to23(I(I(PeriodDays)*I(PeriodDays))))"

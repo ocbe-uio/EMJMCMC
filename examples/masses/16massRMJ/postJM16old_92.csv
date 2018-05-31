@@ -1,0 +1,6 @@
+"posterior","tree"
+1,"I(RadiusJpt)"
+0.999999999999976,"I(sigmoid(I(RadiusJpt)))"
+0.999999959992987,"I(PlanetaryDensJpt)"
+0.999903395450423,"I(logi(I(PlanetaryDensJpt)))"
+0.998881321731042,"I(sigmoid(m(7.616e-05,1) +m(-0.00013224,I(RadiusJpt))+m(-3.565e-05,I(logi(I(PlanetaryDensJpt))))))"

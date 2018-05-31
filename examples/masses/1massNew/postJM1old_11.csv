@@ -1,0 +1,8 @@
+"posterior","tree"
+0.999999999999999,"I(I(PlanetaryDensJpt)*I(RadiusJpt))"
+0.895816462198288,"I(PlanetaryDensJpt)"
+0.461994535876048,"I(PeriodDays)"
+0.170591404946223,"I(SemiMajorAxisAU)"
+0.163774055994182,"I(I(PeriodDays)*I(PlanetaryDensJpt))"
+0.155998974511353,"I(RadiusJpt)"
+0.0604482086426812,"I(HostStarMassSlrMass)"

@@ -1,0 +1,4 @@
+"posterior","tree"
+1,"I(I(RadiusJpt)*I(PeriodDays))"
+1,"I(PeriodDays)"
+0.999977126517927,"I(I(I(RadiusJpt)*I(PeriodDays))*I(PeriodDays))"

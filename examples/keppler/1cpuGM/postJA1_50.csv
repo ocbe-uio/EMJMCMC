@@ -1,0 +1,2 @@
+"posterior","tree"
+0.999999999999987,"I(I(troot(I(I(PeriodDays)*I(PeriodDays))))*I(sigmoid(I(HostStarRadiusSlrRad))))"
