@@ -112,7 +112,7 @@ simplifyposteriors=function(X,posteriors,th=0.0001,thf=0.5)
 
 
 #define number of simulations
-MM = 100
+MM = 800
 #define number of threads to be used
 M = 32
 #define the size of the simulated samples
@@ -150,7 +150,7 @@ type4=F
 typeJ=F
 
 #start the sensitivity analysis
-for(j in 800:1)
+for(j in MM:1)
 {
   print(paste0("begin iteration ",j))
   tryCatch({
@@ -335,7 +335,7 @@ for(j in 800:1)
     
     #perform garbage collection
     gc()
-    #explore Byesian logic regression on M threads in parallel using the GMJMCMC algorithm
+    #explore Bayesian logic regression on M threads in parallel using the GMJMCMC algorithm
     results=parall.gmj(X = params,FUN = runpar,mc.preschedule = T, mc.cores = M)
     #clean up
     gc()

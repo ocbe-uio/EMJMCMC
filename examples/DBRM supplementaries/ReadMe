@@ -2,7 +2,7 @@
 
 1. /package/EMJMCMC_1.4_bin.tar.gz (GNU zipped tar) file includes the most recent stable version of EMJMCMC package.
 
-2. To install the package the user would need to run install.packages("install.packages("https://github.com/aliaksah/EMJMCMC2016/raw/master/EMJMCMC_1.4_bin.tar.gz", repos = NULL, type="source")", repos = NULL, type="source"). Notice that some dependencies may be required (see for details http://aliaksah.github.io/EMJMCMC2016/).
+2. To install the package the user would need to run install.packages("https://github.com/aliaksah/EMJMCMC2016/raw/master/EMJMCMC_1.4_bin.tar.gz", repos = NULL, type="source"). Notice that some dependencies may be required (see for details http://aliaksah.github.io/EMJMCMC2016/).
 
 3. /summaries/ contains supplementary tables with the discovered in the experiments features.
 
