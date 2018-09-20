@@ -43,6 +43,231 @@ estimate.bas.glm <- function(formula, data, family, prior, logn)
 
 }
 
+#define the function estimating parameters of a given Bernoulli logic regression with robust g prior
+estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1)
+{
+  if(is.null(formula))
+    return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
+  X = scale(model.matrix(object = formula,data = data),center = T,scale = F)
+  X[,1] = 1
+  fmla.proc=as.character(formula)[2:3]
+  out = glm(formula = as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = binomial())
+  beta=coef(out)[-1]
+  if(length(which(is.na(beta)))>0)
+  {
+    return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
+  }
+  p = out$rank
+  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  sj=sj+1
+  p.v = (n+1)/(p+1)
+  sout = summary(out)
+  J.a.hat = 1/sout$cov.unscaled[1,1]
+  if(length(beta)>0&&length(beta)==(dim(sout$cov.unscaled)[1]-1)&&length(which(is.na(beta)))==0)
+  {
+    Q = t(beta)%*%solve(sout$cov.unscaled[-1,-1])%*%beta
+  }else{
+    return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
+  }
+  
+  Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
+  mlik = (logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
+  if(is.na(mlik)||mlik==-Inf)
+    mlik = -10000+ rnorm(1,0,1)
+  return(list(mlik = mlik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coefficients(out))))
+}
+
+
+
+#define the function simplifying logical expressions at the end of the search
+simplifyposteriors.infer=function(X,posteriors,th=0.00001,thf=0.5, resp)
+{
+  todel = which(posteriors[,2]<th)
+  if(length(todel)>0)
+    posteriors=posteriors[-todel,]
+  rhash=hash()
+  for(i in 1:length(posteriors[,1]))
+  {
+    expr=posteriors[i,1]
+    #print(expr)
+    res=model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
+    res[,1]=res[,1]-res[,2]
+    ress=c(stri_flatten(res[,1],collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
+    if(!(ress[1] %in% values(rhash)||(ress[2] %in% values(rhash))))
+      rhash[[ress[1]]]=ress
+    else
+    {
+      if(ress[1] %in% keys(rhash))
+      {
+        rhash[[ress[1]]][3]= (as.numeric(rhash[[ress[1]]][3]) + as.numeric(ress[3]))
+        if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
+          rhash[[ress[1]]][4]=expr
+      }
+      else
+      {
+        rhash[[ress[2]]][3]= (as.numeric(rhash[[ress[2]]][3]) + as.numeric(ress[3]))
+        if(stri_length(rhash[[ress[2]]][4])>stri_length(expr))
+          rhash[[ress[2]]][4]=expr
+      }
+    }
+    
+  }
+  res=as.data.frame(t(values(rhash)[c(3,4),]))
+  res$V1=as.numeric(as.character(res$V1))
+  res=res[which(res$V1>thf),]
+  res=res[order(res$V1, decreasing = T),]
+  clear(rhash)
+  rm(rhash)
+  res[which(res[,1]>1),1]=1
+  colnames(res)=c("posterior","feature")
+  #rownames(res) = NULL
+  return(res)
+}
+
+
+#define a function performing the map step for a given thread
+runpar.infer=function(vect)
+{
+  ret = NULL
+  tryCatch({
+    set.seed(as.integer(vect[length(vect)]))
+    do.call(runemjmcmc, vect[1:(length(vect)-2)])
+    vals=values(hashStat)
+    fparam=mySearch$fparam
+    cterm=max(vals[1,],na.rm = T)
+    ppp=mySearch$post_proceed_results_hash(hashStat = hashStat)
+    post.populi=sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
+    ret = list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam)
+    if(length(cterm)==0){
+      vect$cpu=as.integer(vect$cpu)+as.integer(runif(1,1,10000))
+      if(vect$cpu<50000)
+        ret = runpar.infer(vect)
+      else
+        ret = NULL
+    }
+  },error = function(err){
+    print(paste0("error in thread",  vect[length(vect)]))
+    print(err)
+    vect$cpu=as.integer(vect$cpu)+as.integer(runif(1,1,10000))
+    if(vect$cpu<50000)
+      ret = runpar.infer(vect)
+    else
+      ret =err
+  },finally = {
+    
+    #clear(hashStat)
+    #rm(hashStat)
+    #rm(vals)
+    gc()
+    return(ret)
+    
+  })
+}
+
+
+
+
+pinferunemjmcmc = function(formula, data, n.cores = 4,mc.preschedule = F, report.level =  0.5, num.mod.best = 1000 , runemjmcmc.params)
+{
+  
+  params = list(runemjmcmc.params)[rep(1,n.cores)]
+  for(i in 1:n.cores)
+  {
+    params[[i]]$NM = num.mod.best
+    params[[i]]$cpu=i
+  }
+  M = n.cores
+  #results = runpar.infer(params[[1]])
+  results=mclapply(X = params,FUN = runpar.infer,mc.preschedule = mc.preschedule,mc.cores = n.cores)
+  #print(results)
+  #clean up
+  gc()
+  #prepare the data structures for final analysis of the runs
+  compmax = runemjmcmc.params$interact.param$Nvars.max + 1
+  resa=array(data = 0,dim = c(compmax,M*3))
+  post.popul = array(0,M)
+  max.popul = array(0,M)
+  nulls=NULL
+  not.null=1
+  #check which threads had non-zero exit status
+  for(k in 1:M)
+  {
+    if(length(results[[k]])<=1||length(results[[k]]$cterm)==0)
+    {
+      nulls=c(nulls,k)
+      next
+    }
+    else
+    {
+      not.null = k
+    }
+    
+  }
+  
+  #for all of the successful runs collect the results into the corresponding data structures
+  for(k in 1:M)
+  {
+    if(k %in% nulls)
+    {
+      results[[k]]=results[[not.null]]
+    }
+    max.popul[k]=results[[k]]$cterm
+    post.popul[k]=results[[k]]$post.populi
+    resa[,k*3-2]=c(results[[k]]$fparam,"Post.Gen.Max")
+    resa[,k*3-1]=c(results[[k]]$p.post,results[[k]]$cterm)
+    resa[,k*3]=rep(post.popul[k],length(results[[k]]$p.post)+1)
+    
+  }
+  #renormalize estimates of the marginal inclusion probabilities
+  #based on all of the runs
+  ml.max=max(max.popul)
+  post.popul=post.popul*exp(-ml.max+max.popul)
+  p.gen.post=post.popul/sum(post.popul)
+  hfinal=hash()
+  for(ii in 1:M)
+  {
+    resa[,ii*3]=p.gen.post[ii]*as.numeric(resa[,ii*3-1])
+    resa[length(resa[,ii*3]),ii*3]=p.gen.post[ii]
+    if(p.gen.post[ii]>0)
+    {
+      for(jj in 1:(length(resa[,ii*3])-1))
+      {
+        if(resa[jj,ii*3]>0)
+        {
+          if(as.integer(has.key(hash = hfinal,key =resa[jj,ii*3-2]))==0)
+            hfinal[[resa[jj,ii*3-2]]]=as.numeric(resa[jj,ii*3])
+          else
+            hfinal[[resa[jj,ii*3-2]]]=hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
+        }
+        
+      }
+    }
+  }
+  
+  posteriors=values(hfinal)
+  clear(hfinal)
+  #delete the unused further variables
+  rm(hfinal)
+  rm(resa)
+  rm(post.popul)
+  rm(max.popul)
+  #simplify the found trees and their posteriors
+  posteriors=as.data.frame(posteriors)
+  posteriors=data.frame(X=row.names(posteriors),x=posteriors$posteriors)
+  posteriors$X=as.character(posteriors$X)
+  res1=simplifyposteriors.infer(X = runemjmcmc.params$data,posteriors = posteriors, thf = report.level,resp = as.character(runemjmcmc.params$formula)[2])
+  rownames(res1) = NULL
+  res1$feature = as.character(res1$feature)
+  rm(params)
+  gc()
+  return(list(feat.stat = cbind(res1$feature,res1$posterior),threads.stats = results))
+  
+}
+
 
 estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
 {
