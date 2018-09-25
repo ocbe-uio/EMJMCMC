@@ -6,7 +6,7 @@
 
 3. /appendix/appendix.pdf appenicies of the paper.
 
-4. /simulations/ contains the R files for the 5 simulation scenarios from the paper.
+4. /simulations/ contains the R files for the 6 simulation scenarios from the paper.
 
 6. /sensitivity/ contains the R files for performing sensitivity analysis and building the power curves.
 
