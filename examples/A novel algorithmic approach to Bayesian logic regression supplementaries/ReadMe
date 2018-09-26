@@ -12,6 +12,8 @@
 
 7. /proceed/ contains the R files for postproceeding the results of the simulations scenarios.
 
+8. /simple usage/ containts the R scrypt with the example of simple calls of Bayesian logia regression using LogicRegr function from EMJMCMC2016 package.
+
 9. For additional details and updates see http://aliaksah.github.io/EMJMCMC2016/.
 
 **********************************The End******************************************
