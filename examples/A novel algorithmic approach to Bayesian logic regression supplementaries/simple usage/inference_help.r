@@ -8,6 +8,8 @@ source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode
 set.seed(040590)
 X1= as.data.frame(array(data = rbinom(n = 50*1000,size = 1,prob = 0.3),dim = c(1000,50)))
 Y1=rnorm(1000,-0.7+1*(X1$V1)*(X1$V4) + 1*(X1$V8*X1$V11)+1*(X1$V5*X1$V9),1)
+X1$Y1 = Y1
+
 
 formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(51)],collapse = "+")))
 data.example = as.data.frame(X1)
