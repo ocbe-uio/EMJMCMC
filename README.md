@@ -10,4 +10,4 @@ In this R package problems of Bayesian model selection and model averaging are a
     Some applications of the package are available on GitHub
                             ...
 
-For detail see https://github.com/aliaksah/EMJMCMC2016
+For detail see http://aliaksah.github.io/EMJMCMC2016/
