@@ -8,3 +8,6 @@ In this R package problems of Bayesian model selection and model averaging are a
     Presentations of the talks are available on GitHub
     Latest issues of the package are available on GitHub
     Some applications of the package are available on GitHub
+                            ...
+
+For detail see https://github.com/aliaksah/EMJMCMC2016
