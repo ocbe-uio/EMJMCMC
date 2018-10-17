@@ -1,5 +1,5 @@
 #read the most recent stable version of the package
-source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package2.r")
 
 #make sure that you are using Mac Os or Linux (mclapply is currently not supported for Windows)
 
