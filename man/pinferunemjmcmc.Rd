@@ -22,7 +22,9 @@
 \seealso{EMJMCMC::runemjmcmc, EMJMCMC::LogrRegr, EMJMCMC::DBRM}
 \examples{
 
+#inference
 
+#prediction
 
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
