@@ -14,12 +14,12 @@
 \item{num.mod.best}{the number of the best models in the thread to calculate marginal inclusion probabilities}
 }
 \value{a list of
-\item{feat.stat}{detected logical expressions and their marginal inclusion probabilities}
-\item{predictions}{NULL currently, since LogrRegr function is not designed for predictions at the moment, which is still possible in its expert mother function pinferunemjmcmc}
-\item{allposteriors}{all visited by GMJMCMC logical expressions and their marginal inclusion probabilities}
-\item{threads.stats}{a vector of detailed outputs of individual ncores threads of GMJMCMC run}
+\item{feat.stat}{detected features or logical expressions and their marginal inclusion probabilities}
+\item{predictions}{predicted values if they are required, NULL otherwise}
+\item{allposteriors}{all visited by (R)(G)MJMCMC features and logical expressions and their marginal inclusion probabilities}
+\item{threads.stats}{a vector of detailed outputs of individual n.cores threads of (R)(G)MJMCMC run}
 }
-\seealso{EMJMCMC::runemjmcmc, EMJMCMC::LogrRegr, EMJMCMC::DBRM}
+\seealso{EMJMCMC::runemjmcmc, EMJMCMC::LogrRegr, EMJMCMC::DeepRegr, EMJMCMC::LinRegr}
 \examples{
 
 #inference
