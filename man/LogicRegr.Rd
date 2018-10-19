@@ -24,7 +24,7 @@
 \item{allposteriors}{all visited by GMJMCMC logical expressions and their marginal inclusion probabilities}
 \item{threads.stats}{a vector of detailed outputs of individual ncores threads of GMJMCMC run}
 }
-\seealso{EMJMCMC::runemjmcmc}
+\seealso{EMJMCMC::runemjmcmc, EMJMCMC::pinferunemjmcmc}
 \examples{
 
 set.seed(040590)
