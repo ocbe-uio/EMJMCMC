@@ -249,7 +249,7 @@ estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50,
 {
   if(is.null(formula))
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  
+
   out = glm(formula = formula,data = data, family=family)
   p = out$rank
   if(p>k.max)
@@ -286,13 +286,13 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   {
     return(list(mlik = -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  
+
   beta=coef(out)[-1]
   if(length(which(is.na(beta)))>0)
   {
     return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  
+
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
   fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
@@ -308,7 +308,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   }else{
     return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  
+
   Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
   if(is.na(mlik)||mlik==-Inf)
@@ -341,7 +341,7 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
   Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   p.v = (n+1)/(p+1)
   R.2 = summary(out)$r.squared
-  
+
   mlik = (-0.5*p*log(p.v) -0.5*(n-1)*log(1-(1-1/p.v)*R.2) + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(phi1(p.b/2,(n-1)/2,(p.a+p.b+p)/2,p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(p.b/2,(p.a+p.b)/2,p.s/2/p.v,log = T)+log(Jprior) + p*log(r)+n)
   if(mlik==-Inf||is.na(mlik)||is.nan(mlik))
     mlik = -10000
@@ -408,13 +408,13 @@ simplifyposteriors.infer=function(X,posteriors,th=0.0000001,thf=0.5, resp)
           rhash[[ress[2]]][4]=expr
       }
     }
-    
+
   }
   res=as.data.frame(t(values(rhash)[c(3,4),]))
   res$V1=as.numeric(as.character(res$V1))
   tokeep = which(res$V1>thf)
   if(length(tokeep)>0)
-  {  
+  {
     res=res[tokeep,]
   }else
     warning(paste0("No features with posteriors above ",thf,". Returning everything"))
@@ -442,10 +442,10 @@ runpar.infer=function(vect)
     cterm=max(vals[1,],na.rm = T)
     ppp=mySearch$post_proceed_results_hash(hashStat = hashStat)
     post.populi=sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
-    
+
     betas = NULL
     mliks = NULL
-    
+
     if(vect$save.beta){
       #get the modes of beta coefficients for the explored models
       Nvars=mySearch$Nvars
@@ -459,14 +459,14 @@ runpar.infer=function(vect)
       }
       betas=cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
     }
-    
+
     preds = NULL
     if(vect$predict)
     {
       preds=mySearch$forecast.matrix.na(link.g = vect$link, covariates = (vect$test),betas = betas,mliks.in = mliks)$forecast
     }
-    
-    
+
+
     ret = list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, preds = preds, fparam = fparam, betas = betas, mliks = mliks )
     if(length(cterm)==0){
       vect$cpu=as.integer(vect$cpu)+as.integer(runif(1,1,10000))
@@ -475,7 +475,7 @@ runpar.infer=function(vect)
       else
         ret = NULL
     }
-    
+
   },error = function(err){
     print(paste0("error in thread",  vect[length(vect)]))
     print(err)
@@ -485,13 +485,13 @@ runpar.infer=function(vect)
     else
       ret =err
   },finally = {
-    
+
     #clear(hashStat)
     #rm(hashStat)
     #rm(vals)
     gc()
     return(ret)
-    
+
   })
 }
 
@@ -500,7 +500,7 @@ estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50,
 {
   if(is.null(formula))
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  
+
   out = glm(formula = formula,data = data, family=family)
   p = out$rank
   if(p>k.max)
@@ -537,13 +537,13 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   {
     return(list(mlik = -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  
+
   beta=coef(out)[-1]
   if(length(which(is.na(beta)))>0)
   {
     return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  
+
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
   fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
@@ -559,7 +559,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   }else{
     return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  
+
   Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
   if(is.na(mlik)||mlik==-Inf)
@@ -592,7 +592,7 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
   Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   p.v = (n+1)/(p+1)
   R.2 = summary(out)$r.squared
-  
+
   mlik = (-0.5*p*log(p.v) -0.5*(n-1)*log(1-(1-1/p.v)*R.2) + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(phi1(p.b/2,(n-1)/2,(p.a+p.b+p)/2,p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(p.b/2,(p.a+p.b)/2,p.s/2/p.v,log = T)+log(Jprior) + p*log(r)+n)
   if(mlik==-Inf||is.na(mlik)||is.nan(mlik))
     mlik = -10000
@@ -601,7 +601,7 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
 
 
 #define the function estimating parameters of a given Gaussian logic regression with Jeffrey's prior
-estimate.logic.lm = function(formula= NULL, data, n, m, r = 1,k.max=21)
+estimate.logic.lm.jef = function(formula= NULL, data, n, m, r = 1,k.max=21)
 {
   if(is.na(formula)||is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
@@ -655,14 +655,14 @@ LogicRegr = function(formula, data, family = "Gaussian",prior = "J",report.level
   {
     if(prior == "J")
     {
-      advanced$estimator = estimate.logic.lm
+      advanced$estimator = estimate.logic.lm.jef
       advanced$estimator.args = list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }else{
       advanced$estimator = estimate.logic.lm.tCCH
       advanced$estimator.args = list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }
   }else{
-    
+
     if(prior == "J")
     {
       advanced$estimator = estimate.logic.bern
@@ -671,14 +671,14 @@ LogicRegr = function(formula, data, family = "Gaussian",prior = "J",report.level
       advanced$estimator = estimate.logic.bern.tCCH
       advanced$estimator.args =  list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }
-    
+
   }
-  
+
   if(ncores<1)
     ncores = detectCores()
-  
+
   return(pinferunemjmcmc(n.cores = ncores,report.level =  report.level, simplify = T, num.mod.best = n.mods, predict = F, runemjmcmc.params = advanced))
-  
+
 }
 
 mcgmjpar = function(X,FUN,mc.cores) mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores)
@@ -686,17 +686,17 @@ mcgmjpse = function(X,FUN,mc.cores) lapply(X,FUN)
 
 pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
 {
-  
+
   if(predict)
   {
     runemjmcmc.params$save.beta = T
-    
+
     if(length(test.data)==0)
     {
       warning("Test data is not provided. No predictions will be made!")
     }
   }
-  
+
   params = list(runemjmcmc.params)[rep(1,n.cores)]
   for(i in 1:n.cores)
   {
@@ -732,16 +732,16 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
     {
       not.null = k
     }
-    
+
   }
-  
+
   if(length(nulls) == M)
   {
     warning("All threads did not converge or gave an error! Returning stats from the threads only!")
     return(list(feat.stat = NULL,predictions = NULL,allposteriors = NULL, threads.stats = results))
   }
-  
-  
+
+
   #for all of the successful runs collect the results into the corresponding data structures
   for(k in 1:M)
   {
@@ -754,23 +754,23 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
     resa[,k*3-2]=c(results[[k]]$fparam,"Post.Gen.Max")
     resa[,k*3-1]=c(results[[k]]$p.post,results[[k]]$cterm)
     resa[,k*3]=rep(post.popul[k],length(results[[k]]$p.post)+1)
-    
+
   }
   #renormalize estimates of the marginal inclusion probabilities
   #based on all of the runs
   ml.max=max(max.popul)
   post.popul=post.popul*exp(-ml.max+max.popul)
   p.gen.post=post.popul/sum(post.popul)
-  
+
   #perform BMA of the redictions across the runs
   pred = NULL
   if(predict){
     pred = results[[1]]$preds*p.gen.post[1]
     for(i in 2:M)
     {
-      
+
       pred=pred+results[[i]]$preds*p.gen.post[i]
-      
+
     }
   }
   hfinal=hash()
@@ -789,11 +789,11 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
           else
             hfinal[[resa[jj,ii*3-2]]]=hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
         }
-        
+
       }
     }
   }
-  
+
   posteriors=values(hfinal)
   clear(hfinal)
   #delete the unused further variables
@@ -807,8 +807,8 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
   posteriors$X=as.character(posteriors$X)
   res1 = NULL
   if(simplify){
-    
-    
+
+
     res1=simplifyposteriors.infer(X = runemjmcmc.params$data,posteriors = posteriors, thf = report.level,resp = as.character(runemjmcmc.params$formula)[2])
     rownames(res1) = NULL
     res1$feature = as.character(res1$feature)
@@ -818,7 +818,7 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
   rm(params)
   gc()
   return(list(feat.stat = cbind(res1$feature,res1$posterior),predictions = pred,allposteriors = posteriors, threads.stats = results))
-  
+
 }
 
 estimate.inla.ar1 <- function(formula, args)
@@ -4006,7 +4006,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              if(printable.opt)
                                               print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                              fparam[id.replace]<<-proposal
-                                             
+
                                              keysarr <- as.array(keys(hashStat))
                                              p.add[id.replace]<<-p.allow.replace
                                              del(x = keysarr[which(stri_sub(keysarr,from  = id.replace, to = id.replace)=="1")],hash = hashStat)
@@ -4018,7 +4018,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        }
                                      }
-                                
+
                                    varcurb<-c(varcurb,array(1,dim = (Nvars -length(varcurb))))
                                    varcand<-c(varcand,array(1,dim = (Nvars -length(varcand))))
                                    varglob<-c(varglob,array(1,dim = (Nvars -length(varglob))))
