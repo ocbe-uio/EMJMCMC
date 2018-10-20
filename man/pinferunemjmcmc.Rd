@@ -8,7 +8,7 @@
 \item{simplify}{a logical value specifying in simplification of the features is to be done after the search is completed}
 \item{predict}{a logical value specifying if predictions should be done by the run of pinferunemjmcmc}
 \item{test.data}{covariates data.frame to be used for predictions}
-\itme{link.function}{the link functions to be used to make predictions}
+\item{link.function}{the link functions to be used to make predictions}
 \item{report.level}{a numeric value in (0,1) specifying the treshold for detections based on the marginal inclusion probabilities}
 \item{n.cores}{the maximal number of cores (and (R)(G)MJMCMC threads) to be addressed in the analysis}
 \item{num.mod.best}{the number of the best models in the thread to calculate marginal inclusion probabilities}
