@@ -1,0 +1,23 @@
+A uniform prior on all of the models in this adoptation is addressed. Hence
+
+<E_P_GAM> 2 The a priori expected model size.
+<SD_P_GAM> 1 The a priori standard deviation of the model size.
+
+Are to be omitted!
+
+G has to be fixed in this adoptation as well. Hence
+
+<G_ADMH_OPTIMAL> 0.44 The optimal acceptance rate for g (see Section 5.4).
+<G_N_BATCH> 100 The number of sweeps between two adaptations of the standard deviation
+of the proposal for g.
+<G_ADMH_LS> 0 Initial value for the log standard deviation of g proposal.
+<G_M_MIN> ??log p=2 Lower bound for the log standard deviation of g proposal.
+<G_M_MAX> log p=2 Upper bound for the log standard deviation of g proposal.
+
+Are to be omittet too. 
+
+The results are only valid if g is fixed when calling the ESS, namely:
+
+-g_set N
+
+must be used.

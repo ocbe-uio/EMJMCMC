@@ -1,0 +1,22 @@
+**********************************Read Me******************************************
+
+1. /package/EMJMCMC_1.4_bin.tar.gz (GNU zipped tar) file includes the most recent stable version of EMJMCMC package.
+
+2. To install the package the user would need to run install.packages("https://github.com/aliaksah/EMJMCMC2016/raw/master/EMJMCMC_1.4_bin.tar.gz", repos = NULL, type="source"). Notice that some dependencies may be required (see for details http://aliaksah.github.io/EMJMCMC2016/).
+
+3. /appendix/appendix.pdf appenicies of the paper.
+
+4. /simulations/ contains the R files for the 6 simulation scenarios from the paper.
+
+6. /sensitivity/ contains the R files for performing sensitivity analysis and building the power curves.
+
+7. /proceed/ contains the R files for postproceeding the results of the simulations scenarios.
+
+8. /simple usage/ containts the R scrypt with the example of simple calls of Bayesian logia regression using LogicRegr function from EMJMCMC2016 package.
+
+9. For additional details and updates see http://aliaksah.github.io/EMJMCMC2016/.
+
+**********************************The End******************************************
+
+
+
