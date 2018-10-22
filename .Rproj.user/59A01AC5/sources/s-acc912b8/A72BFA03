@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1539938412637.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A72BFA03",
+    "lastKnownWriteTime" : 1539938875,
+    "last_content_update" : 1539938875935,
+    "path" : "~/EMJMCMC2016/R/the_mode_jumping_package3.r",
+    "project_path" : "R/the_mode_jumping_package3.r",
+    "properties" : {
+        "cursorPosition" : "4866,42",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

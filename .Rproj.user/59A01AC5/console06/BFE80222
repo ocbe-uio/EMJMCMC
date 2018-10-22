@@ -1,0 +1,78 @@
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@hpc03:~/EMJMCMC2016$ htop
+echo FD3BF915 && /usr/bin/env && echo 89220BA7
+FD3BF915
+GREP_COLOR=32
+SED=/bin/sed
+LN_S=ln -s
+R_TEXI2DVICMD=/usr/bin/texi2dvi
+MANPATH=:/usr/local/xite/man
+XITE_HOME=/nr/prog/xite
+RSTUDIO_PANDOC=/usr/lib/rstudio-server/bin/pandoc
+R_PDFVIEWER=/usr/bin/acroread
+R_INCLUDE_DIR=/nr/prog/R/3.4.4_UBUNTU16.04/lib/R/include
+RSU_TEMPLATE2_INI=/nr/prog/rational/config/templates2.ini
+BSTINPUTS=.:/nr/group/maler/nrdoc:
+RSTUDIO_PROJ_NAME=EMJMCMC
+RSTUDIO_SESSION_STREAM=ahu-d
+R_PRINTCMD=lpr
+TERM=xterm-256color
+IDL_DIR=/nr/prog/itt/idl82
+R_SYSTEM_ABI=linux,gcc,gxx,gfortran,?
+R_RD4PDF=times,inconsolata,hyper
+CVSROOT=/nr/cvsroot
+R_PAPERSIZE=a4
+RSTUDIO=1
+RSTUDIO_HTTP_REFERER=http://samba9.ad.nr.no:8787/
+RSTUDIO_CONSOLE_WIDTH=91
+USER=ahu
+LD_LIBRARY_PATH=/nr/prog/R/3.4.4_UBUNTU16.04/lib/R/lib::/lib:/usr/local/lib:/usr/lib/gcc/x86_64-linux-gnu/5:/usr/lib/x86_64-linux-gnu:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server
+TAR=/bin/tar
+R_ZIPCMD=/usr/bin/zip
+PAGER=/usr/bin/less
+R_GZIPCMD=/bin/gzip
+PATH=/nr/prog/rational/releases/PurifyPlus.7.0.1/i386_linux2/bin:/nr/prog/AppServerDefaults/Ubuntu_16.04_x86_64/bin:/nr/prog/mrtswath/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:bin/msys-ssh-1000-18:/snap/bin:/usr/local/bin:/nr/prog/intel/Compiler/bin:/nr/prog/xite/bin/Linux
+RSTUDIO_DISABLE_CHECK_FOR_UPDATES=1
+RSTUDIO_USER_IDENTITY=ahu
+PWD=/nr/samba/user/ahu/EMJMCMC2016
+RSTUDIO_WINUTILS=bin/winutils
+R_SHARE_DIR=/nr/prog/R/3.4.4_UBUNTU16.04/lib/R/share
+RSTUDIO_SESSION_ID=acc912b8
+EDITOR=vi
+LANG=en_US.UTF-8
+R_LIBS_SITE=
+KDEDIRS=/nr/prog/etc/KDE/:
+RSTUDIO_TERM=BFE80222
+LM_LICENSE_FILE=
+HISTCONTROL=ignoreboth
+SSH_ASKPASS=rpostback-askpass
+RMARKDOWN_MATHJAX_PATH=/usr/lib/rstudio-server/resources/mathjax-26
+R_BROWSER=/usr/bin/firefox
+TEXINPUTS=.:/nr/group/maler/nrdoc:
+SHLVL=1
+HOME=/nr/samba/user/ahu
+MAKE=make
+MRTDATADIR=/nr/prog/mrtswath/data
+RS_RPOSTBACK_PATH=/usr/lib/rstudio-server/bin/rpostback
+R_UNZIPCMD=/usr/bin/unzip
+LOGNAME=ahu
+R_BZIPCMD=/bin/bzip2
+CLICOLOR_FORCE=1
+PROMPT_COMMAND=echo -ne "\033]0;${PWD/#${HOME}/~}\007"
+R_HOME=/nr/prog/R/3.4.4_UBUNTU16.04/lib/R
+GIT_ASKPASS=rpostback-askpass
+MAUDE_LIB=/nr/prog/maude-linux64
+DISPLAY=:0
+MYHOST=Linux
+R_PLATFORM=x86_64-pc-linux-gnu
+SLIC_SERVER=flexlm.nr.no
+RSU_LICENSE_MAP=/nr/prog/rational/config/PurifyPlus_License_Map
+R_LIBS_USER=~/R/x86_64-pc-linux-gnu-library/3.4
+R_DOC_DIR=/nr/prog/R/3.4.4_UBUNTU16.04/lib/R/doc
+R_SESSION_TMPDIR=/tmp/Rtmp6lqJjO
+RSTUDIO_CONSOLE_COLOR=256
+COLORTERM=1
+_=/usr/bin/env
+89220BA7
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@samba9:~/EMJMCMC2016$ ^C
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@samba8:~/EMJMCMC2016$ [Kahu@samba8:~/EMJMCMC2016$ htop
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@hpc07:~/EMJMCMC2016$ ^V[K[Kahu@hpc07:~/EMJMCMC2016$ 
