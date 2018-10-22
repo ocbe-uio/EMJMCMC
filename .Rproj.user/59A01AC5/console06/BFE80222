@@ -75,4 +75,15 @@ _=/usr/bin/env
 89220BA7
 ]0;/nr/samba/user/ahu/EMJMCMC2016ahu@samba9:~/EMJMCMC2016$ ^C
 ]0;/nr/samba/user/ahu/EMJMCMC2016ahu@samba8:~/EMJMCMC2016$ [Kahu@samba8:~/EMJMCMC2016$ htop
-]0;/nr/samba/user/ahu/EMJMCMC2016ahu@hpc07:~/EMJMCMC2016$ ^V[K[Kahu@hpc07:~/EMJMCMC2016$ 
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@hpc07:~/EMJMCMC2016$ ^V[K[Kahu@hpc07:~/EMJMCMC2016$ stage
+
+Command 'stage' not found, did you mean:
+
+  command 'sage' from deb sagemath-common
+
+Try: apt install <deb name>
+
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@hpc07:~/EMJMCMC2016$ git stage
+Nothing specified, nothing added.
+Maybe you wanted to say 'git add .'?
+]0;/nr/samba/user/ahu/EMJMCMC2016ahu@hpc07:~/EMJMCMC2016$ 
