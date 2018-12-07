@@ -4,7 +4,7 @@
 
 2. To install the package the user would need to run install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/EMJMCMC_1.4.2_R_x86_64-pc-linux-gnu.tar.gz?raw=true", repos = NULL, type="source"). Notice that some dependencies may be required (see for details http://aliaksah.github.io/EMJMCMC2016/).
 
-3. /appendix/appendix.pdf appenicies of the paper.
+3. /appendix/web_supplement.pdf web supplementary materials of the paper.
 
 4. /simulations/ contains the R files for the 6 simulation scenarios from the paper.
 
