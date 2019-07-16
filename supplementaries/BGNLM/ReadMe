@@ -1,0 +1,22 @@
+﻿**********************************Read Me******************************************
+
+1. /package/EMJMCMC_1.4_bin.tar.gz (GNU zipped tar) file includes the most recent stable version of EMJMCMC package.
+
+2. To install the package the user would need to run install.packages("https://github.com/aliaksah/EMJMCMC2016/raw/master/EMJMCMC_1.4_bin.tar.gz", repos = NULL, type="source"). Notice that some dependencies may be required (see for details http://aliaksah.github.io/EMJMCMC2016/).
+
+3. /summaries/ contains supplementary tables with the discovered in the experiments features.
+
+4. /breast cancer/ contains the R files and data needed to reproduce the example on breast cancer classification.
+
+5. /kepler and mass/ contains the R files and data needed to reproduce the examples on Jupiter mass of the planets and 3rd Kepler's laws recovery.
+
+6. /simulation/ contains the R files and data needed to reproduce the examples on the simulated non-linear features recovery.
+
+7. /epigenetic modifications/ contains the R files and data needed to reproduce the study on epigenetic modification.
+
+8. For additional details and updates see http://aliaksah.github.io/EMJMCMC2016/.
+
+**********************************The End******************************************
+
+
+
