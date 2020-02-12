@@ -2,6 +2,8 @@ library(hash)
 library(stringi)
 library(qtl)
 
+
+setwd("/nr/samba/user/ahu/Documents/tmp/BLRRES")
 #read the output files of all of the MM simulations for the scenario of interest
 temp = list.files(pattern="post2etaJQTL_*")
 myfiles = lapply(FUN = read.csv,X = temp)
@@ -93,7 +95,8 @@ for(i in 1:min(100,N))
   names.all$n2 = names.new
   names.all$n3 = names.new
   names.all$n4 = names.new
-  
+  names.all$n5 = names.new
+  names.all$n6 = names.new
   for(ncur in names.old[c(4,17,30,10,7,20,12,2,9,37)])
   {
     
@@ -107,21 +110,27 @@ for(i in 1:min(100,N))
         nab2 = paste0("D",chr,"M",9)
         nab3 = paste0("D",chr,"M",9)
         nab4 = paste0("D",chr,"M",9)
+        nab5 = paste0("D",chr,"M",9)
+        nab6 = paste0("D",chr,"M",9)
       }else if(mar==1)
       {
         nab1 = paste0("D",chr,"M",2)
         nab2 = paste0("D",chr,"M",2)
         nab3 = paste0("D",chr,"M",2)
         nab4 = paste0("D",chr,"M",2)
+        nab5 = paste0("D",chr,"M",2)
+        nab6 = paste0("D",chr,"M",2)
       }else
       {
         nab1 = paste0("D",chr,"M",mar+1)
         nab2 = paste0("D",chr,"M",mar-1)
         nab3 = paste0("D",chr,"M",mar+1)
         nab4 = paste0("D",chr,"M",mar-1)
+        nab5 = paste0("D",chr,"M",mar-1)
+        nab6 = paste0("D",chr,"M",mar-1)
       }
       
-    }else{
+    }else if(chr==4){
       
       if(mar==10)
       {
@@ -129,24 +138,32 @@ for(i in 1:min(100,N))
         nab2 = paste0("D",chr,"M",8)
         nab3 = paste0("D",chr,"M",8)
         nab4 = paste0("D",chr,"M",9)
+        nab5 = paste0("D",chr,"M",8)
+        nab6 = paste0("D",chr,"M",9)
       }else if(mar==1)
       {
         nab1 = paste0("D",chr,"M",2)
         nab2 = paste0("D",chr,"M",3)
         nab3 = paste0("D",chr,"M",2)
         nab4 = paste0("D",chr,"M",3)
+        nab5 = paste0("D",chr,"M",2)
+        nab6 = paste0("D",chr,"M",3)
       }else if(mar==9)
       {
         nab1 = paste0("D",chr,"M",10)
         nab2 = paste0("D",chr,"M",10)
         nab3 = paste0("D",chr,"M",8)
         nab4 = paste0("D",chr,"M",7)
+        nab5 = paste0("D",chr,"M",8)
+        nab6 = paste0("D",chr,"M",7)
       }else if(mar==2)
       {
         nab1 = paste0("D",chr,"M",1)
         nab2 = paste0("D",chr,"M",1)
         nab3 = paste0("D",chr,"M",3)
         nab4 = paste0("D",chr,"M",4)
+        nab5 = paste0("D",chr,"M",3)
+        nab6 = paste0("D",chr,"M",4)
       }
       else
       {
@@ -154,7 +171,67 @@ for(i in 1:min(100,N))
         nab2 = paste0("D",chr,"M",mar-1)
         nab3 = paste0("D",chr,"M",mar+2)
         nab4 = paste0("D",chr,"M",mar-2)
+        nab5 = paste0("D",chr,"M",mar+2)
+        nab6 = paste0("D",chr,"M",mar-2)
       }
+    }else {
+      
+      if(mar==10)
+      {
+        nab1 = paste0("D",chr,"M",9)
+        nab2 = paste0("D",chr,"M",8)
+        nab3 = paste0("D",chr,"M",8)
+        nab4 = paste0("D",chr,"M",7)
+        nab5 = paste0("D",chr,"M",7)
+        nab6 = paste0("D",chr,"M",7)
+      }else if(mar==1)
+      {
+        nab1 = paste0("D",chr,"M",2)
+        nab2 = paste0("D",chr,"M",3)
+        nab3 = paste0("D",chr,"M",2)
+        nab4 = paste0("D",chr,"M",4)
+        nab5 = paste0("D",chr,"M",4)
+        nab6 = paste0("D",chr,"M",4)
+      }else if(mar==9)
+      {
+        nab1 = paste0("D",chr,"M",10)
+        nab2 = paste0("D",chr,"M",10)
+        nab3 = paste0("D",chr,"M",8)
+        nab4 = paste0("D",chr,"M",7)
+        nab5 = paste0("D",chr,"M",6)
+        nab6 = paste0("D",chr,"M",6)
+      }else if(mar==2)
+      {
+        nab1 = paste0("D",chr,"M",1)
+        nab2 = paste0("D",chr,"M",1)
+        nab3 = paste0("D",chr,"M",3)
+        nab4 = paste0("D",chr,"M",4)
+        nab5 = paste0("D",chr,"M",5)
+        nab6 = paste0("D",chr,"M",5)
+      }
+      else if(mar==3){
+        nab1 = paste0("D",chr,"M",1)
+        nab2 = paste0("D",chr,"M",2)
+        nab3 = paste0("D",chr,"M",4)
+        nab4 = paste0("D",chr,"M",5)
+        nab5 = paste0("D",chr,"M",6)
+        nab6 = paste0("D",chr,"M",6)
+      }else if(mar==8){
+        nab1 = paste0("D",chr,"M",10)
+        nab2 = paste0("D",chr,"M",9)
+        nab3 = paste0("D",chr,"M",7)
+        nab4 = paste0("D",chr,"M",6)
+        nab5 = paste0("D",chr,"M",5)
+        nab6 = paste0("D",chr,"M",5)
+      }else{
+        nab1 = paste0("D",chr,"M",mar+1)
+        nab2 = paste0("D",chr,"M",mar-1)
+        nab3 = paste0("D",chr,"M",mar+2)
+        nab4 = paste0("D",chr,"M",mar-2)
+        nab5 = paste0("D",chr,"M",mar+3)
+        nab6 = paste0("D",chr,"M",mar-3)
+      }
+      
     }
     
     names.all$n1[which(names.all$names.old==ncur)]=as.character(names.all$names.new[which(names.all$names.old==nab1)])
@@ -187,86 +264,96 @@ for(i in 1:min(100,N))
       count = stringi::stri_count_fixed(str = expr,pattern = "V")
       #print("before")
       #print(expr)
-      if(count == 1)
+      if(count == 1 & sum(expr.paresed%in%"V37")==0)
       for(ncur in c(37))
       {
         if(!names.all$n1[ncur]%in%names.new[c(37)])
+        {  
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
+        }
+          #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
         if(!names.all$n2[ncur]%in%names.new[c(37)])
+        {
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
+        }
+          #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
         if(!names.all$n3[ncur]%in%names.new[c(37)])
+        {
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        }  
         #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
         if(!names.all$n4[ncur]%in%names.new[c(37)])
+        {
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        }
+        if(!names.all$n5[ncur]%in%names.new[c(37)])
+        {
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n5[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        }
+        if(!names.all$n6[ncur]%in%names.new[c(37)])
+        {
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n6[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        }
         #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
       }
       
-      if(count == 2)
+      if(count == 2 & sum(expr.paresed%in%c("V2","V9"))<2)
       for(ncur in c(2,9))
       {
-        if(!names.all$n1[ncur]%in%names.new[c(2,9)])
+        if(!names.all$n1[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n2[ncur]%in%names.new[c(2,9)])
+        if(!names.all$n2[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n3[ncur]%in%names.new[c(2,9)])
+        if(!names.all$n3[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n4[ncur]%in%names.new[c(2,9)])
+        if(!names.all$n4[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        if(!names.all$n5[ncur]%in%names.new[ncur])
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n5[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        if(!names.all$n6[ncur]%in%names.new[ncur])
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n6[ncur],")"),paste0(names.all$names.new[ncur],")"))
         #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
       }
       
-      if(count == 3)
+      if(count == 3 & sum(expr.paresed%in%c("V7","V20","V12"))<3)
       for(ncur in c(7,20,12))
       {
-        if(!names.all$n1[ncur]%in%names.new[c(7,20,12)])
+        if(!names.all$n1[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n2[ncur]%in%names.new[c(7,20,12)])
+        if(!names.all$n2[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n3[ncur]%in%names.new[c(7,20,12)])
+        if(!names.all$n3[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n4[ncur]%in%names.new[c(7,20,12)])
+        if(!names.all$n4[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        if(!names.all$n5[ncur]%in%names.new[ncur])
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n5[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        if(!names.all$n6[ncur]%in%names.new[ncur])
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n6[ncur],")"),paste0(names.all$names.new[ncur],")"))
         #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
       }
       
-      if(count == 4)
+      if(count == 4 & sum(expr.paresed%in%c("V4","V17","V10","V30"))<3)
       for(ncur in c(4,17,30,10))
       {
-        if(!names.all$n1[ncur]%in%names.new[c(4,17,30,10)])
+        if(!names.all$n1[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n1[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n2[ncur]%in%names.new[c(4,17,30,10)])
+        if(!names.all$n2[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n2[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n3[ncur]%in%names.new[c(4,17,30,10)])
+        if(!names.all$n3[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        #else
-        #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n3[ncur],")"),paste0(names.all$names.new[ncur],")"))
-        if(!names.all$n4[ncur]%in%names.new[c(4,17,30,10)])
+        if(!names.all$n4[ncur]%in%names.new[ncur])
           expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        if(!names.all$n5[ncur]%in%names.new[ncur])
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n5[ncur],")"),paste0(names.all$names.new[ncur],")"))
+        if(!names.all$n6[ncur]%in%names.new[ncur])
+          expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n6[ncur],")"),paste0(names.all$names.new[ncur],")"))
         #else
         #  expr = stringi::stri_replace_first_fixed(expr,pattern = paste0(names.all$n4[ncur],")"),paste0(names.all$names.new[ncur],")"))
       }
