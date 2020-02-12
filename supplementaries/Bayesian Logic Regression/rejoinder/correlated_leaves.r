@@ -1,6 +1,9 @@
 #read the most recent stable version of the package
-source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package5.r")
-#library(EMJMCMC)
+#source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
+install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/EMJMCMC_1.4.2_R_x86_64-pc-linux-gnu.tar.gz?raw=true", 
+                 repos = NULL, type="source")
+# load the EMJMCMC package
+library(EMJMCMC)
 set.seed(040590)
 #make sure that you are using Mac Os or Linux (mclapply is currently not supported for Windows unless some mclapply hack function for Windows is preloaded in your R session)
 

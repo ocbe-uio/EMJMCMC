@@ -482,6 +482,7 @@ LogicRegr = function(formula, data, family = "Gaussian",prior = "J",report.level
   min.N=as.integer(1),
   printable = F)))
 {
+  data.example =  data
   advanced$formula = formula
   advanced$data = data
   advanced$interact.param$Nvars.max = d
