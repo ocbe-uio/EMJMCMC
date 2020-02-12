@@ -3,7 +3,7 @@ library(stringi)
 
 
 #read the output files of all of the MM simulations for the scenario of interest
-temp = list.files(pattern="postLog2etaOld_*")
+temp = list.files(pattern="post2GQTL_*")
 myfiles = lapply(FUN = read.csv,X = temp)
 
 #create a dummy matrix of binary covariates
@@ -12,7 +12,7 @@ rhash=hash()
 
 
 #specify true positive discoveries for the scenario of interest
-scenairo=1
+scenairo=5
 if(scenairo == 1|2)
 {
   tps=array(data = 0, dim =c(1000,3))

@@ -1,4 +1,4 @@
-activeClientUrl="http://samba8.ad.nr.no:8787/"
+activeClientUrl="http://hpc07.ad.nr.no:8787/"
 build-last-errors="[]"
 build-last-errors-base-dir=""
 build-last-outputs="[]"
@@ -6,5 +6,5 @@ compile_pdf_state="{\"errors\":[],\"output\":\"\",\"running\":false,\"tab_visibl
 files.monitored-path=""
 find-in-files-state="{\"handle\":\"\",\"input\":\"\",\"path\":\"\",\"regex\":true,\"results\":{\"file\":[],\"line\":[],\"lineValue\":[],\"matchOff\":[],\"matchOn\":[]},\"running\":false}"
 imageDirtyState="1"
-portToken="89defb1a805d"
+portToken="230b02932523"
 saveActionState="-1"
