@@ -80,7 +80,7 @@ simplifyposteriors=function(X,posteriors,th=0.0001,thf=0.5)
 #define number of simulations
 MM = 100
 #define number of threads to be used
-M = 32
+M = 64
 #define the size of the simulated samples
 NM= 1000
 #define \k_{max} + 1 from the paper
@@ -108,7 +108,7 @@ runpar=function(vect)
 }
 
 #perform MM runs of GMJMCMC on M threads each
-for(j in MM:1)
+for(j in 1:MM)
 {
   tryCatch({
     

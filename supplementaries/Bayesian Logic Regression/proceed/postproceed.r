@@ -3,7 +3,7 @@ library(stringi)
 
 
 #read the output files of all of the MM simulations for the scenario of interest
-temp = list.files(pattern="post2GQTL_*")
+temp = list.files(pattern="post2etaJQTL_*")
 myfiles = lapply(FUN = read.csv,X = temp)
 
 #create a dummy matrix of binary covariates

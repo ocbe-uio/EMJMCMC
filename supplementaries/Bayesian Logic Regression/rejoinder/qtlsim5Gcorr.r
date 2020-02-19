@@ -111,7 +111,7 @@ runpar=function(vect)
 }
 
 #perform MM runs of GMJMCMC on M threads each
-for(j in MM:80)
+for(j in 1:MM)
 {
   tryCatch({
     
