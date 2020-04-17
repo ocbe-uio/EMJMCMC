@@ -86,6 +86,7 @@ ggplot2::ggplot(data = melted_cormat,
 dev.off()
 
 
+#run the mjmcmc inference
 data.example = as.data.frame(data.train)
 res = runemjmcmc(formula = formula1,data = data.train,recalc_margin = 2^10,latent = "+ f(data.example$ppos,model=\"iid\") + f(data.example$pos,model=\"rw1\")", estimator =estimate.inla.ar1,estimator.args =  list(family = "binomial",data = data.train, Ntrials = data.train$total_bases,control.compute = list(waic = T,dic = T)),save.beta = T,interact = F,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=2,mutation_rate = 100, max.tree.size = 200000, Nvars.max = 95,p.allow.replace=0.9,p.allow.tree=0.5,p.nor=0.3,p.and = 0.7),n.models = 10000,unique = T,max.cpu = 20,max.cpu.glob = 10,create.table = T,create.hash = F,pseudo.paral = F,burn.in = 100,print.freq = 100)
 
