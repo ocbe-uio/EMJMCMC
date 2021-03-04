@@ -69,7 +69,7 @@ return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -
 
 }
 
-factorial<-function(x) ifelse(x<=170,gamma(x + 1),gamma(171))
+factorial<-function(x) ifelse(x<=170,gamma(abs(x) + 1),gamma(171))
 
 estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
 {
@@ -167,7 +167,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
 #define the function estimating parameters of a given Gaussian logic regression with robust g prior
 estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1,k.max=21)
 {
-  if(is.na(formula)||is.null(formula))
+  if(is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
   fmla.proc=as.character(formula)[2:3]
   fobserved = fmla.proc[1]
@@ -199,7 +199,7 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
 #define the function estimating parameters of a given Gaussian logic regression with Jeffrey's prior
 estimate.logic.lm = function(formula= NULL, data, n, m, r = 1,k.max=21)
 {
-  if(is.na(formula)||is.null(formula))
+  if(is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
   out = lm(formula = formula,data = data)
   p = out$rank
@@ -420,7 +420,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
 #define the function estimating parameters of a given Gaussian logic regression with robust g prior
 estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1,k.max=21)
 {
-  if(is.na(formula)||is.null(formula))
+  if(is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
   fmla.proc=as.character(formula)[2:3]
   fobserved = fmla.proc[1]
@@ -454,7 +454,7 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
 #define the function estimating parameters of a given Gaussian logic regression with Jeffrey's prior
 estimate.logic.lm.jef = function(formula= NULL, data, n, m, r = 1,k.max=21)
 {
-  if(is.na(formula)||is.null(formula))
+  if(is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
   out = lm(formula = formula,data = data)
   p = out$rank
@@ -941,7 +941,7 @@ cterm<-max(vals[1,],na.rm = T)
 ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
 post.populi<-sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
 clear(hashStat)
-rm(hashStat)
+#rm(hashStat)
 rm(vals)
 gc()
 return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
@@ -969,7 +969,7 @@ assign("fobserved.example",variables$fobserved, envir=globalenv())
 #{
 #  fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
 #}
-fparam.tmp<- sapply(FUN = paste,"I(",variables$fparam,")",sep="")
+fparam.tmp<- as.vector(sapply(FUN = paste,"I(",variables$fparam,")",sep="")[,1])
 if(latnames[1]!="")
   fparam.example<<-c(fparam.tmp,latnames)
 else
@@ -1589,7 +1589,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                            {
                              if(switch.type == 1) # random size random N(x)
                              {
-                               warning("This option should not be chosen for randomization unless p.add == 0.5 ", call. = FALSE)
+
+                               #warning("This option should not be chosen for randomization unless p.add == 0.5 ", call. = FALSE)
                                min.N = max.N
 
                                log.mod.switch.prob <- log(1/(max.N - min.N +1)) # probability of having that many differences
@@ -1601,7 +1602,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              {
                                if(min.N!=max.N)
                                {
-                                 warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
+                                 #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                  min.N = max.N
                                }
                                log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -1618,7 +1619,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              {
                                if(min.N!=max.N)
                                {
-                                 warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
+                                 #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                  min.N = max.N
                                }
                                log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -1685,7 +1686,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  if(min.N!=max.N)
                                  {
-                                   warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
+                                   #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                    min.N <- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -1742,7 +1743,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  if(min.N!=max.N)
                                  {
-                                   warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
+                                   #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                    min.N <- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -3978,7 +3979,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      clear(hashStat)
-                                     rm(hashStat)
+                                     #rm(hashStat)
                                      gc()
                                      #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                      hashStat<<-hash()
@@ -4196,7 +4197,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      clear(hashStat)
-                                     rm(hashStat)
+                                     #rm(hashStat)
                                      #gc()
                                      #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                      #rm(hashStat)
@@ -4606,7 +4607,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      clear(hashStat)
-                                     rm(hashStat)
+                                     #rm(hashStat)
                                      #gc()
                                      #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                      clear(hashStat)
@@ -6426,6 +6427,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                }
                              }else
                              {
+
                                warning("No betas were saved. Prediction is impossible. Please change the search parameters and run the search again.")
                              }
 

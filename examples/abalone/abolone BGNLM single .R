@@ -1,7 +1,7 @@
 #inference
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
-setwd("/nr/samba/user/ahu/EMJMCMC2016/examples/abalone/")
+setwd("/mn/sarpanitu/ansatte-u2/aliaksah/PycharmProjects/EMJMCMC2016/examples/abalone/")
 
 
 data.example = read.csv("abalone.data",header = F)

@@ -457,6 +457,8 @@ runemjmcmc<-function(formula, data,
     mySearch$hash.length<<-as.integer(20)
     mySearch$double.hashing<<-F
   }
+
+  print("Start MJMCMC")
   # now as the object is created run the algorithm
   initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
   if(unique)

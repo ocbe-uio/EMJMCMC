@@ -86,7 +86,7 @@ troot<-function(x)abs(x)^(1/3)
 #specify the number of runs
 MM = 100
 #specify the number of threads used
-M = 64
+M = 1
 NM= 1000
 #specify the number of features + 1 per model
 compmax = 16
