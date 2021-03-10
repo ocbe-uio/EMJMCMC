@@ -92,7 +92,7 @@ return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$devia
 }
 
 #define the function estimating parameters of a given Bernoulli logic regression with Jeffrey's prior
-estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50, r = 1,k.max=21)
+estimate.logic.bern = function(formula = NULL, data, family = binomial(), n=1000, m=50, r = 1,k.max=21)
 {
   if(is.null(formula))
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
