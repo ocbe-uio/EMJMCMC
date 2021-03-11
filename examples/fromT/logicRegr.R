@@ -19,8 +19,9 @@ split = floor(0.2 * n)
 #cors = cor(data_all)[,251]
 
 #which(abs(cors[1:250])>0.05)
-
-d_train = (data_all[sample.int(n,0.1*n, replace = F),c(51,1:50)])
+trid= sample.int(n,0.2*n, replace = F)
+d_train = (data_all[trid,c(51,1:50)])
+test = (data_all[-trid,c(51,1:50)])
 
 cors = cor(d_train)[,1]
 
@@ -44,3 +45,42 @@ res4J = LogicRegr(formula = formula1, data = data.example ,
 
 
 print(res4J$feat.stat)
+
+res4J$allposteriors
+
+g=function(x)
+{
+  return((x = 1/(1+exp(-x))))
+}
+# specify the parameters of the custom estimator function
+estimator.args = list(data = data.example, n = dim(data.example)[1],
+                      m =stri_count_fixed(as.character(formula1)[3],"+"),k.max = 15)
+# specify the parameters of gmjmcmc algorithm
+gmjmcmc.params = list(allow_offsprings=1,mutation_rate = 250,
+                      last.mutation=10000, max.tree.size = 3, Nvars.max =15,
+                      p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.1,p.and = 0.9)
+# specify some advenced parameters of mjmcmc
+mjmcmc.params = list(max.N.glob=10, min.N.glob=5, max.N=3, min.N=1,
+                     printable = F)
+# run the inference of BLR with a non-binary covariate and predicions
+res.alt = pinferunemjmcmc(n.cores = 4, report.level =  0.2,
+                          num.mod.best = 500,simplify = T,predict = T,test.data = test,
+                          link.function = g,
+                          runemjmcmc.params = list(formula = formula1,
+                                                   data = data.example,estimator = estimate.logic.bern.tCCH,
+                                                   estimator.args =estimator.args,
+                                                   recalc_margin = 249, save.beta = T,interact = T,outgraphs=F,
+                                                   interact.param = gmjmcmc.params,
+                                                   n.models = 20000,unique = F,max.cpu = 4,max.cpu.glob = 4,
+                                                   create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,
+                                                   print.freq = 1000,
+                                                   advanced.param = mjmcmc.params))
+
+
+
+print(base::rbind(c("expressions","probabilities"),res.alt$feat.stat))
+
+
+print(1-mean(abs((as.integer(res.alt$predictions>0.875)-test$Y))))
+
+res.alt$feat.stat
