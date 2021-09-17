@@ -3,6 +3,15 @@ source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode
 
 #make sure that you are using Mac Os or Linux (mclapply is currently not supported for Windows unless some mclapply hack function for Windows is preloaded in your R session)
 
+#***********************IMPORTANT******************************************************
+# if a multithreaded backend openBLAS for matrix multiplications
+# is installed on your machine, please force it to use 1 thread explicitly
+# unless ncores in LogrRegr is reasonably small, in the latter case 
+# you might want to experiment with the combinations of blas_set_num_threads and ncores
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+#***********************IMPORTANT******************************************************
 
 #simulate Gaussian responses
 
@@ -38,5 +47,5 @@ res1G = LogicRegr(formula = formula1,data = data.example,family = "Bernoulli",pr
 print(res1G$feat.stat)
 
 #run the inference with Jeffrey's prior
-res1J = LogicRegr(formula = formula1,data = data.example,family = "Bernoulli",prior = "J",report.level = 0.5,d = 15,cmax = 2,kmax = 15,p.and = 0.9,p.not = 0.2,p.surv = 0.2,ncores = 1)
+res1J = LogicRegr(formula = formula1,data = data.example,family = "Bernoulli",prior = "J",report.level = 0.5,d = 15,cmax = 2,kmax = 15,p.and = 0.9,p.not = 0.2,p.surv = 0.2,ncores = 32)
 print(res1J$feat.stat)

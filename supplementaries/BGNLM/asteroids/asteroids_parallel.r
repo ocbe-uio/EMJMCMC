@@ -6,6 +6,14 @@ library(RCurl)
 #read in the package most recent version
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
+#***********************IMPORTANT******************************************************
+# if a multithreaded backend openBLAS for matrix multiplications
+# is installed on your machine, please force it to use 1 thread explicitly
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+#***********************IMPORTANT******************************************************
+
 #specify the estimator function returning p(Y|m)p(m), model selection criteria and the vector of the modes for the beta coefficients
 estimate.bas.glm.cpen = function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("gauss","tanh","atan","sin"))
 {
@@ -150,7 +158,7 @@ run = 5
 
 #specify the number of threads used in the runs
 M=32
-for(j in 1:100)
+for(j in 1:2)
 {
 
   set.seed(j)
@@ -318,7 +326,7 @@ for(j in 1:100)
 #make the joint summary of the runs, including min, max and medians of the performance metrics
 summary.results=array(data = NA,dim = c(1,9))
 
-for(j in 1:3)
+for(j in 1:100)
 {
   summary.results[1,(j-1)*3+2]=min(total[,5,j])
   summary.results[1,(j-1)*3+1]=median(total[,5,j])

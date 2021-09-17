@@ -7,7 +7,7 @@ library(BAS)
 #define your working directory, where the data files are stored
 workdir=""
 
-
+  
 #prepare the test set data
 simx = read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NEAs.txt"),sep = ",",header = T,fill=TRUE)
 simy =  read.table(text = getURL("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/asteroid%20data/Recognize/NotNeas8%2B.txt"),sep = ",",header = T,fill=TRUE)
@@ -50,9 +50,9 @@ h2o.removeAll()
 
 for(ii in 1:100)
 {
-  print(paste("iteration ",ii))
-  capture.output({withRestarts(tryCatch(capture.output({
 
+  capture.output({withRestarts(tryCatch(capture.output({
+    print(paste("iteration ",ii))
     set.seed(ii)
     #here we are no longer running BGNLM, since BGNLM algorithms are run via other scripts
     #for computational efficiency and speed
@@ -98,7 +98,8 @@ for(ii in 1:100)
     out=as.integer(out>=0.5)
 
     #compute and store the performance metrics
-    print(results[3,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[3,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[3,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)
@@ -148,7 +149,8 @@ for(ii in 1:100)
     out=as.integer(out>=0.5)
 
     #compute and store the performance metrics
-    print(results[4,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[4,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[4,ii,1])
     results[4,ii,5]=t[3]
     #FNR
     ps=which(data.example1$neo==1)
@@ -177,7 +179,8 @@ for(ii in 1:100)
     out=as.integer(out>=0.5)
 
     #compute and store the performance metrics
-    print(results[5,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[5,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[5,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)
@@ -205,7 +208,8 @@ for(ii in 1:100)
     out=as.integer(out>=0.5)
 
     #compute and store the performance metrics
-    print(results[6,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[6,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[6,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)
@@ -261,8 +265,8 @@ for(ii in 1:100)
     #compute and store the performance metrics
     out=as.integer(as.numeric(as.character(out$predict)))
 
-
-    print(results[7,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[7,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[7,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)
@@ -295,7 +299,8 @@ for(ii in 1:100)
     out=as.integer(as.numeric(as.character(out$predict)))
 
     #compute and store the performance metrics
-    print(results[8,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[8,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[8,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)
@@ -330,7 +335,8 @@ for(ii in 1:100)
     out=as.integer(as.numeric(as.character(out$predict)))
 
     #compute and store the performance metrics
-    print(results[9,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[9,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[9,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)
@@ -358,7 +364,8 @@ for(ii in 1:100)
     out=as.integer(as.numeric(as.character(out$predict)))
 
     #compute and store the performance metrics
-    print(results[10,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out)))
+    results[10,ii,1]=(1-sum(abs(out-test$neo[1:length(out)]))/length(out))
+    print(results[10,ii,1])
 
     #FNR
     ps=which(data.example1$neo==1)

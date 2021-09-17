@@ -7,10 +7,9 @@ library(caret)
 #define your working directory, where the data files are stored
 workdir=""
 
-
 #read in the train and test data sets
-test = read.csv("test.csv",header = T,sep=",")[,-1]
-train = read.csv("train.csv",header = T,sep=",")[,-1]
+test = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/breast%20cancer/test.csv",header = T,sep=",")[,-1]
+train = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/breast%20cancer/train.csv",header = T,sep=",")[,-1]
 
 gc()
 
@@ -111,7 +110,7 @@ t=system.time({
 out=as.integer(out>=0.5)
 
 #compute and store the performance metrics
-print(results[4,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[4,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -138,7 +137,7 @@ results[5,ii,5]=t[3]
 
 #compute and store the performance metrics
 out=as.integer(out>=0.5)
-print(results[5,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[5,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -167,7 +166,7 @@ results[6,ii,5]=t[3]
 out=as.integer(out>=0.5)
 
 #compute and store the performance metrics
-print(results[6,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[6,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -220,7 +219,7 @@ out=as.data.frame(out)
 out=as.integer(as.numeric(as.character(out$predict)))
 
 #compute and store the performance metrics
-print(results[7,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[7,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -249,7 +248,7 @@ out=as.data.frame(out)
 out=as.integer(as.numeric(as.character(out$predict)))
 
 #compute and store the performance metrics
-print(results[8,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[8,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -283,7 +282,7 @@ out=as.data.frame(out)
 out=as.integer(as.numeric(as.character(out$predict)))
 
 #compute and store the performance metrics
-print(results[9,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[9,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -311,7 +310,7 @@ out=as.data.frame(out)
 out=as.integer(as.numeric(as.character(out$predict)))
 
 #compute and store the performance metrics
-print(results[10,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[10,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -343,7 +342,7 @@ out=as.data.frame(out)
 out=as.integer(as.numeric(as.character(out$predict)))
 
 #compute and store the performance metrics
-print(results[11,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
+(results[11,ii,1]=(1-sum(abs(out-test$X[1:length(out)]))/length(out)))
 
 #FNR
 ps=which(test$X==1)
@@ -352,6 +351,8 @@ results[11,ii,2]=sum(abs(out[ps]-test$X[ps]))/(sum(abs(out[ps]-test$X[ps]))+leng
 #FPR
 ns=which(test$X==0)
 results[11,ii,3]=sum(abs(out[ns]-test$X[ns]))/(sum(abs(out[ns]-test$X[ns]))+length(ns))
+
+print(results[,ii,1])
 
 gc()
 })), abort = function(){onerr=TRUE;out=NULL})})

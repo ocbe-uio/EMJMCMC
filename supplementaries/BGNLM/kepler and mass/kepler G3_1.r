@@ -1,6 +1,15 @@
 #read in the package most recent version
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
+#***********************IMPORTANT******************************************************
+# if a multithreaded backend openBLAS for matrix multiplications
+# is installed on your machine, please force it to use 1 thread explicitly
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+#***********************IMPORTANT******************************************************
+
+
 #a function for cleaning up after the parallel computing is finished
 library(inline)
 includes = '#include <sys/wait.h>'
@@ -121,7 +130,7 @@ for(j in 1:MM)
     set.seed(j)
 
     #read and prepare the data
-    X=read.csv("exa1.csv")
+    X=read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/kepler%20and%20mass/exa1.csv")
     data.example = as.data.frame(X)
 
     #specify the initial formula

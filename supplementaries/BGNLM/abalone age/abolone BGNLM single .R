@@ -1,10 +1,15 @@
 #inference
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
-setwd("/nr/samba/user/ahu/EMJMCMC2016/examples/abalone/")
+#***********************IMPORTANT******************************************************
+# if a multithreaded backend openBLAS for matrix multiplications
+# is installed on your machine, please force it to use 1 thread explicitly
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+#***********************IMPORTANT******************************************************
 
-
-data.example = read.csv("abalone.data",header = F)
+data.example = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/abalone%20age/abalone.data",header = F)
 data.example$MS=as.integer(data.example$V1=="M")
 data.example$FS=as.integer(data.example$V1=="F")
 data.example$V1=data.example$V9

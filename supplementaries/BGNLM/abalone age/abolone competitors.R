@@ -58,10 +58,8 @@ custpredict.vb = function(infer, x.new)
 #define your working directory, where the data files are stored
 workdir=""
 
-setwd("/nr/samba/user/ahu/EMJMCMC2016/examples/abalone/")
 
-
-data.example = read.csv("abalone.data",header = F)
+data.example = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/abalone%20age/abalone.data",header = F)
 data.example$MS=as.integer(data.example$V1=="M")
 data.example$FS=as.integer(data.example$V1=="F")
 data.example$V1=data.example$V9
@@ -99,12 +97,12 @@ train1 = h2o.assign(df , "train1.hex")
 valid1 = h2o.assign(df , "valid1.hex")
 test1 = h2o.assign(as.h2o(test[,-1]), "test1.hex")
 features = names(train1)[-1]
-for(ii in 6:100)
+for(ii in 1:10)
 {
   print(paste("iteration ",ii))
   #here we are no longer running BGNLM, since BGNLM algorithms are run via other scripts
   #for computational efficiency and speed
- # capture.output({withRestarts(tryCatch(capture.output({
+  # capture.output({withRestarts(tryCatch(capture.output({
     #run xGboost logloss gblinear
     t=system.time({
       param = list(objective = "reg:linear",

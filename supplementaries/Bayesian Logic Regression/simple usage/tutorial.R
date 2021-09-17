@@ -5,6 +5,16 @@ library(clusterGeneration)
 library(bindata)
 library(ggplot2)
 
+#***********************IMPORTANT******************************************************
+# if a multithreaded backend openBLAS for matrix multiplications
+# is installed on your machine, please force it to use 1 thread explicitly
+# unless ncores in LogrRegr is reasonably small, in the latter case 
+# you might want to experiment with the combinations of blas_set_num_threads and ncores
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+#***********************IMPORTANT******************************************************
+
 # set the seed
 set.seed(040590)
 # construct a correlation matrix for M = 50 variables
@@ -91,7 +101,7 @@ res.alt = pinferunemjmcmc(n.cores = 30, report.level =  0.2,
                                                    estimator.args =estimator.args,
                                                    recalc_margin = 249, save.beta = T,interact = T,outgraphs=F,
                                                    interact.param = gmjmcmc.params,
-                                                   n.models = 10000,unique = T,max.cpu = 4,max.cpu.glob = 4,
+                                                   n.models = 10000,unique = F,max.cpu = 4,max.cpu.glob = 4,
                                                    create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,
                                                    print.freq = 1000,
                                                    advanced.param = mjmcmc.params))

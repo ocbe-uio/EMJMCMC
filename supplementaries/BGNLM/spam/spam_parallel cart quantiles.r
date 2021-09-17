@@ -3,6 +3,17 @@
 #read in the package most recent version
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 
+
+#***********************IMPORTANT******************************************************
+# if a multithreaded backend openBLAS for matrix multiplications
+# is installed on your machine, please force it to use 1 thread explicitly
+# you might want to experiment with the combinations of blas_set_num_threads and ncores
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+#***********************IMPORTANT******************************************************
+#*
+
 #specify the estimator function returning p(Y|m)p(m), model selection criteria and the vector of the modes for the beta coefficients
 
 estimate.bas.glm.cpen = function(formula, data, family, prior, logn,r = 0.1,yid=1,relat =c("sigmoid","glquar","gmedi","gfquar","tanh","atan","sin"))
@@ -29,14 +40,12 @@ featgmj = hash()
 #specify the function for parallel computations
 parall.gmj <<- mclapply
 
-setwd("/nr/samba/user/ahu/EMJMCMC2016/supplementaries/BGNLM/spam/")
-
 #read in the train and test data sets
-data = read.table("spam.data",col.names=c(paste("x",1:57,sep=""),"X"))
+data = read.table("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/spam/spam.data",col.names=c(paste("x",1:57,sep=""),"X"))
 data[,1:57] = scale(data[,1:57])
 
 set.seed(1)
-spam.traintest =  read.table("spam.traintest")#rbinom(n = dim(data)[1],size = 1,prob = 0.01)
+spam.traintest =  read.table("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/spam/spam.traintest")#rbinom(n = dim(data)[1],size = 1,prob = 0.01)
 train = data[spam.traintest==1,]
 test = data[spam.traintest==0,]
 
