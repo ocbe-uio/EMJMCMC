@@ -9,7 +9,7 @@ In this R package problems of Bayesian model selection and model averaging are a
 
 * Full text of the paper introducing MJMCMC for Bayesian variable selection: [arXiv](http://arxiv.org/abs/1604.06398)
 * Full text of the paper introducing GMJMCMC for inference on Bayesian logic regressions: [arXiv](https://arxiv.org/abs/1705.07616)
-* Full text of the paper introducing DBRM and GMJMCMC, RGMJMCMC algorithms for DBRM: [arXiv](https://arxiv.org/abs/1806.02160)
+* Full text of the paper introducing BGNLM and GMJMCMC algorithms for BGNLM: [arXiv](https://arxiv.org/abs/2003.02929)
 * Supplementaries to these papers are available on [GitHub](https://github.com/aliaksah/EMJMCMC2016/tree/master/supplementaries)
 * Presentations of the talks are available on [GitHub](https://github.com/aliaksah/EMJMCMC2016/tree/master/presentations)
 * Latest issues of the package are available on [GitHub](https://github.com/aliaksah/EMJMCMC2016/)
@@ -20,13 +20,19 @@ In this R package problems of Bayesian model selection and model averaging are a
 
 * Install binary on Linux or Mac Os:
 ```R 
-install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/EMJMCMC_1.4.2_R_x86_64-pc-linux-gnu.tar.gz?raw=true", repos = NULL, type="source")
+install.packages("https://github.com/aliaksah/EMJMCMC2016/blob/master/EMJMCMC_1.4.3_R_x86_64-pc-linux-gnu.tar.gz?raw=true", repos = NULL, type="source")
 ```
 
 * Notice that some dependencies might be required. To install dependencies before installation of the package run (additionally, this will  load the source code for the EMJMCMC2016 package without installing it, which might be of interest for Windows users):
 ```R 
 source("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/R/the_mode_jumping_package4.r")
 ``` 
+* If you have a parallel version of openBlas in your backend and you want to run parallel inference with EMJMCMC, make sure to use:
+```R 
+library(RhpcBLASctl)
+blas_set_num_threads(1)
+omp_set_num_threads(1)
+```
 
 * An expert one threaded call of (R)(G)MJMCMC is (see [runemjmcmc](https://rdrr.io/github/aliaksah/EMJMCMC2016/man/EMJMCMC.html) for details): 
 ```R 
