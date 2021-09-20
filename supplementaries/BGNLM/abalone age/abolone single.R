@@ -19,7 +19,8 @@ data.example$V9 = NULL
 names(data.example) = c("Age","Length", "Diameter","Height","WholeWeight","ShuckedWeight","VisceraWeight","ShellWeight","Male","Femele")
 
 set.seed(040590)
-teid =  sample.int(size =1000,n = 4176,replace = F)
+teid =  read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/abalone%20age/teid.csv",sep = ";")[,2]
+
 
 test = data.example[teid,]
 data.example = data.example[-teid,]
