@@ -625,11 +625,14 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
   pred = NULL
   if(predict){
     pred = results[[1]]$preds*p.gen.post[1]
-    for(i in 2:M)
-    {
-
-      pred=pred+results[[i]]$preds*p.gen.post[i]
-
+    if(M > 1) {
+      
+      for(i in 2:M)
+      {
+  
+        pred=pred+results[[i]]$preds*p.gen.post[i]
+  
+      }
     }
   }
   hfinal=hash()
