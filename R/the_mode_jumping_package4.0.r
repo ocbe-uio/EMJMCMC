@@ -1129,14 +1129,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                estimator.args <<- estimator.args.list
                                latent.formula <<- latent.formula
                                g.results <<- big.matrix(nrow = 4,ncol = 2)
-                               g.results[1,1]<- -Inf
-                               g.results[1,2]<- 1
-                               g.results[2,1]<- Inf
-                               g.results[2,2]<- 1
-                               g.results[3,1]<- Inf
-                               g.results[3,2]<- 1
-                               g.results[4,1]<- 0
-                               g.results[4,2]<- 0
+                               g.results[1,1]<<- -Inf
+                               g.results[1,2]<<- 1
+                               g.results[2,1]<<- Inf
+                               g.results[2,2]<<- 1
+                               g.results[3,1]<<- Inf
+                               g.results[3,2]<<- 1
+                               g.results[4,1]<<- 0
+                               g.results[4,2]<<- 0
 
                                if(is.null(search.args.list))
                                {
@@ -1241,7 +1241,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  aa <<- search.args.list$lambda.a
                                  prand<<-earch.args.list$prand
                                  sup.large.n<<-search.args.list$sup.large.n
-                                 thin_rate <-search.args.list$thin_rate
+                                 thin_rate <<-search.args.list$thin_rate
                                  keep.origin<<-search.args.list$keep.origin
                                  cc <<- search.args.list$lambda.c
                                  M.nd <<- as.integer(search.args.list$stepsGreedy)
@@ -1518,7 +1518,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(switch.type == 1) # random size random N(x)
                                {
                                  warning("This option should not be chosen for randomization unless p.add == 0.5 ", call. = FALSE)
-                                 min.N = max.N
+                                 min.N <<- max.N
 
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1)) # probability of having that many differences
                                  KK<-sum(abs(varold-varnew))
@@ -1530,7 +1530,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(min.N!=max.N)
                                  {
                                    warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                   min.N = max.N
+                                   min.N <<- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-max.N
@@ -1547,7 +1547,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(min.N!=max.N)
                                  {
                                    warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                   min.N = max.N
+                                   min.N <<- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-max.N
@@ -1614,7 +1614,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(min.N!=max.N)
                                    {
                                      warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                     min.N <- max.N
+                                     min.N <<- max.N
                                    }
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-max.N
@@ -1671,7 +1671,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(min.N!=max.N)
                                    {
                                      warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                     min.N <- max.N
+                                     min.N <<- max.N
                                    }
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-max.N
@@ -1908,22 +1908,22 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
-                                         g.results[2,1]<-fm$waic[[1]]
-                                         g.results[2,2]<-as.integer(id)
+                                         g.results[2, 1] <<- fm$waic[[1]]
+                                         g.results[2, 2] <<- as.integer(id)
                                        }
                                        if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                        {
-                                         g.results[1,1]<-fm$mlik[[1]]
-                                         g.results[1,2]<-as.integer(id)
+                                         g.results[1, 1] <<- fm$mlik[[1]]
+                                         g.results[1, 2] <<- as.integer(id)
                                        }
 
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
-                                         g.results[3,1]<-fm$dic[[1]]
-                                         g.results[3,2]<-as.integer(id)
+                                         g.results[3, 1] <<- fm$dic[[1]]
+                                         g.results[3, 2] <<- as.integer(id)
                                        }
 
-                                       g.results[4,2] <- g.results[4,2]+1
+                                       g.results[4, 2] <<-  g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          p.add <<- as.array(post_proceed_results(statistics1)$p.post)
@@ -1935,7 +1935,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    if(model$statid!=-1)
                                      statistics1[id,model$statid+1]<-statistics1[id,model$statid+1] + 1
-                                   g.results[4,1] <- g.results[4,1]+1
+                                   g.results[4, 1] <<-  g.results[4,1]+1
                                    return(list(mlik=statistics1[id,1],waic=statistics1[id,2],dic=statistics1[id,3]))
                                  }else  if(exists("statistics")){
                                    if(is.na(statistics[id,1]))
@@ -1982,27 +1982,27 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
-                                         g.results[2,1]<-fm$waic[[1]]
-                                         g.results[2,2]<-as.integer(id)
+                                         g.results[2, 1] <<- fm$waic[[1]]
+                                         g.results[2, 2] <<- as.integer(id)
                                        }
                                        if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                        {
-                                         g.results[1,1]<-fm$mlik[[1]]
-                                         g.results[1,2]<-as.integer(id)
+                                         g.results[1, 1] <<- fm$mlik[[1]]
+                                         g.results[1, 2] <<- as.integer(id)
                                        }
 
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
-                                         g.results[3,1]<-fm$dic[[1]]
-                                         g.results[3,2]<-as.integer(id)
+                                         g.results[3, 1] <<- fm$dic[[1]]
+                                         g.results[3, 2] <<- as.integer(id)
                                        }
 
-                                       g.results[4,2] <- g.results[4,2]+1
+                                       g.results[4, 2] <<-  g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          proceeeded <- post_proceed_results(statistics)
                                          p.add <<- as.array(proceeeded$p.post)
-                                         #g.results[4,2] <-
+                                         #g.results[4, 2] <<-
                                        }
                                      }
 
@@ -2010,7 +2010,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    if(model$statid!=-1)
                                      statistics[id,model$statid+1]<-statistics[id,model$statid+1] + 1
-                                   g.results[4,1] <- g.results[4,1]+1
+                                   g.results[4, 1] <<-  g.results[4,1]+1
                                    return(list(mlik=statistics[id,1],waic=statistics[id,2],dic=statistics[id,3]))
 
                                  }else if(exists("hashStat")){
@@ -2102,28 +2102,28 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #                                                          }
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
-                                         g.results[2,1]<-fm$waic[[1]]
-                                         g.results[2,2]<-(id)
+                                         g.results[2, 1] <<- fm$waic[[1]]
+                                         g.results[2, 2] <<- (id)
                                        }
                                        if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                        {
-                                         g.results[1,1]<-fm$mlik[[1]]
-                                         g.results[1,2]<-(id)
+                                         g.results[1, 1] <<- fm$mlik[[1]]
+                                         g.results[1, 2] <<- (id)
                                        }
 
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
-                                         g.results[3,1]<-fm$dic[[1]]
-                                         g.results[3,2]<-(id)
+                                         g.results[3, 1] <<- fm$dic[[1]]
+                                         g.results[3, 2] <<- (id)
                                        }
 
-                                       g.results[4,2] <- g.results[4,2]+1
+                                       g.results[4, 2] <<-  g.results[4,2]+1
 
                                      }
 
 
                                    }
-                                   g.results[4,1] <- g.results[4,1]+1
+                                   g.results[4, 1] <<-  g.results[4,1]+1
                                    if(has.key(hash = hashStat,key=idd))
                                      hasRes<- values(hashStat[idd])
                                    else
@@ -2132,7 +2132,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    {
                                      proceeeded <- post_proceed_results_hash(hashStat)
                                      p.add <<- as.array(proceeeded$p.post)
-                                     #g.results[4,2] <-
+                                     #g.results[4, 2] <<-
                                    }
                                    return(list(mlik=hasRes[1],waic=hasRes[2],dic=hasRes[3]))
 
@@ -2145,33 +2145,33 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                      {
-                                       g.results[2,1]<-fm$waic[[1]]
-                                       g.results[2,2]<-(id)
+                                       g.results[2, 1] <<- fm$waic[[1]]
+                                       g.results[2, 2] <<- (id)
                                      }
                                      if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                      {
-                                       g.results[1,1]<-fm$mlik[[1]]
-                                       g.results[1,2]<-(id)
+                                       g.results[1, 1] <<- fm$mlik[[1]]
+                                       g.results[1, 2] <<- (id)
                                      }
 
                                      if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                      {
-                                       g.results[3,1]<-fm$dic[[1]]
-                                       g.results[3,2]<-(id)
+                                       g.results[3, 1] <<- fm$dic[[1]]
+                                       g.results[3, 2] <<- (id)
                                      }
-                                     g.results[4,1] <- g.results[4,1]+1
-                                     g.results[4,2] <- g.results[4,2]+1
+                                     g.results[4, 1] <<-  g.results[4,1]+1
+                                     g.results[4, 2] <<-  g.results[4,2]+1
                                      return(list(mlik=fm$mlik[[1]],waic=fm$waic[[1]],dic=fm$dic[[1]]))
                                    }
                                    else
                                    {
-                                     g.results[4,1] <- g.results[4,1]+1
+                                     g.results[4, 1] <<-  g.results[4,1]+1
                                      return(list(mlik=-Inf,waic=Inf,dic=Inf))
                                    }
                                  }
                                }
-                               g.results[4,1] <- g.results[4,1]+1
-                               g.results[4,2] <- g.results[4,2]+1
+                               g.results[4, 1] <<-  g.results[4,1]+1
+                               g.results[4, 2] <<-  g.results[4,2]+1
                                return(list(mlik=-Inf,waic=Inf,dic=Inf))
                              },
                              #lambda function for mtmcmc
@@ -3759,8 +3759,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                distrib_of_proposals <- glob.model$distrib_of_proposals
                                distrib_of_neighbourhoods <- glob.model$distrib_of_neighbourhoods
                                # do the search and simulations accross the modes
-                               g.results[4,1]<- 0
-                               g.results[4,2]<- 0
+                               g.results[4, 1] <<-  0
+                               g.results[4, 2] <<-  0
 
                                if(glob.model$presearch)
                                {
@@ -3831,7 +3831,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                eps.emp<-normprob(p1,p2)
                                max.cpu.buf<-max.cpu
                                delta.time <- 0
-                               LocImprove<-0
+                               LocImprove <<- 0
                                LocNeighbor<-0
                                max.cpu.buf<-max.cpu.glob
 
@@ -3839,7 +3839,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  p1<-p.post/acc_moves
                                  set.seed(runif(n = 1, min = 1, max = seed*100), kind = NULL, normal.kind = NULL)
-                                 LocImprove <- (sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
+                                 LocImprove <<- (sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
                                  LocNeighbor<-(sample(x = 7,size = 1,prob = distrib_of_neighbourhoods[LocImprove+1,]))
                                  switch.type.glob.buf = LocNeighbor
                                  switch.type.buf = LocNeighbor
@@ -3858,7 +3858,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    print(paste(j," iterations completed up to now after ",delta.time," cpu minutes"," best MLIK found ",g.results[1,1] ," current mlik found ",mlikcur,  "current acceptance ratio ",acc_moves/j.a))
                                  }
                                  if(j%%100==0)
-                                   seed = runif(n = 1,min = 0,max = 100000)
+                                   seed <<- runif(n = 1,min = 0,max = 100000)
                                  # the small part of the code to be upgraded at least slightly
                                  if(allow_offsprings  %in% c(1,2)  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                  {
@@ -3894,7 +3894,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        clear(hashStat)
                                        rm(hashStat)
                                        gc()
-                                       hashStat<<-hash()
+                                       hashStat <- hash()
                                        fparam<<-fparam[-to.del]
                                        Nvars<<-length(fparam)
                                        Nvars.init<<-Nvars
@@ -4090,7 +4090,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        rm(hashStat)
                                        gc()
                                        rm(hashStat)
-                                       hashStat<<-hash()
+                                       hashStat <- hash()
                                        fparam<<-fparam[-to.del]
                                        if(!keep.origin)
                                          pool.probs[which(fparam.pool %in% fparam)]<-1
@@ -4706,7 +4706,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                  }else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
                                  {
-                                   recalc.margin = 2^Nvars
+                                   recalc.margin <<- 2^Nvars
                                  }
                                  #withRestarts(tryCatch({
 
@@ -5882,7 +5882,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              {
 
                                xyz<-which(!is.na(statistics1[,1]))
-                               g.results[4,2] <- length(xyz)
+                               g.results[4, 2] <<-  length(xyz)
                                xyz<-intersect(xyz,which(statistics1[,1]!=-10000))
                                moddee<-which(statistics1[,1]==max(statistics1[,1],na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = length(statistics1[,1]))
@@ -5954,7 +5954,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                lHash<-length(hashStat)
                                mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
                                xyz<-which(mliks!=-10000)
-                               g.results[4,2] <- lHash
+                               g.results[4, 2] <<-  lHash
                                moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = lHash)
                                nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
@@ -6079,7 +6079,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
                                    betas[which(is.na(betas))]<-0
                                    xyz<-which(mliks!=-10000)
-                                   g.results[4,2] <- lHash
+                                   g.results[4, 2] <<-  lHash
                                    moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
                                    zyx<-array(data = NA,dim = lHash)
                                    nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
