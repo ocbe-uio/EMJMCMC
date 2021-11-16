@@ -96,10 +96,10 @@ estimate.logic.bern = function(formula = NULL, data, family = binomial(), n=1000
 {
   if(length(formula)==0)
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  
+
   if(is.na(formula))
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  
+
   out = glm(formula = formula,data = data, family=family)
   p = out$rank
   if(p>k.max)
@@ -127,10 +127,10 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
 {
   if(length(formula)==0)
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  
+
   if(is.na(formula))
     return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  
+
   X = scale(model.matrix(object = formula,data = data),center = T,scale = F)
   X[,1] = 1
   fmla.proc=as.character(formula)[2:3]
@@ -626,12 +626,12 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
   if(predict){
     pred = results[[1]]$preds*p.gen.post[1]
     if(M > 1) {
-      
+
       for(i in 2:M)
       {
-  
+
         pred=pred+results[[i]]$preds*p.gen.post[i]
-  
+
       }
     }
   }
@@ -1033,8 +1033,6 @@ if(!is.null(advanced.param))
   mySearch$printable.opt<<-advanced.param$printable
 }
 
-
-#distrib_of_proposals = с(0,0,0,0,10)
 if(exists("hashStat"))
 {
   clear(hashStat)
@@ -3989,16 +3987,13 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      clear(hashStat)
-                                     #rm(hashStat)
                                      gc()
-                                     #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                      hashStat<<-hash()
                                      fparam<<-fparam[-to.del]
                                      Nvars<<-length(fparam)
                                      Nvars.init<<-Nvars
                                      p.add<<-p.add[-to.del]
                                      p.post<-array(data = 1,dim = Nvars)
-                                     #print(paste("mutation happended ",proposal," tree  added"))
                                      varcurb<-varcurb[1:Nvars]
                                      varcand<-varcurb[1:Nvars]
                                      varglob<-varcurb[1:Nvars]
@@ -4207,21 +4202,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      clear(hashStat)
-                                     #rm(hashStat)
-                                     #gc()
-                                     #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
-                                     #rm(hashStat)
                                      hashStat<<-hash()
-                                     #clear(hashStat)
-                                     #hashStat<<-hash()
                                      fparam<<-fparam[-to.del]
-                                     #if(!keep.origin)
-                                     #   pool.probs[which(fparam.pool %in% fparam)]<-1
                                      Nvars<<-length(fparam)
                                      Nvars.init<<-Nvars
                                      p.add<<-p.add[-to.del]
                                      p.post<-array(data = 1,dim = Nvars)
-                                     #print(paste("mutation happended ",proposal," tree  added"))
                                      varcurb<-varcurb[-to.del]
                                      varcand<-varcurb[-to.del]
                                      varglob<-varcurb[-to.del]
@@ -4617,11 +4603,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      clear(hashStat)
-                                     #rm(hashStat)
-                                     #gc()
-                                     #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                      clear(hashStat)
-                                     #hashStat<<-hash()
                                      fparam<<-fparam[-to.del]
                                      if(!keep.origin)
                                        pool.probs[which(fparam.pool %in% fparam)]<-1
@@ -4629,7 +4611,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      Nvars.init<<-Nvars
                                      p.add<<-p.add[-to.del]
                                      p.post<-array(data = 1,dim = Nvars)
-                                     #print(paste("mutation happended ",proposal," tree  added"))
                                      varcurb<-varcurb[-to.del]
                                      varcand<-varcurb[-to.del]
                                      varglob<-varcurb[-to.del]
