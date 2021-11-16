@@ -1,2 +1,14 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+EMJMCMC
+examples
+illustrations
+older\ versions
+papers
+presentations
+submitted
+supplementaries
+\*\.tar\.gz
+\.gitignore
+\.Rhistory
+ReadMe\.pdf
