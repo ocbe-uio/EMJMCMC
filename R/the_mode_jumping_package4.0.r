@@ -1,39 +1,3 @@
-#rm(list = ls(all = TRUE))
-
-#install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
-#install.packages("bigmemory")
-#install.packages("snow")
-#install.packages("Rmpi")
-#install.packages("ade4")
-#install.packages("sp")
-#install.packages("BAS")
-#install.packages("hash")
-#install.packages("stringi")
-#install.packages("irlba")
-#install.packages("bigalgebra")
-#install.packages("speedglm")
-#install.packages("biglm")
-#/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive
-#install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive/bas_0.90.tar.gz", repos = NULL)
-
-library(glmnet)
-library(biglm)
-library(hash)
-library(sp)
-library(INLA)
-library(parallel)
-library(bigmemory)
-#library(snow)
-library(MASS)
-library(ade4)
-#library(copula)
-#library(compiler)
-library(BAS)
-library(stringi)
-#library(speedglm)
-require(stats)
-#compile INLA
-
 m<-function(a,b)a*b
 
 estimate.bas.glm <- function(formula, data, family, prior, logn)

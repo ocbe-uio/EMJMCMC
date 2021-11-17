@@ -1,38 +1,3 @@
-#rm(list = ls(all = TRUE))
-
-#install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
-#install.packages("bigmemory")
-#install.packages("snow")
-#install.packages("Rmpi")
-#install.packages("ade4")
-#install.packages("sp")
-#install.packages("BAS")
-#install.packages("hash")
-#install.packages("stringi")
-#install.packages("irlba")
-#install.packages("bigalgebra")
-#install.packages("speedglm")
-#install.packages("biglm")
-library(glmnet)
-library(biglm)
-library(hash)
-library(sp)
-library(INLA)
-library(parallel)
-library(bigmemory)
-#library(snow)
-library(MASS)
-library(ade4)
-#library(copula)
-#library(compiler)
-library(BAS)
-library(stringi)
-#library(speedglm)
-require(stats)
-#compile INLA
-
-
-
 estimate.logic.lm.tCCH.fixed.phi <- function(formula = Y1~-1., data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1)
 {
   fmla.proc<-as.character(formula)[2:3]
