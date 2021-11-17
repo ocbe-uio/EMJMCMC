@@ -899,7 +899,15 @@ gc()
 return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))
 }
 
-parall.gmj <- function(X,M=16,preschedule = F) parallel::mclapply(X = X, FUN = do.call.emjmcmc,mc.preschedule = preschedule, mc.cores = M,mc.cleanup = T)
+parall.gmj <- function(X, M = 16, preschedule = FALSE) {
+  parallel::mclapply(
+    X              = X,
+    FUN            = do.call.emjmcmc,
+    mc.preschedule = preschedule,
+    mc.cores       = M,
+    mc.cleanup     = TRUE
+  )
+}
 
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and default values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0), latnames="",
