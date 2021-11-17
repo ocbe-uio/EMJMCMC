@@ -28,7 +28,7 @@ runemjmcmc(formula, data, secondary = vector(mode="character", length=0),
   \item{interact}{a boolean parameter defining if feature engineering is allowed in the search}
   \item{relations}{a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = T)}
   \item{relations.prob}{probability distribution of addressing modifications defined in relations parameter (both vectors must be of the same length)}
-  \item{gen.prob}{a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if interact.param$allow_offsprings is either 3 or 4)}
+  \item{gen.prob}{a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if interact.param\$allow_offsprings is either 3 or 4)}
   \item{pool.cross}{a parameter defining the probability of adressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)}
   \item{p.add}{a default marginal inclusion probability parameter to be changed during the search to the true value}
   \item{o.add.default}{a parameter defining sparcity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for paramters in the current pool}
