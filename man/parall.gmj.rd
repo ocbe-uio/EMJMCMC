@@ -1,7 +1,7 @@
 \name{parall.gmj}
 \alias{parall.gmj}
 \title{A function to run parallel chains of (R)(G)MJMCMC algorithms}
-\usage{(X,M=16,preschedule=F)}
+\usage{parall.gmj(X, M=16, preschedule=F)}
 \arguments{
 \item{X}{a vector of lists of parameters of runemjmcmc as well as several additional fields that must come after runemjmcmc parameters such as: vect$simlen - the number of parameters of runemjmcmc in vect, vect$cpu - the cpu id for to set the unique seed, vect$NM - the number of unique best models from runemjmcmc to base the output report upon}
 \item{M}{a number of cpus to be used (can only be equal to 1 on Windows OS currently, up to a maximal number of cores can be used on linux based systems)}

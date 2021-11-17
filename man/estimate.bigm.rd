@@ -1,12 +1,13 @@
 \name{estimate.bigm}
 \alias{estimate.bigm}
 \title{Obtaining Bayesian estimators of interest from a GLM model}
-\usage{estimate.bigm(formula, data, family, prior, maxit = 2,chunksize = 1000000)}
+\usage{estimate.bigm(formula, data, family, prior, n, maxit = 2,chunksize = 1000000)}
 \arguments{
 \item{formula}{a formula object for the model to be addressed}
 \item{data}{a data frame object containing variables and observations corresponding to the formula used}
 \item{family}{distribution family foe the responces}
 \item{prior}{either "AIC" or "BIC"}
+\item{n}{sample size}
 \item{maxit}{maximum number of Fisher scoring iterations}
 \item{chunksize}{size of chunks for processng the data frame}
 }

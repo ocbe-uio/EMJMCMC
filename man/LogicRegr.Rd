@@ -1,6 +1,7 @@
 \name{LogicRegr}
 \alias{LogicRegr}
 \title{A wrapper for running the Bayesian logic regression based inference in a easy to use way}
+\description{A wrapper for running the Bayesian logic regression based inference in a easy to use way}
 \usage{LogicRegr(formula, data, family = "Gaussian",prior = "J",report.level = 0.5, d = 20, cmax = 5, kmax = 20, p.and = 0.9, p.not = 0.05, p.surv = 0.1,ncores = -1, n.mods = 1000 ,advanced)}
 \arguments{
 \item{formula}{a formula object for the model to be addressed}

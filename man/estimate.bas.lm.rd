@@ -7,6 +7,7 @@
 \item{data}{a data frame object containing variables and observations corresponding to the formula used}
 \item{prior}{integers 1, 2 or 3 are allowed corresponding to AIC, BIC or Gelman's g-prior}
 \item{n}{sample size}
+\item{g}{g}
 }
 \value{a list of
 \item{mlik}{marginal likelihood of the model}

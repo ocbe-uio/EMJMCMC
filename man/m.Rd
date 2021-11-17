@@ -1,6 +1,7 @@
 \name{m}
 \alias{m}
 \title{product function used in the deep regression context}
+\description{product function used in the deep regression context}
 \usage{m(a,b)}
 \arguments{
 \item{a}{the first argument}
