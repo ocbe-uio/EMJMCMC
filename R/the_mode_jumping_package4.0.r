@@ -1051,12 +1051,12 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                          switch.type.glob = "integer",
                                          isobsbinary = "array",
                                          filtered = "vector",
-                                         fparam = "vector",
-                                         fparam.pool = "vector",
+                                         fparam = "array",
+                                         fparam.pool = "array",
                                          p.add = "array",
                                          latent.formula = "character",
                                          Nvars = "integer",
-                                         seed = "integer",
+                                         seed = "numeric",
                                          M.nd = "integer",
                                          locstop.nd = "logical",
                                          M.mcmc = "integer",
@@ -1214,7 +1214,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                  fobserved <<- search.args.list$fobserved
                                  switch.type <<- as.integer(search.args.list$fswitch.type)
                                  n.size <<- as.integer(search.args.list$n.size)
-                                 LocImprove <<-search.args.list$prior.optimizer.freq
+                                 LocImprove <<- as.array(search.args.list$prior.optimizer.freq)
                                  max.N <<- as.integer(search.args.list$max.N)
                                  fparam <<- search.args.list$fparam
                                  fparam.pool <<- search.args.list$fparam
@@ -3795,7 +3795,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                eps.emp<-normprob(p1,p2)
                                max.cpu.buf<-max.cpu
                                delta.time <- 0
-                               LocImprove <<- 0
+                               LocImprove <<- as.array(0)
                                LocNeighbor<-0
                                max.cpu.buf<-max.cpu.glob
 
@@ -3803,7 +3803,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                {
                                  p1<-p.post/acc_moves
                                  set.seed(stats::runif(n = 1, min = 1, max = seed*100), kind = NULL, normal.kind = NULL)
-                                 LocImprove <<- (sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
+                                 LocImprove <<- as.array(sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
                                  LocNeighbor<-(sample(x = 7,size = 1,prob = distrib_of_neighbourhoods[LocImprove+1,]))
                                  switch.type.glob.buf = LocNeighbor
                                  switch.type.buf = LocNeighbor
@@ -4678,7 +4678,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
 
 
 
-                                 if(LocImprove<=3)
+                                 if(LocImprove <= as.array(3))
                                  {
                                    vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = 4 + LocImprove,min.N = min.N.glob,max.N = max.N.glob,switch.type = switch.type.glob.buf)
                                    max.cpu.buf = 1
@@ -5000,10 +5000,10 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                  }
 
                                  # try local improvements
-                                 if(LocImprove<=3)
+                                 if(LocImprove <= as.array(3))
                                  {
                                    # sa improvements
-                                   if(LocImprove == 0 || LocImprove == 3)
+                                   if(LocImprove == as.array(0) || LocImprove == as.array(3))
                                    {
                                      if(printable.opt)print("Try SA imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
@@ -5021,12 +5021,12 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                        objcur<- -mlikcand
                                      }
                                      model = list(statid = 4 + LocImprove, switch.type = switch.type.buf, change = buf.change,mlikcur = mlikcur,
-                                                  varcur = varcur,varold = varcurb, objcur = objcur,objold = objold, sa2 = ifelse(LocImprove == 3,TRUE,FALSE) ,reverse=FALSE)
+                                                  varcur = varcur,varold = varcurb, objcur = objcur,objold = objold, sa2 = ifelse(LocImprove == as.array(3),TRUE,FALSE) ,reverse=FALSE)
 
                                      SA.forw<-learnlocalSA(model)
                                      ratcand<-SA.forw$mlikcur
 
-                                     if(LocImprove == 0)
+                                     if(LocImprove == as.array(0))
                                      {
 
                                        ids = which(buf.change == 1)
@@ -5059,7 +5059,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
 
                                      }
 
-                                     if(LocImprove == 0)
+                                     if(LocImprove == as.array(0))
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,SA.back$log.prob.cur, - SA.back$log.prob.fix,na.rm=T)
                                        if(log(stats::runif(n = 1,min = 0,max = 1))<=thact)
@@ -5137,7 +5137,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                        modglob<-SA.forw$modglob
                                      }
 
-                                   }else  if(LocImprove == 1)
+                                   }else  if(LocImprove == as.array(1))
                                    {
                                      if(printable.opt)print("Try MTMCMC imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
@@ -5215,7 +5215,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                        modglob<-MTMCMC.back$modglob
                                      }
 
-                                   }else if(LocImprove == 2)
+                                   }else if(LocImprove == as.array(2))
                                    {
                                      if(printable.opt)print("Try greedy heuristic imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
