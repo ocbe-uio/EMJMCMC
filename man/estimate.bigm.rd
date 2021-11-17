@@ -31,7 +31,7 @@ data.example = as.data.frame(X4)
 formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
 
 formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-1],collapse = "+")))
-estimate.bigm(formula = formula1, data = data.example,n=47,prior = "BIC", maxit = 20,chunksize = 1000000, family = gaussian())
+EMJMCMC:::estimate.bigm(formula = formula1, data = data.example,n=47,prior = "BIC", maxit = 20,chunksize = 1000000, family = gaussian())
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

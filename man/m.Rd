@@ -9,6 +9,6 @@
 \value{
 \item{m(a,b)}{product of the arguments a*b}
 }
-\examples{m(10,2)}
+\examples{EMJMCMC:::m(10,2)}
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

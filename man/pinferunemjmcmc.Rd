@@ -1,7 +1,7 @@
 \name{pinferunemjmcmc}
 \alias{pinferunemjmcmc}
 \title{A wrapper for running the GLMM, BLR, or DBRM based inference and predictions in an expert but rather easy to use way}
-\usage{pinferunemjmcmc(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)}
+\usage{pinferunemjmcmc(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = FALSE,  num.mod.best = 1000, predict = FALSE,   test.data = 1, link.function = function(z)z, runemjmcmc.params)}
 \arguments{
 \item{runemjmcmc.params}{a vector of parameters of runemjmcmc function, see the help of runemjmcmc for details}
 \item{mcgmj}{an mclapply like function for perfroming for perfroming parallel computing, do not change the default unless you are using Windows}
@@ -83,7 +83,7 @@ thf=0.05
 #specify tuning parameters of the algorithm for exploring DBRM of interest
 #notice that allow_offsprings=3 corresponds to the GMJMCMC runs and
 #allow_offsprings=4 -to the RGMJMCMC runs
-res1 = pinferunemjmcmc(n.cores = M, report.level =  0.5, num.mod.best = NM ,simplify = T,runemjmcmc.params = list(formula = formula1,data = data.example,estimator = estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = F,interact = T,outgraphs=F,relations=c("to23","expi","logi","to35","sini","troot","sigmoid"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=10000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+res1 = EMJMCMC:::pinferunemjmcmc(n.cores = M, report.level =  0.5, num.mod.best = NM ,simplify = TRUE, runemjmcmc.params = list(formula = formula1,data = data.example,estimator = estimate.gamma.cpen,estimator.args =  list(data = data.example),recalc_margin = 249, save.beta = FALSE, interact = TRUE, outgraphs= FALSE, relations=c("to23","expi","logi","to35","sini","troot","sigmoid"),relations.prob =c(0.1,0.1,0.1,0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=3,mutation_rate = 250,last.mutation=10000, max.tree.size = 5, Nvars.max =15,p.allow.replace=0.9,p.allow.tree=0.01,p.nor=0.9,p.and = 0.9),n.models = 10000,unique = TRUE, max.cpu = 4,max.cpu.glob = 4,create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 100,print.freq = 1000,advanced.param = list(
   max.N.glob=as.integer(10),
   min.N.glob=as.integer(5),
   max.N=as.integer(3),
@@ -113,8 +113,8 @@ gauss=function(x)exp(-x*x)
 compmax = 21
 
 #read in the train and test data sets
-test = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\%20supplementaries/breast\%20cancer/test.csv",header = T,sep=",")[,-1]
-train = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\%20supplementaries/breast\%20cancer/train.csv",header = T,sep=",")[,-1]
+test = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\%20supplementaries/breast\%20cancer/test.csv",header = TRUE, sep=",")[,-1]
+train = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\%20supplementaries/breast\%20cancer/train.csv",header = TRUE, sep=",")[,-1]
 
 #transform the train data set to a data.example data.frame that EMJMCMC class will internally use
 data.example = as.data.frame(train)
@@ -128,7 +128,7 @@ g=function(x)
 formula1 = as.formula(paste(colnames(data.example)[31],"~ 1 +",paste0(colnames(data.example)[-31],collapse = "+")))
 
 
-res = pinferunemjmcmc(n.cores =30, report.level =  0.5 , num.mod.best = NM,simplify = T, predict = T,test.data = as.data.frame(test),link.function = g, runemjmcmc.params =list(formula = formula1,data = data.example,gen.prob = c(1,1,1,1,0),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = BAS::aic.prior(),family = binomial(),yid=31, logn = log(143),r=exp(-0.5)),recalc_margin = 95, save.beta = T,interact = T,relations = c("gauss","tanh","atan","sin"),relations.prob =c(0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 100,last.mutation=1000, max.tree.size = 6, Nvars.max = 20,p.allow.replace=0.5,p.allow.tree=0.4,p.nor=0.3,p.and = 0.9),n.models = 7000,unique =T,max.cpu = 4,max.cpu.glob = 4,create.table = F,create.hash = T,pseudo.paral = T,burn.in = 100,print.freq = 1000,advanced.param = list(
+res = EMJMCMC:::pinferunemjmcmc(n.cores =30, report.level =  0.5 , num.mod.best = NM,simplify = TRUE,  predict = TRUE, test.data = as.data.frame(test),link.function = g, runemjmcmc.params =list(formula = formula1,data = data.example,gen.prob = c(1,1,1,1,0),estimator =estimate.bas.glm.cpen,estimator.args =  list(data = data.example,prior = BAS::aic.prior(),family = binomial(),yid=31, logn = log(143),r=exp(-0.5)),recalc_margin = 95, save.beta = TRUE, interact = TRUE, relations = c("gauss","tanh","atan","sin"),relations.prob =c(0.1,0.1,0.1,0.1),interact.param=list(allow_offsprings=4,mutation_rate = 100,last.mutation=1000, max.tree.size = 6, Nvars.max = 20,p.allow.replace=0.5,p.allow.tree=0.4,p.nor=0.3,p.and = 0.9),n.models = 7000,unique = TRUE, max.cpu = 4,max.cpu.glob = 4,create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 100,print.freq = 1000,advanced.param = list(
   max.N.glob=as.integer(10),
   min.N.glob=as.integer(5),
   max.N=as.integer(3),

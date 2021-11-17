@@ -25,7 +25,7 @@ X1$Y1=round(1.0/(1.0+exp(-Y1)))
 
 formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(51)],collapse = "+")))
 
-estimate.logic.glm(formula = formula1, data = X1,family = binomial(),n = 1000, m = 50)
+EMJMCMC:::estimate.logic.glm(formula = formula1, data = X1,family = binomial(),n = 1000, m = 50)
 
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")

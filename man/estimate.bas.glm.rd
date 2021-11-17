@@ -26,7 +26,7 @@ data.example = as.data.frame(X4)
 data.example$Y4=as.integer(data.example$Y>mean(data.example$Y))
 formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
 
-estimate.bas.glm(formula = formula1, data = data.example,prior = BAS::aic.prior(), logn=47, family = binomial())
+EMJMCMC:::estimate.bas.glm(formula = formula1, data = data.example,prior = BAS::aic.prior(), logn=47, family = binomial())
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

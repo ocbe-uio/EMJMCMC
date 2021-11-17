@@ -18,7 +18,7 @@ X1$Y1<-round(1.0/(1.0+exp(-Y1)))
 
 formula1 = as.formula(paste(colnames(X1)[51],"~ 1 +",paste0(colnames(X1)[-c(51)],collapse = "+")))
 names = colnames(X1)
-simplify.formula(fmla=formula1,names=names)
+EMJMCMC:::simplify.formula(fmla=formula1,names=names)
 
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")

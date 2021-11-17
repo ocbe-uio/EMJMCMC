@@ -8,6 +8,6 @@
 \value{
 \item{erf(x)}{erf value}
 }
-\examples{erf(10)}
+\examples{EMJMCMC:::erf(10)}
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

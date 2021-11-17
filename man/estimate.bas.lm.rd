@@ -26,7 +26,7 @@ X4$Y4=Y4
 data.example = as.data.frame(X4)
 formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
 
-estimate.bas.lm(formula = formula1, data = data.example,prior = 2, n=47)
+EMJMCMC:::estimate.bas.lm(formula = formula1, data = data.example,prior = 2, n=47)
 
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")

@@ -8,6 +8,6 @@
 \value{
 \item{factorial(x)}{truncated facctorial as min(x!,171!)}
 }
-\examples{factorial(10)}
+\examples{EMJMCMC:::factorial(10)}
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line
