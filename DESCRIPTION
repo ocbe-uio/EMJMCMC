@@ -1,7 +1,7 @@
 Package: EMJMCMC
 Type: Package
 Title: EMJMCMC
-Version: 1.4.3
+Version: 1.4.3.9004
 Date: 2021-09-20
 Author: person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut", "cre"))
 Maintainer: Aliaksandr Hubin<aliaksah@math.uio.no>
