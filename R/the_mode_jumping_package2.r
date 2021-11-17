@@ -511,7 +511,7 @@ LogicRegr = function(formula, data, family = "Gaussian",prior = "J",report.level
 mcgmjpar = function(X,FUN,mc.cores) parallel::mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores)
 mcgmjpse = function(X,FUN,mc.cores) lapply(X,FUN)
 
-pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
+pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
 {
 
   if(predict)

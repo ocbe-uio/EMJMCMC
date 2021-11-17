@@ -1,7 +1,7 @@
 \name{pinferunemjmcmc}
 \alias{pinferunemjmcmc}
 \title{A wrapper for running the GLMM, BLR, or DBRM based inference and predictions in an expert but rather easy to use way}
-\usage{pinferunemjmcmc(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = FALSE,  num.mod.best = 1000, predict = FALSE,   test.data = 1, link.function = function(z)z, runemjmcmc.params)}
+\usage{pinferunemjmcmc(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)}
 \arguments{
 \item{runemjmcmc.params}{a vector of parameters of runemjmcmc function, see the help of runemjmcmc for details}
 \item{mcgmj}{an mclapply like function for perfroming for perfroming parallel computing, do not change the default unless you are using Windows}
