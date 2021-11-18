@@ -27,7 +27,7 @@ X4$Y4=Y4
 data.example = as.data.frame(X4)
 formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
 
-estimate.speedglm(formula = formula1, data = data.example,prior = "BIC", logn=log(47), family = gaussian())
+EMJMCMC:::estimate.speedglm(formula = formula1, data = data.example,prior = "BIC", logn=log(47), family = gaussian())
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

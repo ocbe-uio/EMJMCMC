@@ -1,12 +1,13 @@
 \name{estimate.bigm}
 \alias{estimate.bigm}
 \title{Obtaining Bayesian estimators of interest from a GLM model}
-\usage{estimate.bigm(formula, data, family, prior, maxit = 2,chunksize = 1000000)}
+\usage{estimate.bigm(formula, data, family, prior, n, maxit = 2,chunksize = 1000000)}
 \arguments{
 \item{formula}{a formula object for the model to be addressed}
 \item{data}{a data frame object containing variables and observations corresponding to the formula used}
 \item{family}{distribution family foe the responces}
 \item{prior}{either "AIC" or "BIC"}
+\item{n}{sample size}
 \item{maxit}{maximum number of Fisher scoring iterations}
 \item{chunksize}{size of chunks for processng the data frame}
 }
@@ -31,7 +32,7 @@ data.example = as.data.frame(X4)
 formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
 
 formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-1],collapse = "+")))
-estimate.bigm(formula = formula1, data = data.example,n=47,prior = "BIC", maxit = 20,chunksize = 1000000, family = gaussian())
+EMJMCMC:::estimate.bigm(formula = formula1, data = data.example,n=47,prior = "BIC", maxit = 20,chunksize = 1000000, family = gaussian())
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

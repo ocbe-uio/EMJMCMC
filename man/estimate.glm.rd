@@ -27,7 +27,7 @@ data.example = as.data.frame(X4)
 formula1 = as.formula(paste(colnames(X4)[51],"~ 1 +",paste0(colnames(X4)[-c(51)],collapse = "+")))
 
 formula1 = as.formula(paste(colnames(data.example)[1],"~ 1 +",paste0(colnames(data.example)[-1],collapse = "+")))
-estimate.glm(formula = formula1, data = data.example,prior = 2, family = gaussian())
+EMJMCMC:::estimate.glm(formula = formula1, data = data.example,prior = 2, family = gaussian())
 }
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

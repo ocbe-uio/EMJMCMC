@@ -1,49 +1,13 @@
-#rm(list = ls(all = TRUE))
-
-#install.packages("INLA", repos="http://www.math.ntnu.no/inla/R/testing")
-#install.packages("bigmemory")
-#install.packages("snow")
-#install.packages("Rmpi")
-#install.packages("ade4")
-#install.packages("sp")
-#install.packages("BAS")
-#install.packages("hash")
-#install.packages("stringi")
-#install.packages("irlba")
-#install.packages("bigalgebra")
-#install.packages("speedglm")
-#install.packages("biglm")
-#/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive
-#install.packages("/mn/sarpanitu/ansatte-u2/aliaksah/Desktop/package/EMJMCMC/examples/BAS archive/bas_0.90.tar.gz", repos = NULL)
-
-library(glmnet)
-library(biglm)
-library(hash)
-library(sp)
-library(INLA)
-library(parallel)
-library(bigmemory)
-#library(snow)
-library(MASS)
-library(ade4)
-#library(copula)
-#library(compiler)
-library(BAS)
-library(stringi)
-#library(speedglm)
-require(stats)
-#compile INLA
-
 m<-function(a,b)a*b
 
 estimate.bas.glm <- function(formula, data, family, prior, logn)
 {
 
   #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
+  X <- stats::model.matrix(object = formula,data = data)
+  out <- BAS::bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = stats::coefficients(out))))
 
 }
 
@@ -53,19 +17,19 @@ estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
 {
 
   #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
+  X <- stats::model.matrix(object = formula,data = data)
+  out <- BAS::bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  tn<-sum(stringi::stri_count_fixed(str = fmla.proc[2], pattern = "I("))
 
-  return(list(mlik = (out$logmarglik+2*log(Jprior) + 2*tn*log(r)),waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = (out$logmarglik+2*log(Jprior) + 2*tn*log(r)),waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = stats::coefficients(out))))
 
 }
 
@@ -74,19 +38,19 @@ estimate.bas.glm.pen <- function(formula, data, family, prior, logn,n,m,r=1)
 
 estimate.elnet <- function(formula,response, data, family,alpha)
 {
-  X <- model.matrix(object = formula,data = data)
+  X <- stats::model.matrix(object = formula,data = data)
   if(dim(X)[2]<=2)
     return(list(mlik =  -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = array(0,dim=dim(X)[2]))))
-  out <- glmnet(x=X[,-1], y = data[[response]], family=family, a=alpha)
-  dout<- as.numeric(-deviance(out)[[out$dim[2]]])
-  return(list(mlik = dout,waic = -dout , dic =  -dout,summary.fixed =list(mean = coef(out)[,out$dim[2]])))
+  out <-glmnet::glmnet(x=X[,-1], y = data[[response]], family=family, a=alpha)
+  dout<- as.numeric(-stats::deviance(out)[[out$dim[2]]])
+  return(list(mlik = dout,waic = -dout , dic =  -dout,summary.fixed =list(mean = stats::coef(out)[,out$dim[2]])))
 }
 
 # use dic and aic as bic and aic correspondinly
 estimate.speedglm <- function(formula, data, family, prior) # weird behaviour, bad control of singularity
 {
-  X <- model.matrix(object = formula,data = data)
-  out <- speedglm.wfit(y = data[,1], X = X, intercept=FALSE, family=family,eigendec = T, method = "Cholesky")
+  X <- stats::model.matrix(object = formula,data = data)
+  out <- speedglm::speedglm.wfit(y = data[,1], X = X, intercept=FALSE, family=family,eigendec = T, method = "Cholesky")
   if(prior == "AIC")
     return(list(mlik = -out$aic ,waic = -(out$deviance + 2*out$rank) , dic =  -(out$RSS),summary.fixed =list(mean = out$coefficients)))
   if(prior=="RSS")
@@ -96,21 +60,21 @@ estimate.speedglm <- function(formula, data, family, prior) # weird behaviour, b
 estimate.bigm <- function(formula, data, family, prior, maxit = 2,chunksize = 1000000) # nice behaviour
 {
 
-  out <- bigglm(data = data, family=family,formula = formula, sandwich = F,maxit = maxit, chunksize = chunksize)
+  out <- stats::lm(data = data, family=family,formula = formula, sandwich = F,maxit = maxit, chunksize = chunksize)
   if(prior == "AIC")
-    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = 2),summary.fixed =list(mean = coef(out))))
+    return(list(mlik = -stats::AIC(out,k = 2) ,waic = stats::AIC(out,k = 2) , dic =  stats::AIC(out,k = 2),summary.fixed =list(mean = stats::coef(out))))
   if(prior=="RSS")
-    return(list(mlik = -AIC(out,k = 2) ,waic = AIC(out,k = 2) , dic =  AIC(out,k = 2),summary.fixed =list(mean = coef(out))))
+    return(list(mlik = -stats::AIC(out,k = 2) ,waic = stats::AIC(out,k = 2) , dic =  stats::AIC(out,k = 2),summary.fixed =list(mean = stats::coef(out))))
 }
 
 estimate.bas.glm.bagging <- function(formula, data, family, prior, logn, bag.size)
 {
 
   #only poisson and binomial families are currently adopted
-  X <- model.matrix(object = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
+  X <- stats::model.matrix(object = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
+  out <- BAS::bayesglm.fit(x = X, y = data[,1], family=family,coefprior=prior)
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + logn*out$rank),summary.fixed =list(mean = stats::coefficients(out))))
 
 }
 
@@ -120,12 +84,12 @@ sigmoid<- function(x)
 }
 erf <- function(x)
 {
-  return(2 * pnorm(x * sqrt(2)) - 1)
+  return(2 * stats::pnorm(x * sqrt(2)) - 1)
 }
 estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 {
 
-  out <- lm(formula = formula,data = data)
+  out <- stats::lm(formula = formula,data = data)
   # 1 for aic, 2 bic prior, else g.prior
 
   p <- out$rank
@@ -147,54 +111,54 @@ estimate.bas.lm <- function(formula, data, prior, n, g = 0)
   }
 
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  return(list(mlik = logmarglik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coef(out))))
 
 }
 
 estimate.logic.lm <- function(formula, data, n, m, r = 1)
 {
-  out <- lm(formula = formula,data = data)
+  out <- stats::lm(formula = formula,data = data)
   p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   Jprior <- prod(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
-  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
+  #tn<-sum(stringi::stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  mlik = (-stats::BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+  return(list(mlik = mlik,waic = stats::AIC(out)-n , dic =  stats::BIC(out)-n,summary.fixed =list(mean = stats::coef(out))))
 }
 
 
 estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
 {
-  X <- model.matrix(object = formula,data = data)
-  out <- bayesglm.fit(x = X, y = data[,1], family=family,coefprior=aic.prior())
+  X <- stats::model.matrix(object = formula,data = data)
+  out <- BAS::bayesglm.fit(x = X, y = data[,1], family=family,coefprior=BAS::aic.prior())
   p <- out$rank
   fmla.proc<-as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <-stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj<-(stri_count_fixed(str = fparam, pattern = "&"))
-  sj<-sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj<-(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   Jprior <- sum(factorial(sj)/((m^sj)*2^(3*sj-2)))
-  #tn<-sum(stri_count_fixed(str = fmla.proc[2], pattern = "I("))
+  #tn<-sum(stringi::stri_count_fixed(str = fmla.proc[2], pattern = "I("))
   mlik = (out$logmarglik + 4*p - log(n)*p +2*log(Jprior) + 2*p*log(r)+n)
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = out$logmarglik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = stats::coefficients(out))))
 }
 
 estimate.bas.lm.bagging <- function(formula, data, prior, n, g = 0, bag.size)
 {
 
-  out <- lm(formula = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
+  out <- stats::lm(formula = formula,data = data[sample.int(size = bag.size,n = dim(data)[1],replace = F),])
   # 1 for aic, 2 bic prior, else g.prior
 
   p <- out$rank
@@ -216,7 +180,7 @@ estimate.bas.lm.bagging <- function(formula, data, prior, n, g = 0, bag.size)
   }
 
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  return(list(mlik = logmarglik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coef(out))))
 
 }
 
@@ -235,7 +199,7 @@ estimate.inla.ar1 <- function(formula, args)
 {
 
   out<-NULL
-  capture.output({withRestarts(tryCatch(capture.output({out <- do.call(inla, c(args,formula = formula)) })), abort = function(){onerr<-TRUE;out<-NULL})})
+  utils::capture.output({withRestarts(tryCatch(utils::capture.output({out <- do.call(inla, c(args,formula = formula)) })), abort = function(){onerr<-TRUE;out<-NULL})})
   if(is.null(out))
   {
     return(list(mlik = -10000,waic =10000, dic =10000, summary.fixed = 0))
@@ -250,25 +214,25 @@ estimate.inla.ar1 <- function(formula, args)
 parallelize<-function(X,FUN)
 {
   max.cpu <- length(X)
-  cl <-makeCluster(max.cpu ,type = paral.type,outfile = "")#outfile = ""
-  clusterEvalQ(cl = cl,expr = c(library(INLA),library(bigmemory)))
+  cl <-parallel::makeCluster(max.cpu ,type = paral.type,outfile = "")#outfile = ""
+  parallel::clusterEvalQ(cl = cl,expr = c(library(INLA),library(bigmemory)))
   if(exists("statistics"))
   {
-    clusterExport(cl=cl, "statistics")
-    clusterEvalQ(cl,{statistics <- attach.resource(statistics);1})
+    parallel::clusterExport(cl=cl, "statistics")
+    parallel::clusterEvalQ(cl,{statistics <- bigmemory::attach.resource(statistics);1})
   }
-  res.par <- parLapply(cl = cl, X, FUN)
-  stopCluster(cl)
+  res.par <- parallel::parLapply(cl = cl, X, FUN)
+  parallel::stopCluster(cl)
   return(res.par)
 }
 
 #define the function estimating parameters of a given Bernoulli logic regression with Jeffrey's prior
-estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50, r = 1,k.max=21)
+estimate.logic.bern = function(formula, data, family = stats::binomial(), n=1000, m=50, r = 1,k.max=21)
 {
   if(is.null(formula))
-    return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
+    return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
 
-  out = glm(formula = formula,data = data, family=family)
+  out = stats::lm(formula = formula,data = data, family=family)
   p = out$rank
   if(p>k.max)
   {
@@ -276,17 +240,17 @@ estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50,
   }
   fmla.proc=as.character(formula)[2:3]
   fobserved = fmla.proc[1]
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = stats::coefficients(out))))
 }
 
 
@@ -294,28 +258,28 @@ estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50,
 estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1,k.max=21)
 {
   if(is.null(formula))
-    return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  X = scale(model.matrix(object = formula,data = data),center = T,scale = F)
+    return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
+  X = scale(stats::model.matrix(object = formula,data = data),center = T,scale = F)
   X[,1] = 1
   fmla.proc=as.character(formula)[2:3]
-  out = glm(formula = as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = binomial())
+  out = stats::lm(formula = stats::as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = stats::binomial())
   p = out$rank
   if(p>k.max)
   {
     return(list(mlik = -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
-  beta=coef(out)[-1]
+  beta=stats::coef(out)[-1]
   if(length(which(is.na(beta)))>0)
   {
-    return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
+    return(list(mlik = -10000 + stats::rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   p.v = (n+1)/(p+1)
   sout = summary(out)
@@ -324,14 +288,14 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   {
     Q = t(beta)%*%solve(sout$cov.unscaled[-1,-1])%*%beta
   }else{
-    return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
+    return(list(mlik = -10000 + stats::rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
   Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
-  mlik = (logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
+  mlik = (stats::logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(BAS::phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
   if(is.na(mlik)||mlik==-Inf)
-    mlik = -10000+ rnorm(1,0,1)
-  return(list(mlik = mlik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coefficients(out))))
+    mlik = -10000+ stats::rnorm(1,0,1)
+  return(list(mlik = mlik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coefficients(out))))
 }
 
 
@@ -344,26 +308,26 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
   fobserved = fmla.proc[1]
   if(fmla.proc[2]=="-1")
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  out = lm(formula = formula,data = data)
+  out = stats::lm(formula = formula,data = data)
   p = out$rank
   if(p>k.max)
   {
     return(list(mlik = -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   p.v = (n+1)/(p+1)
   R.2 = summary(out)$r.squared
 
-  mlik = (-0.5*p*log(p.v) -0.5*(n-1)*log(1-(1-1/p.v)*R.2) + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(phi1(p.b/2,(n-1)/2,(p.a+p.b+p)/2,p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(p.b/2,(p.a+p.b)/2,p.s/2/p.v,log = T)+log(Jprior) + p*log(r)+n)
+  mlik = (-0.5*p*log(p.v) -0.5*(n-1)*log(1-(1-1/p.v)*R.2) + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(BAS::phi1(p.b/2,(n-1)/2,(p.a+p.b+p)/2,p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - BAS::hypergeometric1F1(p.b/2,(p.a+p.b)/2,p.s/2/p.v,log = T)+log(Jprior) + p*log(r)+n)
   if(mlik==-Inf||is.na(mlik)||is.nan(mlik))
     mlik = -10000
-  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+  return(list(mlik = mlik,waic = stats::AIC(out)-n , dic =  stats::BIC(out)-n,summary.fixed =list(mean = stats::coef(out))))
 }
 
 
@@ -372,7 +336,7 @@ estimate.logic.lm = function(formula= NULL, data, n, m, r = 1,k.max=21)
 {
   if(is.na(formula)||is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  out = lm(formula = formula,data = data)
+  out = stats::lm(formula = formula,data = data)
   p = out$rank
   if(p>k.max)
   {
@@ -380,17 +344,17 @@ estimate.logic.lm = function(formula= NULL, data, n, m, r = 1,k.max=21)
   }
   fmla.proc=as.character(formula)[2:3]
   fobserved = fmla.proc[1]
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
-  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
+  mlik = (-stats::BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+  return(list(mlik = mlik,waic = stats::AIC(out)-n , dic =  stats::BIC(out)-n,summary.fixed =list(mean = stats::coef(out))))
 }
 
 
@@ -400,35 +364,35 @@ simplifyposteriors.infer=function(X,posteriors,th=0.0000001,thf=0.5, resp)
   todel = which(posteriors[,2]<th)
   if(length(todel)>0)
     posteriors=posteriors[-todel,]
-  rhash=hash()
+  rhash=hash::hash()
   for(i in 1:length(posteriors[,1]))
   {
     expr=posteriors[i,1]
     #print(expr)
-    res=model.matrix(data=X,object = as.formula(paste0(resp,"~",expr)))
+    res=stats::model.matrix(data=X,object = stats::as.formula(paste0(resp,"~",expr)))
     res[,1]=res[,1]-res[,2]
-    ress=c(stri_flatten(res[,1],collapse = ""),stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
-    ress[1] = stri_sub(ress[1],from = 1,to = 9999)
-    if(!(ress[1] %in% values(rhash)||(ress[2] %in% values(rhash))))
+    ress=c( stringi::stri_flatten(res[,1],collapse = ""), stringi::stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
+    ress[1] =  stringi::stri_sub(ress[1],from = 1,to = 9999)
+    if(!(ress[1] %in% hash::values(rhash)||(ress[2] %in% hash::values(rhash))))
       rhash[[ress[1]]]=ress
     else
     {
-      if(ress[1] %in% keys(rhash))
+      if(ress[1] %in% hash::keys(rhash))
       {
         rhash[[ress[1]]][3]= (as.numeric(rhash[[ress[1]]][3]) + as.numeric(ress[3]))
-        if(stri_length(rhash[[ress[1]]][4])>stri_length(expr))
+        if(stringi::stri_length(rhash[[ress[1]]][4])>stringi::stri_length(expr))
           rhash[[ress[1]]][4]=expr
       }
       else
       {
         rhash[[ress[2]]][3]= (as.numeric(rhash[[ress[2]]][3]) + as.numeric(ress[3]))
-        if(stri_length(rhash[[ress[2]]][4])>stri_length(expr))
+        if(stringi::stri_length(rhash[[ress[2]]][4])>stringi::stri_length(expr))
           rhash[[ress[2]]][4]=expr
       }
     }
 
   }
-  res=as.data.frame(t(values(rhash)[c(3,4),]))
+  res=as.data.frame(t(hash::values(rhash)[c(3,4),]))
   res$V1=as.numeric(as.character(res$V1))
   tokeep = which(res$V1>thf)
   if(length(tokeep)>0)
@@ -437,7 +401,7 @@ simplifyposteriors.infer=function(X,posteriors,th=0.0000001,thf=0.5, resp)
   }else
     warning(paste0("No features with posteriors above ",thf,". Returning everything"))
   res=res[order(res$V1, decreasing = T),]
-  clear(rhash)
+  hash::clear(rhash)
   rm(rhash)
   tokeep = which(res[,1]>1)
   if(length(tokeep)>0)
@@ -455,11 +419,11 @@ runpar.infer=function(vect)
   tryCatch({
     set.seed(as.integer(vect$cpu))
     do.call(runemjmcmc, vect[1:(length(vect)-5)])
-    vals=values(hashStat)
+    vals=hash::values(hashStat)
     fparam=mySearch$fparam
     cterm=max(vals[1,],na.rm = T)
     ppp=mySearch$post_proceed_results_hash(hashStat = hashStat)
-    post.populi=sum(exp(values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
+    post.populi=sum(exp(hash::values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
 
     betas = NULL
     mliks = NULL
@@ -469,13 +433,13 @@ runpar.infer=function(vect)
       Nvars=mySearch$Nvars
       linx =mySearch$Nvars+4
       lHash=length(hashStat)
-      mliks = values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
-      betas = values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
+      mliks = hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+      betas = hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
       for(i in 1:(Nvars-1))
       {
-        betas=cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
+        betas=cbind(betas,hash::values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
       }
-      betas=cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
+      betas=cbind(betas,hash::values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
     }
 
     preds = NULL
@@ -487,7 +451,7 @@ runpar.infer=function(vect)
 
     ret = list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, preds = preds, fparam = fparam, betas = betas, mliks = mliks )
     if(length(cterm)==0){
-      vect$cpu=as.integer(vect$cpu)+as.integer(runif(1,1,10000))
+      vect$cpu=as.integer(vect$cpu)+as.integer(stats::runif(1,1,10000))
       if(vect$cpu<50000)
         ret = runpar.infer(vect)
       else
@@ -497,14 +461,14 @@ runpar.infer=function(vect)
   },error = function(err){
     print(paste0("error in thread",  vect[length(vect)]))
     print(err)
-    vect$cpu=as.integer(vect$cpu)+as.integer(runif(1,1,10000))
+    vect$cpu=as.integer(vect$cpu)+as.integer(stats::runif(1,1,10000))
     if(vect$cpu<50000)
       ret = runpar.infer(vect)
     else
       ret =err
   },finally = {
 
-    #clear(hashStat)
+    #hash::clear(hashStat)
     #rm(hashStat)
     #rm(vals)
     gc()
@@ -514,12 +478,12 @@ runpar.infer=function(vect)
 }
 
 #define the function estimating parameters of a given Bernoulli logic regression with Jeffrey's prior
-estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50, r = 1,k.max=21)
+estimate.logic.bern = function(formula, data, family = stats::binomial(), n=1000, m=50, r = 1,k.max=21)
 {
   if(is.null(formula))
-    return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
+    return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
 
-  out = glm(formula = formula,data = data, family=family)
+  out = stats::lm(formula = formula,data = data, family=family)
   p = out$rank
   if(p>k.max)
   {
@@ -527,17 +491,17 @@ estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50,
   }
   fmla.proc=as.character(formula)[2:3]
   fobserved = fmla.proc[1]
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = coefficients(out))))
+  return(list(mlik = mlik,waic = -(out$deviance + 2*out$rank) , dic =  -(out$deviance + log(n)*out$rank),summary.fixed =list(mean = stats::coefficients(out))))
 }
 
 
@@ -545,28 +509,28 @@ estimate.logic.bern = function(formula, data, family = binomial(), n=1000, m=50,
 estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1,k.max=21)
 {
   if(is.null(formula))
-    return(list(mlik =  -10000 + rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  X = scale(model.matrix(object = formula,data = data),center = T,scale = F)
+    return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
+  X = scale(stats::model.matrix(object = formula,data = data),center = T,scale = F)
   X[,1] = 1
   fmla.proc=as.character(formula)[2:3]
-  out = glm(formula = as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = binomial())
+  out = stats::lm(formula = stats::as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = stats::binomial())
   p = out$rank
   if(p>k.max)
   {
     return(list(mlik = -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
-  beta=coef(out)[-1]
+  beta=stats::coef(out)[-1]
   if(length(which(is.na(beta)))>0)
   {
-    return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
+    return(list(mlik = -10000 + stats::rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   p.v = (n+1)/(p+1)
   sout = summary(out)
@@ -575,14 +539,14 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   {
     Q = t(beta)%*%solve(sout$cov.unscaled[-1,-1])%*%beta
   }else{
-    return(list(mlik = -10000 + rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
+    return(list(mlik = -10000 + stats::rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
   Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
-  mlik = (logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
+  mlik = (stats::logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(BAS::phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
   if(is.na(mlik)||mlik==-Inf)
-    mlik = -10000+ rnorm(1,0,1)
-  return(list(mlik = mlik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coefficients(out))))
+    mlik = -10000+ stats::rnorm(1,0,1)
+  return(list(mlik = mlik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coefficients(out))))
 }
 
 
@@ -595,26 +559,26 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
   fobserved = fmla.proc[1]
   if(fmla.proc[2]=="-1")
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  out = lm(formula = formula,data = data)
+  out = stats::lm(formula = formula,data = data)
   p = out$rank
   if(p>k.max)
   {
     return(list(mlik = -10000,waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
   p.v = (n+1)/(p+1)
   R.2 = summary(out)$r.squared
 
-  mlik = (-0.5*p*log(p.v) -0.5*(n-1)*log(1-(1-1/p.v)*R.2) + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(phi1(p.b/2,(n-1)/2,(p.a+p.b+p)/2,p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - hypergeometric1F1(p.b/2,(p.a+p.b)/2,p.s/2/p.v,log = T)+log(Jprior) + p*log(r)+n)
+  mlik = (-0.5*p*log(p.v) -0.5*(n-1)*log(1-(1-1/p.v)*R.2) + log(beta((p.a+p)/2,p.b/2)) - log(beta(p.a/2,p.b/2)) + log(BAS::phi1(p.b/2,(n-1)/2,(p.a+p.b+p)/2,p.s/2/p.v,R.2/(p.v-(p.v-1)*R.2))) - BAS::hypergeometric1F1(p.b/2,(p.a+p.b)/2,p.s/2/p.v,log = T)+log(Jprior) + p*log(r)+n)
   if(mlik==-Inf||is.na(mlik)||is.nan(mlik))
     mlik = -10000
-  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+  return(list(mlik = mlik,waic = stats::AIC(out)-n , dic =  stats::BIC(out)-n,summary.fixed =list(mean = stats::coef(out))))
 }
 
 
@@ -623,7 +587,7 @@ estimate.logic.lm.jef = function(formula= NULL, data, n, m, r = 1,k.max=21)
 {
   if(is.na(formula)||is.null(formula))
     return(list(mlik =  -10000,waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  out = lm(formula = formula,data = data)
+  out = stats::lm(formula = formula,data = data)
   p = out$rank
   if(p>k.max)
   {
@@ -631,17 +595,17 @@ estimate.logic.lm.jef = function(formula= NULL, data, n, m, r = 1,k.max=21)
   }
   fmla.proc=as.character(formula)[2:3]
   fobserved = fmla.proc[1]
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "&"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "|"))
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
+  sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
   Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
-  mlik = (-BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
+  mlik = (-stats::BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
   if(mlik==-Inf)
     mlik = -10000
-  return(list(mlik = mlik,waic = AIC(out)-n , dic =  BIC(out)-n,summary.fixed =list(mean = coef(out))))
+  return(list(mlik = mlik,waic = stats::AIC(out)-n , dic =  stats::BIC(out)-n,summary.fixed =list(mean = stats::coef(out))))
 }
 
 
@@ -674,36 +638,36 @@ LogicRegr = function(formula, data, family = "Gaussian",prior = "J",report.level
     if(prior == "J")
     {
       advanced$estimator = estimate.logic.lm.jef
-      advanced$estimator.args = list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
+      advanced$estimator.args = list(data = data, n = dim(data)[1], m =stringi::stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }else{
       advanced$estimator = estimate.logic.lm.tCCH
-      advanced$estimator.args = list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
+      advanced$estimator.args = list(data = data, n = dim(data)[1], m =stringi::stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }
   }else{
 
     if(prior == "J")
     {
       advanced$estimator = estimate.logic.bern
-      advanced$estimator.args =  list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
+      advanced$estimator.args =  list(data = data, n = dim(data)[1], m =stringi::stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }else{
       advanced$estimator = estimate.logic.bern.tCCH
-      advanced$estimator.args =  list(data = data, n = dim(data)[1], m =stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
+      advanced$estimator.args =  list(data = data, n = dim(data)[1], m =stringi::stri_count_fixed(as.character(formula)[3],"+"),k.max = kmax)
     }
 
   }
 
   if(ncores<1)
-    ncores = detectCores()
+    ncores = parallel::detectCores()
 
   return(pinferunemjmcmc(n.cores = ncores,report.level =  report.level, simplify = T, num.mod.best = n.mods, predict = F, runemjmcmc.params = advanced))
 
 }
 
 
-mcgmjpar = function(X,FUN,mc.cores) mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores)
+mcgmjpar = function(X,FUN,mc.cores) parallel::mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores)
 mcgmjpse = function(X,FUN,mc.cores) lapply(X,FUN)
 
-pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
+pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
 {
 
   if(predict)
@@ -792,7 +756,7 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
 
     }
   }
-  hfinal=hash()
+  hfinal=hash::hash()
   for(ii in 1:M)
   {
     resa[,ii*3]=p.gen.post[ii]*as.numeric(resa[,ii*3-1])
@@ -803,7 +767,7 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
       {
         if(resa[jj,ii*3]>0)
         {
-          if(as.integer(has.key(hash = hfinal,key =resa[jj,ii*3-2]))==0)
+          if(as.integer(hash::has.key(hash = hfinal,key =resa[jj,ii*3-2]))==0)
             hfinal[[resa[jj,ii*3-2]]]=as.numeric(resa[jj,ii*3])
           else
             hfinal[[resa[jj,ii*3-2]]]=hfinal[[resa[jj,ii*3-2]]]+as.numeric(resa[jj,ii*3])
@@ -813,8 +777,8 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
     }
   }
 
-  posteriors=values(hfinal)
-  clear(hfinal)
+  posteriors=hash::values(hfinal)
+  hash::clear(hfinal)
   #delete the unused further variables
   rm(hfinal)
   rm(resa)
@@ -843,22 +807,22 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpar, report.level =  0.5, s
 estimate.glm <- function(formula, data, prior, family)
 {
 
-  out <- glm(formula = formula,data = data, family = family)
+  out <- stats::lm(formula = formula,data = data, family = family)
   # 1 for aic, 2 bic prior, else g.prior
 
 
   if(prior == 1)
   {
 
-    logmarglik <- -AIC(out)
+    logmarglik <- -stats::AIC(out)
   }
   else
   {
-    logmarglik <- -BIC(out)
+    logmarglik <- -stats::BIC(out)
   }
 
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  return(list(mlik = logmarglik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coef(out))))
 
 }
 
@@ -866,18 +830,18 @@ estimate.glm <- function(formula, data, prior, family)
 estimate.glm.alt <- function(formula, data, family, prior, n, g = 0)
 {
 
-  out <- glm(formula = formula, family = family, data = data)
+  out <- stats::lm(formula = formula, family = family, data = data)
   # 1 for aic, 2 bic prior, else g.prior
 
   p <- out$rank
   if(prior == 1)
   {
 
-    logmarglik <- -AIC(out)
+    logmarglik <- -stats::AIC(out)
   }
   else if(prior ==2)
   {
-    logmarglik <- -BIC(out)
+    logmarglik <- -stats::BIC(out)
   }
   else
   {
@@ -887,7 +851,7 @@ estimate.glm.alt <- function(formula, data, family, prior, n, g = 0)
   }
 
   # use dic and aic as bic and aic correspondinly
-  return(list(mlik = logmarglik,waic = AIC(out) , dic =  BIC(out),summary.fixed =list(mean = coef(out))))
+  return(list(mlik = logmarglik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coef(out))))
 
 }
 
@@ -895,9 +859,9 @@ simplify.formula<-function(fmla,names)
 {
   fmla.proc<-as.character(fmla)[2:3]
   fobserved <- fmla.proc[1]
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]<-stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam <- names[which(names %in% stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]] )]
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
+  fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
+  fparam <- names[which(names %in% stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]] )]
   return(list(fparam = fparam,fobserved = fobserved))
 }
 
@@ -923,7 +887,7 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
   #  fparam.example[i]<<-paste("I(",variables$fparam[i],")",sep = "")
   #}
   fparam.example<<- sapply(FUN = paste,"I(",variables$fparam,")",sep="")
-  assign("mySearch",EMJMCMC2016(), envir=globalenv())
+  assign("mySearch",methods::new(structure("EMJMCMC2016", package = "EMJMCMC")), envir=globalenv())
   if(length(secondary)>0)
     mySearch$filtered <<- sapply(FUN = paste,"I(",secondary,")",sep="")
   mySearch$estimator <<- estimator
@@ -965,11 +929,9 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
     mySearch$printable.opt<<-advanced.param$printable
   }
 
-
-  #distrib_of_proposals = с(0,0,0,0,10)
   if(exists("hashStat"))
   {
-    clear(hashStat)
+    hash::clear(hashStat)
     remove(hashStat,envir=globalenv())
   }
   if(exists("statistics1"))
@@ -988,8 +950,8 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
     if(pseudo.paral)
       mySearch$parallelize <<- lapply
     #carry the search (training out)
-    assign("statistics1",big.matrix(nrow = 2 ^min((length(fparam.example)),hash.length)+1, ncol =  16+length(fparam.example)*save.beta,init = NA, type = "double"), envir=globalenv())
-    assign("statistics",describe(statistics1), envir=globalenv())
+    assign("statistics1",bigmemory::big.matrix(nrow = 2 ^min((length(fparam.example)),hash.length)+1, ncol =  16+length(fparam.example)*save.beta,init = NA, type = "double"), envir=globalenv())
+    assign("statistics",bigmemory::describe(statistics1), envir=globalenv())
 
     mySearch$g.results[4,1]<<-0
     mySearch$g.results[4,2]<<-0
@@ -998,20 +960,20 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
     {
       mySearch$hash.length<<-as.integer(hash.length)
       mySearch$double.hashing<<-T
-      hash.keys1 <<- big.matrix(nrow = 2 ^(hash.length)+1, ncol = length(fparam.example),init = 0, type = "char")
-      hash.keys <<- describe(hash.keys1)
+      hash.keys1 <<- bigmemory::big.matrix(nrow = 2 ^(hash.length)+1, ncol = length(fparam.example),init = 0, type = "char")
+      hash.keys <<- bigmemory::describe(hash.keys1)
     }
 
   }else if(create.hash)
   {
 
-    assign("hashStat",hash(), envir=globalenv())
+    assign("hashStat", hash::hash(), envir=globalenv())
     mySearch$parallelize <<- lapply
     mySearch$hash.length<<-as.integer(20)
     mySearch$double.hashing<<-F
   }
   # now as the object is created run the algorithm
-  initsol=rbinom(n = length(fparam.example),size = 1,prob = 0.5)
+  initsol=stats::rbinom(n = length(fparam.example),size = 1,prob = 0.5)
   if(unique)
     resm<-mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
   else
@@ -1045,18 +1007,18 @@ runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=
 
   if(outgraphs)
   {
-    par(mar = c(10,4,4,2) + 4.1)
-    barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg = mySearch$fparam,las=2)
-    barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg = mySearch$fparam,las=2)
+    graphics::par(mar = c(10,4,4,2) + 4.1)
+    graphics::barplot(resm$bayes.results$p.post,density = 46,border="black",main = "Marginal Inclusion (RM)",ylab="Probability",names.arg = mySearch$fparam,las=2)
+    graphics::barplot(resm$p.post,density = 46,border="black",main = "Marginal Inclusion (MC)",ylab="Probability",names.arg = mySearch$fparam,las=2)
   }
 
   return(ppp)
 }
 
 
-# add plot(ppp), summary(ppp), print(ppp), ppp as a class itself, coef(ppp)
+# add plot(ppp), summary(ppp), print(ppp), ppp as a class itself, stats::coef(ppp)
 
-EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
+EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                            fields = list(estimator.args = "list",
                                          max.cpu = "integer",
                                          objective = "integer",
@@ -1089,12 +1051,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          switch.type.glob = "integer",
                                          isobsbinary = "array",
                                          filtered = "vector",
-                                         fparam = "vector",
-                                         fparam.pool = "vector",
+                                         fparam = "array",
+                                         fparam.pool = "array",
                                          p.add = "array",
                                          latent.formula = "character",
                                          Nvars = "integer",
-                                         seed = "integer",
+                                         seed = "numeric",
                                          M.nd = "integer",
                                          locstop.nd = "logical",
                                          M.mcmc = "integer",
@@ -1123,22 +1085,22 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                            ),
                            methods = list(
                              #class constructor
-                             initialize = function(estimator.function = inla, estimator.args.list = list(family = "gaussian",data = data.example, control.fixed=list(prec=list(default= 0.00001),prec.intercept = 0.00001,mean=list(default= 0),mean.intercept = 0),
+                             initialize = function(estimator.function = INLA::inla, estimator.args.list = list(family = "gaussian",data = data.example, control.fixed=list(prec=list(default= 0.00001),prec.intercept = 0.00001,mean=list(default= 0),mean.intercept = 0),
                                                                                                          control.family = list(hyper = list(prec = list(prior = "loggamma",param = c(0.00001,0.00001),initial = 0))),
                                                                                                          control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)), search.args.list = NULL,latent.formula = "")
                              {
                                estimator <<- estimator.function
                                estimator.args <<- estimator.args.list
                                latent.formula <<- latent.formula
-                               g.results <<- big.matrix(nrow = 4,ncol = 2)
-                               g.results[1,1]<- -Inf
-                               g.results[1,2]<- 1
-                               g.results[2,1]<- Inf
-                               g.results[2,2]<- 1
-                               g.results[3,1]<- Inf
-                               g.results[3,2]<- 1
-                               g.results[4,1]<- 0
-                               g.results[4,2]<- 0
+                               g.results <<- bigmemory::big.matrix(nrow = 4,ncol = 2)
+                               g.results[1,1]<<- -Inf
+                               g.results[1,2]<<- 1
+                               g.results[2,1]<<- Inf
+                               g.results[2,2]<<- 1
+                               g.results[3,1]<<- Inf
+                               g.results[3,2]<<- 1
+                               g.results[4,1]<<- 0
+                               g.results[4,2]<<- 0
 
                                if(is.null(search.args.list))
                                {
@@ -1152,9 +1114,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
                                  else
                                  {
-                                   parallelize <<- mclapply
-                                   parallelize.global <<- mclapply
-                                   parallelize.hyper  <<- mclapply
+                                   parallelize <<- parallel::mclapply
+                                   parallelize.global <<- parallel::mclapply
+                                   parallelize.hyper  <<- parallel::mclapply
                                  }
                                  Nvars  <<- as.integer(length(fparam.example))
                                  min.N <<- as.integer(Nvars/6)
@@ -1217,8 +1179,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    recalc.margin <<- 2^Nvars
                                  }
                                  last.mutation<<-as.integer(2^(Nvars/2)*0.01)
-                                 seed <<- as.integer(runif(n = 1,min = 1,max = 10000))
-                                 p.prior <<- runif(n = Nvars, min = 0.5,max = 0.5)
+                                 seed <<- as.integer(stats::runif(n = 1,min = 1,max = 10000))
+                                 p.prior <<- stats::runif(n = Nvars, min = 0.5,max = 0.5)
                                }
                                else
                                {
@@ -1243,7 +1205,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  aa <<- search.args.list$lambda.a
                                  prand<<-earch.args.list$prand
                                  sup.large.n<<-search.args.list$sup.large.n
-                                 thin_rate <-search.args.list$thin_rate
+                                 thin_rate <<-search.args.list$thin_rate
                                  keep.origin<<-search.args.list$keep.origin
                                  cc <<- search.args.list$lambda.c
                                  M.nd <<- as.integer(search.args.list$stepsGreedy)
@@ -1252,7 +1214,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  fobserved <<- search.args.list$fobserved
                                  switch.type <<- as.integer(search.args.list$fswitch.type)
                                  n.size <<- as.integer(search.args.list$n.size)
-                                 LocImprove <<-search.args.list$prior.optimizer.freq
+                                 LocImprove <<- as.array(search.args.list$prior.optimizer.freq)
                                  max.N <<- as.integer(search.args.list$max.N)
                                  fparam <<- search.args.list$fparam
                                  fparam.pool <<- search.args.list$fparam
@@ -1520,7 +1482,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(switch.type == 1) # random size random N(x)
                                {
                                  warning("This option should not be chosen for randomization unless p.add == 0.5 ", call. = FALSE)
-                                 min.N = max.N
+                                 min.N <<- max.N
 
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1)) # probability of having that many differences
                                  KK<-sum(abs(varold-varnew))
@@ -1532,7 +1494,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(min.N!=max.N)
                                  {
                                    warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                   min.N = max.N
+                                   min.N <<- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-max.N
@@ -1549,7 +1511,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(min.N!=max.N)
                                  {
                                    warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                   min.N = max.N
+                                   min.N <<- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                  KK<-max.N
@@ -1571,14 +1533,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                shift<-0
                                for(cpu in 1:(max.cpu))
                                {
-                                 set.seed(runif(1,1,10000), kind = NULL, normal.kind = NULL)
+                                 set.seed(stats::runif(1,1,10000), kind = NULL, normal.kind = NULL)
                                  if(!is.null(varcur.old)&&length(varcur.old==Nvars))
                                  {
                                    varcur.old[which(is.na(varcur.old))]<-1
                                    varcur<-varcur.old
                                  }else
                                  {
-                                   varcur<-rbinom(n = (Nvars),size = 1,0.5)
+                                   varcur<-stats::rbinom(n = (Nvars),size = 1,0.5)
                                    varcur.old<-varcur
                                  }
 
@@ -1590,33 +1552,33 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  if(switch.type == 1) # random size random N(x) # try avoiding when doing mcmc rather than optimization
                                  {
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
-                                   KK<-floor(runif(n=1, min.N, max.N + 0.999999999))
+                                   KK<-floor(stats::runif(n=1, min.N, max.N + 0.999999999))
                                    log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                    log.mod.switchback.prob <- log.mod.switch.prob
                                    change.buf <- array(data = 0,dim = Nvars)
                                    if(changeble){
                                      for(ttt in 1:KK)
                                      {
-                                       iid<-floor(runif(n = 1,min = 1,max = Nvars+0.999999999))
+                                       iid<-floor(stats::runif(n = 1,min = 1,max = Nvars+0.999999999))
                                        if(changeble.coord[iid]==1)
                                          next
                                        change.buf[iid] = 1
-                                       varcur[iid] <-rbinom(n = 1,size = 1,prob =round(p.add[iid],digits = 8))
+                                       varcur[iid] <-stats::rbinom(n = 1,size = 1,prob =round(p.add[iid],digits = 8))
                                        log.mod.switch.prob = 0#log.mod.switch.prob + log(dbinom(x = varcur[iid],size = 1,prob = p.add[iid])) # this is one of the pathes to get there in general
                                        log.mod.switchback.prob = 0# log.mod.switchback.prob + log(dbinom(x = 1-varcur[iid],size = 1,prob = p.add[iid])) # but this is one of the ways to get back only
                                      }
                                    }else
                                    {
-                                     iid<-floor(runif(n = KK,min = 1,max = Nvars+0.999999999))
+                                     iid<-floor(stats::runif(n = KK,min = 1,max = Nvars+0.999999999))
                                      change.buf[iid] = 1
-                                     varcur[iid] <-rbinom(n = KK,size = 1,prob = round(p.add,digits = 8))
+                                     varcur[iid] <-stats::rbinom(n = KK,size = 1,prob = round(p.add,digits = 8))
                                    }
                                  }else if(switch.type == 2) # fixed sized inverse N(x)
                                  {
                                    if(min.N!=max.N)
                                    {
                                      warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                     min.N <- max.N
+                                     min.N <<- max.N
                                    }
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-max.N
@@ -1627,7 +1589,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(changeble){
                                      for(ttt in 1:KK)
                                      {
-                                       iid<-floor(runif(n = 1,min = 1,max = Nvars+0.999999999))
+                                       iid<-floor(stats::runif(n = 1,min = 1,max = Nvars+0.999999999))
                                        if(change.buf[iid]==1 || changeble.coord[iid]==1)
                                        {
                                          KK<-KK+1
@@ -1638,7 +1600,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }
                                    }else
                                    {
-                                     iid<-floor(runif(n = KK,min = 1,max = Nvars+0.999999999))
+                                     iid<-floor(stats::runif(n = KK,min = 1,max = Nvars+0.999999999))
                                      change.buf[iid] = 1
                                      varcur[iid] = 1-varcur[iid]
                                    }
@@ -1646,14 +1608,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(switch.type == 3)  # random sized inverse N(x)
                                  {
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
-                                   KK<-floor(runif(n=1, min.N, max.N + 0.999999999))
+                                   KK<-floor(stats::runif(n=1, min.N, max.N + 0.999999999))
                                    log.mod.switch.prob <- log.mod.switch.prob + KK*log(factorial(Nvars - KK + 1)/factorial(Nvars))
                                    log.mod.switchback.prob <- log.mod.switch.prob
                                    change.buf <- array(data = 0,dim = Nvars)
                                    if(changeble){
                                      for(ttt in 1:KK)
                                      {
-                                       iid<-floor(runif(n = 1,min = 1,max = Nvars+0.999999999))
+                                       iid<-floor(stats::runif(n = 1,min = 1,max = Nvars+0.999999999))
                                        if(change.buf[iid]==1 || changeble.coord[iid]==1)
                                        {
                                          KK<-KK+1
@@ -1664,7 +1626,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }
                                    }else
                                    {
-                                     iid<-floor(runif(n = KK,min = 1,max = Nvars+0.999999999))
+                                     iid<-floor(stats::runif(n = KK,min = 1,max = Nvars+0.999999999))
                                      change.buf[iid] = 1
                                      varcur[iid] = 1-varcur[iid]
                                    }
@@ -1673,7 +1635,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(min.N!=max.N)
                                    {
                                      warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
-                                     min.N <- max.N
+                                     min.N <<- max.N
                                    }
                                    log.mod.switch.prob <- log(1/(max.N - min.N +1))
                                    KK<-max.N
@@ -1684,7 +1646,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    if(changeble){
                                      for(ttt in KK)
                                      {
-                                       iid<-floor(runif(n = 1,min = 1,max = Nvars+0.999999999))
+                                       iid<-floor(stats::runif(n = 1,min = 1,max = Nvars+0.999999999))
                                        if(change.buf[iid]==1 || changeble.coord[iid]==1)
                                        {
                                          KK<-KK+1
@@ -1695,7 +1657,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }}
                                    else
                                    {
-                                     iid<-floor(runif(n = KK,min = 1,max = Nvars+0.999999999))
+                                     iid<-floor(stats::runif(n = KK,min = 1,max = Nvars+0.999999999))
                                      change.buf[iid] = 1
                                      varcur[iid] = 1-varcur[iid]
                                    }
@@ -1786,7 +1748,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    log.mod.switch.prob <-0
                                    log.mod.switchback.prob <-0
                                    change.buf <- array(data = 1,dim = Nvars)
-                                   changevar<- rbinom(n = Nvars,size = 1,prob=prand)
+                                   changevar<- stats::rbinom(n = Nvars,size = 1,prob=prand)
                                    varcur<-varcur.old
                                    varcur[which(changevar==1)]<-(1-varcur[which(changevar==1)])
                                    log.mod.switch.prob<-prand^length(which(changevar==1))
@@ -1795,7 +1757,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    log.mod.switch.prob <- 0
                                    log.mod.switchback.prob <-0
                                    change.buf <- array(data = 1,dim = Nvars)
-                                   varcur <-rbinom(n = Nvars,size = 1,prob = round(p.add,digits = 8))
+                                   varcur <-stats::rbinom(n = Nvars,size = 1,prob = round(p.add,digits = 8))
                                    #if(printable.opt)print("type 8 invoked")
                                    #if(printable.opt)print(varcur)
                                  }
@@ -1823,19 +1785,19 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
 
-                                 if(ifelse(exists("statistics1"),is.na(statistics1[id,1]),ifelse(exists("statistics"),is.na(statistics[id,1,]),ifelse(exists("hashStat"),!has.key(hash = hashStat,key = paste(varcur,collapse = "")),TRUE))))#||TRUE)
+                                 if(ifelse(exists("statistics1"),is.na(statistics1[id,1]),ifelse(exists("statistics"),is.na(statistics[id,1,]),ifelse(exists("hashStat"),!hash::has.key(hash = hashStat,key = paste(varcur,collapse = "")),TRUE))))#||TRUE)
                                  {
                                    # formula <- NULL
-                                   # formula <- as.formula(ifelse(length(covobs)>0,(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst,"+", stri_flatten(covobs, collapse=" + "), latent.formula)),(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst, latent.formula))))
+                                   # formula <- stats::as.formula(ifelse(length(covobs)>0,(stri_join( stringi::stri_flatten(fobserved[1]), " ~ ",obsconst,"+",  stringi::stri_flatten(covobs, collapse=" + "), latent.formula)),(stri_join( stringi::stri_flatten(fobserved[1]), " ~ ",obsconst, latent.formula))))
                                    #
                                    # if(is.null(formula)){
-                                   #   formula <- as.formula(ifelse(length(covobs)>0,(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst,"+", stri_flatten(covobs, collapse=" + "))),(stri_join(stri_flatten(fobserved[1]), " ~ ",obsconst))))
+                                   #   formula <- stats::as.formula(ifelse(length(covobs)>0,(stri_join( stringi::stri_flatten(fobserved[1]), " ~ ",obsconst,"+",  stringi::stri_flatten(covobs, collapse=" + "))),(stri_join( stringi::stri_flatten(fobserved[1]), " ~ ",obsconst))))
                                    #
                                    # }
                                    formula <- NULL
-                                   capture.output({withRestarts(tryCatch(capture.output({formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})})
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({formula <- stats::as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + "), latent.formula)) })), abort = function(){onerr<-TRUE;fm<-NULL})})
                                    if(is.null(formula)){
-                                     formula <- as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
+                                     formula <- stats::as.formula(paste(paste(fobserved[1]), " ~ ",obsconst,ifelse(length(covobs)>0," + ",""), paste(covobs, collapse=" + ")))
 
                                    }
 
@@ -1876,10 +1838,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
 
-                                     #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
+                                     #       utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-INLA::inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
                                      #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
                                      #
-                                     capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
+                                     utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 
 
@@ -1910,22 +1872,22 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
-                                         g.results[2,1]<-fm$waic[[1]]
-                                         g.results[2,2]<-as.integer(id)
+                                         g.results[2, 1] <<- fm$waic[[1]]
+                                         g.results[2, 2] <<- as.integer(id)
                                        }
                                        if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                        {
-                                         g.results[1,1]<-fm$mlik[[1]]
-                                         g.results[1,2]<-as.integer(id)
+                                         g.results[1, 1] <<- fm$mlik[[1]]
+                                         g.results[1, 2] <<- as.integer(id)
                                        }
 
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
-                                         g.results[3,1]<-fm$dic[[1]]
-                                         g.results[3,2]<-as.integer(id)
+                                         g.results[3, 1] <<- fm$dic[[1]]
+                                         g.results[3, 2] <<- as.integer(id)
                                        }
 
-                                       g.results[4,2] <- g.results[4,2]+1
+                                       g.results[4, 2] <<-  g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          p.add <<- as.array(post_proceed_results(statistics1)$p.post)
@@ -1937,7 +1899,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    if(model$statid!=-1)
                                      statistics1[id,model$statid+1]<-statistics1[id,model$statid+1] + 1
-                                   g.results[4,1] <- g.results[4,1]+1
+                                   g.results[4, 1] <<-  g.results[4,1]+1
                                    return(list(mlik=statistics1[id,1],waic=statistics1[id,2],dic=statistics1[id,3]))
                                  }else  if(exists("statistics")){
                                    if(is.na(statistics[id,1]))
@@ -1950,10 +1912,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      statistics[id,4:14]<-0
                                      #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
 
-                                     #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
+                                     #       utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-INLA::inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
                                      #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
                                      #
-                                     capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
+                                     utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 
 
@@ -1984,27 +1946,27 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
-                                         g.results[2,1]<-fm$waic[[1]]
-                                         g.results[2,2]<-as.integer(id)
+                                         g.results[2, 1] <<- fm$waic[[1]]
+                                         g.results[2, 2] <<- as.integer(id)
                                        }
                                        if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                        {
-                                         g.results[1,1]<-fm$mlik[[1]]
-                                         g.results[1,2]<-as.integer(id)
+                                         g.results[1, 1] <<- fm$mlik[[1]]
+                                         g.results[1, 2] <<- as.integer(id)
                                        }
 
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
-                                         g.results[3,1]<-fm$dic[[1]]
-                                         g.results[3,2]<-as.integer(id)
+                                         g.results[3, 1] <<- fm$dic[[1]]
+                                         g.results[3, 2] <<- as.integer(id)
                                        }
 
-                                       g.results[4,2] <- g.results[4,2]+1
+                                       g.results[4, 2] <<-  g.results[4,2]+1
                                        if(g.results[4,2]%%recalc.margin == 0)
                                        {
                                          proceeeded <- post_proceed_results(statistics)
                                          p.add <<- as.array(proceeeded$p.post)
-                                         #g.results[4,2] <-
+                                         #g.results[4, 2] <<-
                                        }
                                      }
 
@@ -2012,7 +1974,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
                                    if(model$statid!=-1)
                                      statistics[id,model$statid+1]<-statistics[id,model$statid+1] + 1
-                                   g.results[4,1] <- g.results[4,1]+1
+                                   g.results[4, 1] <<-  g.results[4,1]+1
                                    return(list(mlik=statistics[id,1],waic=statistics[id,2],dic=statistics[id,3]))
 
                                  }else if(exists("hashStat")){
@@ -2021,7 +1983,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    else
                                      idd<- as.character(paste(c(model$varcur),collapse = ""))
 
-                                   if(!has.key(key = idd,hash = hashStat))
+                                   if(!hash::has.key(key = idd,hash = hashStat))
                                    {
                                      #if(printable.opt)print("Invoked from EMJMCMC hash table environment")
                                      onerr<-FALSE
@@ -2029,10 +1991,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
 
-                                     #       capture.output({withRestarts(tryCatch(capture.output({fm<-inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
+                                     #       utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-INLA::inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
                                      #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
                                      #
-                                     capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
+                                     utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                      })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 
                                      if(!save.beta)
@@ -2104,76 +2066,76 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #                                                          }
                                        if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                        {
-                                         g.results[2,1]<-fm$waic[[1]]
-                                         g.results[2,2]<-(id)
+                                         g.results[2, 1] <<- fm$waic[[1]]
+                                         g.results[2, 2] <<- (id)
                                        }
                                        if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                        {
-                                         g.results[1,1]<-fm$mlik[[1]]
-                                         g.results[1,2]<-(id)
+                                         g.results[1, 1] <<- fm$mlik[[1]]
+                                         g.results[1, 2] <<- (id)
                                        }
 
                                        if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                        {
-                                         g.results[3,1]<-fm$dic[[1]]
-                                         g.results[3,2]<-(id)
+                                         g.results[3, 1] <<- fm$dic[[1]]
+                                         g.results[3, 2] <<- (id)
                                        }
 
-                                       g.results[4,2] <- g.results[4,2]+1
+                                       g.results[4, 2] <<-  g.results[4,2]+1
 
                                      }
 
 
                                    }
-                                   g.results[4,1] <- g.results[4,1]+1
-                                   if(has.key(hash = hashStat,key=idd))
-                                     hasRes<- values(hashStat[idd])
+                                   g.results[4, 1] <<-  g.results[4,1]+1
+                                   if(hash::has.key(hash = hashStat,key=idd))
+                                     hasRes<- hash::values(hashStat[idd])
                                    else
                                      hasRes<-c(-10000,10000,10000)
                                    if(g.results[4,2]%%recalc.margin == 0)
                                    {
                                      proceeeded <- post_proceed_results_hash(hashStat)
                                      p.add <<- as.array(proceeeded$p.post)
-                                     #g.results[4,2] <-
+                                     #g.results[4, 2] <<-
                                    }
                                    return(list(mlik=hasRes[1],waic=hasRes[2],dic=hasRes[3]))
 
                                  }else
                                  {
-                                   capture.output({withRestarts(tryCatch(capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                    })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 
                                    if(!is.null(fm)){
 
                                      if(fm$waic[[1]]<g.results[2,1] && !is.na(fm$waic[[1]]))
                                      {
-                                       g.results[2,1]<-fm$waic[[1]]
-                                       g.results[2,2]<-(id)
+                                       g.results[2, 1] <<- fm$waic[[1]]
+                                       g.results[2, 2] <<- (id)
                                      }
                                      if(fm$mlik[[1]]>g.results[1,1] && !is.na(fm$mlik[[1]]))
                                      {
-                                       g.results[1,1]<-fm$mlik[[1]]
-                                       g.results[1,2]<-(id)
+                                       g.results[1, 1] <<- fm$mlik[[1]]
+                                       g.results[1, 2] <<- (id)
                                      }
 
                                      if(fm$dic[[1]]<g.results[3,1]&& !is.na(fm$dic[[1]]))
                                      {
-                                       g.results[3,1]<-fm$dic[[1]]
-                                       g.results[3,2]<-(id)
+                                       g.results[3, 1] <<- fm$dic[[1]]
+                                       g.results[3, 2] <<- (id)
                                      }
-                                     g.results[4,1] <- g.results[4,1]+1
-                                     g.results[4,2] <- g.results[4,2]+1
+                                     g.results[4, 1] <<-  g.results[4,1]+1
+                                     g.results[4, 2] <<-  g.results[4,2]+1
                                      return(list(mlik=fm$mlik[[1]],waic=fm$waic[[1]],dic=fm$dic[[1]]))
                                    }
                                    else
                                    {
-                                     g.results[4,1] <- g.results[4,1]+1
+                                     g.results[4, 1] <<-  g.results[4,1]+1
                                      return(list(mlik=-Inf,waic=Inf,dic=Inf))
                                    }
                                  }
                                }
-                               g.results[4,1] <- g.results[4,1]+1
-                               g.results[4,2] <- g.results[4,2]+1
+                               g.results[4, 1] <<-  g.results[4,1]+1
+                               g.results[4, 2] <<-  g.results[4,2]+1
                                return(list(mlik=-Inf,waic=Inf,dic=Inf))
                              },
                              #lambda function for mtmcmc
@@ -2231,8 +2193,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcur,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
 
 
@@ -2252,7 +2214,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  withRestarts(tryCatch({
 
-                                   # statistics <- describe(statistics)
+                                   # statistics <- bigmemory::describe(statistics)
                                    vect<-buildmodel(varcur.old = varcur,statid = model$statid,max.cpu = max.cpu,switch.type=switch.type, min.N = min.N, max.N = max.N)
                                    cluster<-TRUE
                                    flag1<-0
@@ -2307,8 +2269,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(exists("hashStat"))
                                      {
                                        iidd<-paste(varcand,collapse = "")
-                                       waiccand<-values(hashStat[iidd])[2]
-                                       mlikcand<-values(hashStat[iidd])[1]
+                                       waiccand<-hash::values(hashStat[iidd])[2]
+                                       mlikcand<-hash::values(hashStat[iidd])[1]
                                      }
 
                                      if((mlikcand>mlikglob)) #update the parameter of interest
@@ -2366,8 +2328,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }else if(exists("hashStat"))
                                    {
                                      iidd<-paste(varcand,collapse = "")
-                                     waiccand<-values(hashStat[iidd])[2]
-                                     mlikcand<-values(hashStat[iidd])[1]
+                                     waiccand<-hash::values(hashStat[iidd])[2]
+                                     mlikcand<-hash::values(hashStat[iidd])[1]
                                    }
 
                                    #p.Q.cand<- p.select.y[ID]/sum(p.select.y)
@@ -2429,8 +2391,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else if(exists("hashStat"))
                                        {
                                          iidd<-paste(varcand.b,collapse = "")
-                                         waiccand.b<-values(hashStat[iidd])[2]
-                                         mlikcand.b<-values(hashStat[iidd])[1]
+                                         waiccand.b<-hash::values(hashStat[iidd])[2]
+                                         mlikcand.b<-hash::values(hashStat[iidd])[1]
                                        }
 
                                        if((mlikcand.b>mlikglob))
@@ -2482,7 +2444,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(stats::runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
                                    {
                                      mlikcur<-mlikcand
                                      if(printable.opt)print(paste("locMTMCMC update ratcur = ", mlikcand))
@@ -2539,8 +2501,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcur,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
                                  # incorporate what happens for the backward optimization
 
@@ -2610,8 +2572,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcur,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
 
                                }
@@ -2693,8 +2655,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else if(exists("hashStat"))
                                        {
                                          iidd<-paste(varcand,collapse = "")
-                                         waiccand<-values(hashStat[iidd])[2]
-                                         mlikcand<-values(hashStat[iidd])[1]
+                                         waiccand<-hash::values(hashStat[iidd])[2]
+                                         mlikcand<-hash::values(hashStat[iidd])[1]
                                        }
 
                                        if(objective==0)
@@ -2734,7 +2696,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else
                                        {
                                          delta<-objcand - objcur
-                                         if(runif(n = 1,min = 0,max = 1) <= exp(x = -delta/t))
+                                         if(stats::runif(n = 1,min = 0,max = 1) <= exp(x = -delta/t))
                                          {
 
                                            model.probs<-calculate.move.logprobabilities(varold = varcur, varnew = varcand,switch.type = model$switch.type,min.N = min.N,max.N = max.N)
@@ -2838,8 +2800,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcand,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
                                  if(!is.na(mlikcur) &&  !is.na(waiccur) )
                                  {
@@ -2911,8 +2873,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(exists("hashStat"))
                                      {
                                        iidd<-paste(varcand,collapse = "")
-                                       waiccand<-values(hashStat[iidd])[2]
-                                       mlikcand<-values(hashStat[iidd])[1]
+                                       waiccand<-hash::values(hashStat[iidd])[2]
+                                       mlikcand<-hash::values(hashStat[iidd])[1]
                                      }
 
                                      if(objective==0)
@@ -3023,8 +2985,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcand,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
                                  if(!is.na(mlikcur) &&  !is.na(waiccur) )
                                  {
@@ -3095,8 +3057,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(exists("hashStat"))
                                      {
                                        iidd<-paste(varcand,collapse = "")
-                                       waiccand<-values(hashStat[iidd])[2]
-                                       mlikcand<-values(hashStat[iidd])[1]
+                                       waiccand<-hash::values(hashStat[iidd])[2]
+                                       mlikcand<-hash::values(hashStat[iidd])[1]
                                      }
 
                                      if(objective==0)
@@ -3214,8 +3176,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcand,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
                                  if(!is.na(waiccur)&&!is.na(mlikcur))
                                  {
@@ -3292,8 +3254,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(exists("hashStat"))
                                      {
                                        iidd<-paste(varcand,collapse = "")
-                                       waiccand<-values(hashStat[iidd])[2]
-                                       mlikcand<-values(hashStat[iidd])[1]
+                                       waiccand<-hash::values(hashStat[iidd])[2]
+                                       mlikcand<-hash::values(hashStat[iidd])[1]
                                      }
 
                                      if(objective==0)
@@ -3401,12 +3363,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              #forward backward random dance
                              forw_backw_walk = function(model)
                              {
-                               varcur<-rbinom(n = Nvars,size = 1,prob = runif(n = 1,min = 0,max = model$p1))
+                               varcur<-stats::rbinom(n = Nvars,size = 1,prob = stats::runif(n = 1,min = 0,max = model$p1))
                                mlikcur<- -Inf
                                waiccur<- Inf
                                for(i in 1:model$steps)
                                {
-                                 fff<-forward_selection(list(varcur=rbinom(n = Nvars,size = 1,prob = runif(n = 1,min = 0,max = model$p1)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+                                 fff<-forward_selection(list(varcur=stats::rbinom(n = Nvars,size = 1,prob = stats::runif(n = 1,min = 0,max = model$p1)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
                                  if(objective ==1)
                                  {
                                    if(fff$mlikglob>mlikcur)
@@ -3427,7 +3389,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                  }
                                  set.seed(i*model$steps)
-                                 bbb<-backward_selection(list(varcur=rbinom(n = Nvars,size = 1,prob =  runif(n = 1,min = model$p1,max = 1)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
+                                 bbb<-backward_selection(list(varcur=stats::rbinom(n = Nvars,size = 1,prob =  stats::runif(n = 1,min = model$p1,max = 1)),mlikcur=-Inf,waiccur =Inf,locstop = FALSE,statid=-1))
                                  if(objective ==1)
                                  {
                                    if(bbb$mlikglob>mlikcur)
@@ -3483,8 +3445,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcur,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
 
                                  # incorporate what happens for the backward optimization
@@ -3537,8 +3499,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcand,collapse = "")
-                                   waiccand<-values(hashStat[iidd])[2]
-                                   mlikcand<-values(hashStat[iidd])[1]
+                                   waiccand<-hash::values(hashStat[iidd])[2]
+                                   mlikcand<-hash::values(hashStat[iidd])[1]
                                  }
 
 
@@ -3569,7 +3531,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                for(iterat in 1:buf.M.nd)
                                {
                                  withRestarts(tryCatch({
-                                   # statistics <- describe(statistics)
+                                   # statistics <- bigmemory::describe(statistics)
                                    mmax.cpu = max.cpu
                                    if(model$switch.type == 5)
                                    {
@@ -3619,8 +3581,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(exists("hashStat"))
                                      {
                                        iidd<-paste(varcand1,collapse = "")
-                                       waiccand1<-values(hashStat[iidd])[2]
-                                       mlikcand1<-values(hashStat[iidd])[1]
+                                       waiccand1<-hash::values(hashStat[iidd])[2]
+                                       mlikcand1<-hash::values(hashStat[iidd])[1]
                                      }
 
                                      if(objective==0)
@@ -3727,8 +3689,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }else if(exists("hashStat"))
                                  {
                                    iidd<-paste(varcur,collapse = "")
-                                   waiccur<-values(hashStat[iidd])[2]
-                                   mlikcur<-values(hashStat[iidd])[1]
+                                   waiccur<-hash::values(hashStat[iidd])[2]
+                                   mlikcur<-hash::values(hashStat[iidd])[1]
                                  }
 
                                  # incorporate what happens for the backward optimization
@@ -3755,14 +3717,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                stm <- proc.time()
                                if(printable.opt)print("Begin model selection EMJMCMC2016 procedure")
-                               set.seed(runif(n = 1, min = 1, max = seed), kind = NULL, normal.kind = NULL)
+                               set.seed(stats::runif(n = 1, min = 1, max = seed), kind = NULL, normal.kind = NULL)
                                acc_moves<-1
                                accept_old<-1
                                distrib_of_proposals <- glob.model$distrib_of_proposals
                                distrib_of_neighbourhoods <- glob.model$distrib_of_neighbourhoods
                                # do the search and simulations accross the modes
-                               g.results[4,1]<- 0
-                               g.results[4,2]<- 0
+                               g.results[4, 1] <<-  0
+                               g.results[4, 2] <<-  0
 
                                if(glob.model$presearch)
                                {
@@ -3800,7 +3762,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    print(paste("initial solution is set with mlik of ",mlikcur))
 
                                  }else{
-                                   vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
+                                   vec<-stats::rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
                                    varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
                                  }
                                }else if(length(glob.model$varcur[which(glob.model$varcur %in% c(0,1))])==Nvars)
@@ -3810,7 +3772,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                else
                                {
                                  if(printable.opt)print("Incorrect initial solution set be the user, a random one is generated")
-                                 vec<-rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
+                                 vec<-stats::rbinom(n = Nvars,size = 1,prob = 0.5) # generate an initial solution
                                  varcur<-c(array(0,dim = (Nvars -length(vec))),vec)
 
                                }
@@ -3833,15 +3795,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                eps.emp<-normprob(p1,p2)
                                max.cpu.buf<-max.cpu
                                delta.time <- 0
-                               LocImprove<-0
+                               LocImprove <<- as.array(0)
                                LocNeighbor<-0
                                max.cpu.buf<-max.cpu.glob
 
                                while((eps.emp>=glob.model$eps || j<= glob.model$maxit || j <= glob.model$burnin) && delta.time < glob.model$max.time && g.results[4,1]<= glob.model$trit && g.results[4,2]<= glob.model$trest)
                                {
                                  p1<-p.post/acc_moves
-                                 set.seed(runif(n = 1, min = 1, max = seed*100), kind = NULL, normal.kind = NULL)
-                                 LocImprove <- (sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
+                                 set.seed(stats::runif(n = 1, min = 1, max = seed*100), kind = NULL, normal.kind = NULL)
+                                 LocImprove <<- as.array(sample(x = 5,size = 1,prob = distrib_of_proposals) - 1)
                                  LocNeighbor<-(sample(x = 7,size = 1,prob = distrib_of_neighbourhoods[LocImprove+1,]))
                                  switch.type.glob.buf = LocNeighbor
                                  switch.type.buf = LocNeighbor
@@ -3860,7 +3822,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    print(paste(j," iterations completed up to now after ",delta.time," cpu minutes"," best MLIK found ",g.results[1,1] ," current mlik found ",mlikcur,  "current acceptance ratio ",acc_moves/j.a))
                                  }
                                  if(j%%100==0)
-                                   seed = runif(n = 1,min = 0,max = 100000)
+                                   seed <<- stats::runif(n = 1,min = 0,max = 100000)
                                  # the small part of the code to be upgraded at least slightly
                                  if(allow_offsprings  %in% c(1,2)  && j%%mutation_rate == 0 && (j<=last.mutation || Nvars!=Nvars.max))
                                  {
@@ -3874,15 +3836,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      if(length(to.del)==Nvars)
                                        to.del<-to.del[-c(1,2)]
                                      print("Data filtered! Insignificant variables deleted!")
-                                     # keysarr <- as.array(keys(hashStat))
+                                     # keysarr <- as.array(hash::keys(hashStat))
                                      # keysarr.new<-NULL
-                                     # values.new<-values(hashStat)
+                                     # values.new<-hash::values(hashStat)
                                      # for(id.replace in to.del){
                                      #   for(jjj in 1:length(keysarr))
                                      #   {
-                                     #     if(!stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                     #     if(! stringi::stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
                                      #     {
-                                     #       keysarr.new<-c(keysarr.new,stri_sub(keysarr[jjj],from = 1, to = Nvars.max))
+                                     #       keysarr.new<-c(keysarr.new, stringi::stri_sub(keysarr[jjj],from = 1, to = Nvars.max))
                                      #     }
                                      #     else
                                      #     {
@@ -3893,17 +3855,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      # keysarr.new<-unique(keysarr.new)
                                      if(length(to.del)>0)
                                      {
-                                       clear(hashStat)
+                                       hash::clear(hashStat)
                                        rm(hashStat)
                                        gc()
-                                       #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
-                                       hashStat<<-hash()
+                                       hashStat <- hash::hash()
                                        fparam<<-fparam[-to.del]
                                        Nvars<<-length(fparam)
                                        Nvars.init<<-Nvars
                                        p.add<<-p.add[-to.del]
                                        p.post<-array(data = 1,dim = Nvars)
-                                       #print(paste("mutation happended ",proposal," tree  added"))
                                        varcurb<-varcurb[1:Nvars]
                                        varcand<-varcurb[1:Nvars]
                                        varglob<-varcurb[1:Nvars]
@@ -3922,7 +3882,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        if(lidmut>0)
                                        {
                                          p.del<-(lidmut - sum(p.add[idmut]))/lidmut
-                                         lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                         lidmut<-stats::rbinom(n = 1,size = lidmut,prob = p.del)
                                        }
                                      }else
                                      {
@@ -3933,27 +3893,27 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      for(idel in 1:lidmut){
 
                                        p.del<-1-(sum(p.add))/Nvars
-                                       mother<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)],fparam[runif(n = 1,min = 1,max=Nvars.init)])
-                                       ltreem<-stri_length(mother)
-                                       mother<-stri_sub(mother,from=2, to = ltreem)
+                                       mother<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=p.del,fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)],fparam[stats::runif(n = 1,min = 1,max=Nvars.init)])
+                                       ltreem<-stringi::stri_length(mother)
+                                       mother<- stringi::stri_sub(mother,from=2, to = ltreem)
 
                                        if(allow_offsprings==1)
-                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("&","|")))
+                                         sjm<-sum(stringi::stri_count_fixed(str = mother, pattern = c("&","|")))
                                        else
-                                         sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                         sjm<-sum(stringi::stri_count_fixed(str = mother, pattern = c("+","*")))
 
                                        if(sjm<=max.tree.size)
                                        {
 
                                          #p.del<-1-(sum(p.add))/Nvars
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=p.del,fparam.pool[runif(n = 1,min = 1,max=length(fparam.pool))],fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)])
-                                         ltreef<-stri_length(father)
-                                         father<-stri_sub(father,from=2, to = ltreef)
+                                         father<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=p.del,fparam.pool[stats::runif(n = 1,min = 1,max=length(fparam.pool))],fparam[which(rmultinom(n = 1,size = 1,prob = p.add/2)==1)])
+                                         ltreef<-stringi::stri_length(father)
+                                         father<- stringi::stri_sub(father,from=2, to = ltreef)
 
                                          if(allow_offsprings==1)
-                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("&","|")))
+                                           sjf<-sum(stringi::stri_count_fixed(str = father, pattern = c("&","|")))
                                          else
-                                           sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+                                           sjf<-sum(stringi::stri_count_fixed(str = father, pattern = c("+","*")))
 
                                          if(sjm+sjf+1<=max.tree.size)
                                          {
@@ -3961,7 +3921,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            {
                                              if(!grepl(father, mother,fixed = T)&&!grepl(mother, father,fixed = T))
                                              {
-                                               proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I((1-","I(("),mother,sep = ""),paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,")&",")|"))
+                                               proposal<-stri_paste(paste(ifelse(stats::runif(n = 1,min = 0,max = 1)<p.nor,"I((1-","I(("),mother,sep = ""),paste(ifelse(stats::runif(n = 1,min = 0,max = 1)<p.nor,"(1-","("),father,"))",sep = ""),sep  = ifelse(stats::runif(n = 1,min = 0,max = 1)<p.and,")&",")|"))
                                              }
                                              else
                                              {
@@ -3970,15 +3930,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                                  t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
                                                  if(sjm>=sjf)
                                                  {
-                                                   loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
-                                                   proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
+                                                   loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stringi::stri_length(mother))
+                                                   proposal<-stri_paste( stringi::stri_sub(mother,from = 1,to = loc[t.d]-1), stringi::stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stringi::stri_length(mother)))
                                                  }else
                                                  {
-                                                   loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
-                                                   proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
+                                                   loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stringi::stri_length(father))
+                                                   proposal<-stri_paste( stringi::stri_sub(father,from = 1,to = loc[t.d]-1), stringi::stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stringi::stri_length(father)))
                                                  }
 
-                                                 diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
+                                                 diffs<-(stringi::stri_count_fixed(str = proposal, pattern = "(")-stringi::stri_count_fixed(str = proposal, pattern = ")"))
                                                  if(diffs>0)
                                                    proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
                                                  if(diffs<0)
@@ -3993,7 +3953,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            }
                                            else
                                            {
-                                             proposal<-stri_paste(paste(ifelse(runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),mother,sep = ""),paste("(",father,"))",sep = ""),sep  = ifelse(runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
+                                             proposal<-stri_paste(paste(ifelse(stats::runif(n = 1,min = 0,max = 1)<p.nor,"I(","I(-"),mother,sep = ""),paste("(",father,"))",sep = ""),sep  = ifelse(stats::runif(n = 1,min = 0,max = 1)<p.and,"*","+"))
                                              proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                              while((proposal %in% fparam))
                                                proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
@@ -4005,15 +3965,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            t.d<-sample.int(size = 1,n = (max(sjm,sjf)+1))
                                            if(sjm>=sjf)
                                            {
-                                             loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(mother))
-                                             proposal<-stri_paste(stri_sub(mother,from = 1,to = loc[t.d]-1),stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stri_length(mother)))
+                                             loc<-c(1,stri_locate_all(str = mother,regex = "\\&|\\||\\*|\\+")[[1]][,1],stringi::stri_length(mother))
+                                             proposal<-stri_paste( stringi::stri_sub(mother,from = 1,to = loc[t.d]-1), stringi::stri_sub(mother,from = (loc[t.d+1]+(t.d==1)),to = stringi::stri_length(mother)))
                                            }else
                                            {
-                                             loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stri_length(father))
-                                             proposal<-stri_paste(stri_sub(father,from = 1,to = loc[t.d]-1),stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stri_length(father)))
+                                             loc<-c(1,stri_locate_all(str = father,regex = "\\&|\\||\\*|\\+")[[1]][,1],stringi::stri_length(father))
+                                             proposal<-stri_paste( stringi::stri_sub(father,from = 1,to = loc[t.d]-1), stringi::stri_sub(father,from = (loc[t.d+1]+(t.d==1)),to = stringi::stri_length(father)))
                                            }
 
-                                           diffs<-(stri_count_fixed(str = proposal, pattern = "(")-stri_count_fixed(str = proposal, pattern = ")"))
+                                           diffs<-(stringi::stri_count_fixed(str = proposal, pattern = "(")-stringi::stri_count_fixed(str = proposal, pattern = ")"))
                                            if(diffs>0)
                                              proposal<-stri_paste(proposal,stri_paste(rep(")",diffs),collapse = ""),collapse = "")
                                            if(diffs<0)
@@ -4038,15 +3998,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            lto.del<-length(x = to.del)
                                            if(lto.del>0)
                                            {
-                                             id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                             id.replace <- to.del[round(stats::runif(n = 1,min = 1,max = lto.del))]
                                              if(printable.opt)
                                                print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                              fparam[id.replace]<<-proposal
-                                             keysarr <- as.array(keys(hashStat))
+                                             keysarr <- as.array(hash::keys(hashStat))
                                              p.add[id.replace]<<-p.allow.replace
                                              for(jjj in 1:length(keysarr))
                                              {
-                                               if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                               if( stringi::stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
                                                {
                                                  del(x = keysarr[jjj],hash = hashStat)
                                                }
@@ -4090,14 +4050,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      print("Data filtered! Insignificant variables deleted!")
                                      if(length(to.del)>0)
                                      {
-                                       clear(hashStat)
+                                       hash::clear(hashStat)
                                        rm(hashStat)
                                        gc()
-                                       #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
                                        rm(hashStat)
-                                       hashStat<<-hash()
-                                       #clear(hashStat)
-                                       #hashStat<<-hash()
+                                       hashStat <- hash::hash()
                                        fparam<<-fparam[-to.del]
                                        if(!keep.origin)
                                          pool.probs[which(fparam.pool %in% fparam)]<-1
@@ -4105,7 +4062,6 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        Nvars.init<<-Nvars
                                        p.add<<-p.add[-to.del]
                                        p.post<-array(data = 1,dim = Nvars)
-                                       #print(paste("mutation happended ",proposal," tree  added"))
                                        varcurb<-varcurb[-to.del]
                                        varcand<-varcurb[-to.del]
                                        varglob<-varcurb[-to.del]
@@ -4126,7 +4082,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          if(lidmut>0)
                                          {
                                            p.del<-(lidmut - sum(p.add[idmut]))/lidmut
-                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                           lidmut<-stats::rbinom(n = 1,size = lidmut,prob = p.del)
                                          }
                                        }else{
                                          idmut<-which(varcurb == 0)
@@ -4135,7 +4091,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #if(lidmut>0)
                                        #{
                                        # p.del<-(lidmut - sum(p.add[idmut]))/lidmut
-                                       # lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                       # lidmut<-stats::rbinom(n = 1,size = lidmut,prob = p.del)
                                        #}
                                      }else
                                      {
@@ -4160,29 +4116,29 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          # crossover type of a proposal
                                          # generate a mother
                                          #actvars<-which(varcurb==1)
-                                         mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                         ltreem<-stri_length(mother)
-                                         mother<-stri_sub(mother,from=1, to = ltreem)
-                                         #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                         mother<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n =Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                         ltreem<-stringi::stri_length(mother)
+                                         mother<- stringi::stri_sub(mother,from=1, to = ltreem)
+                                         #sjm<-sum(stringi::stri_count_fixed(str = mother, pattern = c("+","*")))
                                          # generate a father
-                                         father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                         ltreef<-stri_length(father)
-                                         father<-stri_sub(father,from=1, to = ltreef)
-                                         #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+                                         father<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars, size =1,prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                         ltreef<-stringi::stri_length(father)
+                                         father<- stringi::stri_sub(father,from=1, to = ltreef)
+                                         #sjf<-sum(stringi::stri_count_fixed(str = father, pattern = c("+","*")))
 
                                          proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
 
 
 
                                        }else if(action.type==3){
-                                         proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                         proposal<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[sample.int(n = Nvars,size =1, prob = p.add+p.epsilon)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
                                          proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                        }else if(action.type==4){
 
 
                                          # select a subset for the projection
 
-                                         actvars <- which(rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
+                                         actvars <- which(stats::rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
 
                                          if(length(actvars)<=1)
                                          {
@@ -4190,7 +4146,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          }else{
                                            # get the projection coefficients as the posterior mode of the fixed effects
-                                           bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
+                                           bet.act <- do.call(.self$estimator, c(estimator.args,stats::as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
                                            nab<-which(is.na(bet.act))
                                            if(length(nab)>0)
                                              bet.act[nab]<-0
@@ -4218,7 +4174,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          {
                                            proposal<-fparam[1]
                                          }else{
-                                           cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
+                                           cpm<-sum(stringi::stri_count_fixed(str = fparam[idel], pattern = c("*")))
                                            if(length(cpm)==0)
                                              cpm<-0
 
@@ -4227,16 +4183,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              t.d<-sample.int(size = 1,n = (cpm))
                                              #print(fparam[idel])
 
-                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
-                                             proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stringi::stri_length(fparam[idel]))
+                                             proposal<-stri_paste( stringi::stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)), stringi::stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stringi::stri_length(fparam[idel])))
 
-                                             if(runif(n = 1,min = 0,max = 1)<del.sigma){
+                                             if(stats::runif(n = 1,min = 0,max = 1)<del.sigma){
                                                dsigmas<-sample.int(size = 1,n = length(sigmas))
                                                if(sigmas[dsigmas]!="")
-                                                 proposal<-stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
+                                                 proposal<-stringi::stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
                                              }
-                                             so<-stri_count_fixed(str = proposal, pattern="(")
-                                             sc<-stri_count_fixed(str = proposal, pattern=")")
+                                             so<-stringi::stri_count_fixed(str = proposal, pattern="(")
+                                             sc<-stringi::stri_count_fixed(str = proposal, pattern=")")
                                              #print(proposal)
                                              if(sc>so){
                                                proposal<-stri_paste(stri_paste("I",rep("(",sc-so),  collapse = ''),proposal)
@@ -4251,9 +4207,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }
 
 
-                                       sj<-(stri_count_fixed(str = proposal, pattern = "*"))
-                                       sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
-                                       sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
+                                       sj<-(stringi::stri_count_fixed(str = proposal, pattern = "*"))
+                                       sj<-sj+(stringi::stri_count_fixed(str = proposal, pattern = "+"))
+                                       sj<-sj+sum(stringi::stri_count_fixed(str = proposal, pattern = sigmas))
                                        sj<-sj+1
                                        if(sj>max.tree.size || length(sj)==0)
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
@@ -4261,7 +4217,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1)]
 
                                        add<-T
-                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                       bet.act <- do.call(.self$estimator, c(estimator.args,stats::as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                        if(is.na(bet.act[length(fparam)+2]))
                                        {
                                          add<-F
@@ -4291,15 +4247,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #lto.del<-length(x = to.del)
                                          if(lto.del>0)
                                          {
-                                           id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                           id.replace <- to.del[round(stats::runif(n = 1,min = 1,max = lto.del))]
                                            if(printable.opt)
                                              print(paste("mutation happended ",proposal," tree  replaced ", fparam[id.replace]))
                                            fparam[id.replace]<<-proposal
-                                           keysarr <- as.array(keys(hashStat))
+                                           keysarr <- as.array(hash::keys(hashStat))
                                            p.add[id.replace]<<-p.allow.replace
                                            for(jjj in 1:length(keysarr))
                                            {
-                                             if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                             if( stringi::stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
                                              {
                                                del(x = keysarr[jjj],hash = hashStat)
                                              }
@@ -4346,12 +4302,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      print("Data filtered! Insignificant variables deleted!")
                                      if(length(to.del)>0)
                                      {
-                                       clear(hashStat)
+                                       hash::clear(hashStat)
                                        rm(hashStat)
                                        gc()
-                                       #hashStat<<-hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
-                                       clear(hashStat)
-                                       #hashStat<<-hash()
+                                       #hashStat <- hash::hash(keys=keysarr.new,values=as.list(data.frame((values.new))))
+                                       hash::clear(hashStat)
                                        fparam<<-fparam[-to.del]
                                        pool.probs[which(fparam.pool %in% fparam)]<-1
                                        Nvars<<-length(fparam)
@@ -4379,7 +4334,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        #if(lidmut>0)
                                        #{
                                        #   p.del<-0.5
-                                       #   lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                       #   lidmut<-stats::rbinom(n = 1,size = lidmut,prob = p.del)
                                        #}
 
                                        if(keep.origin)
@@ -4389,7 +4344,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          if(lidmut>0)
                                          {
                                            p.del<-0.5
-                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                           lidmut<-stats::rbinom(n = 1,size = lidmut,prob = p.del)
                                          }
                                        }else{
                                          idmut<-which(varcurb ==0)
@@ -4397,11 +4352,11 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          if(lidmut>0)
                                          {
                                            p.del<-0.5
-                                           lidmut<-rbinom(n = 1,size = lidmut,prob = p.del)
+                                           lidmut<-stats::rbinom(n = 1,size = lidmut,prob = p.del)
                                          }
                                        }
 
-                                       #mod.id.old<-runif(n = 1000,min = 1,max = 2^Nvars)
+                                       #mod.id.old<-stats::runif(n = 1000,min = 1,max = 2^Nvars)
                                        if(on.suggested%%2==1){
 
                                          if(preaccepted)
@@ -4411,7 +4366,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            log.mod.switch.prob.back<-log.mod.switch.prob.back+length(which(fparam[eqal.things]!=tmp.buf.1[eqal.things]))
                                            log.mod.switch.prob.back<-log.mod.switch.prob.back^prand
                                            if(printable.opt) print(paste0("afteracceptance ratio ",log.mod.switch.prob.back/log.mod.switch.prob))
-                                           if(runif(1,0,1)<=log.mod.switch.prob.back/log.mod.switch.prob)
+                                           if(stats::runif(1,0,1)<=log.mod.switch.prob.back/log.mod.switch.prob)
                                            {
                                              if(printable.opt) print("preaccepted mutation is accepted")
                                              mlikcur<-mlikcur.buf.2
@@ -4477,7 +4432,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            msn<-1
                                            mso<-1
                                          }#*log((sum(tmp.buf%in%fparam)==length(tmp.buf)))
-                                         if(log(runif(1,0,1))>=((msn)-(mso)))
+                                         if(log(stats::runif(1,0,1))>=((msn)-(mso)))
                                          {
 
                                            if(printable.opt)print("proposal is rejected")
@@ -4533,15 +4488,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            father<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
                                          }else
                                          {
-                                           mother<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                           #ltreem<-stri_length(mother)
-                                           #mother<-stri_sub(mother,from=1, to = ltreem)
-                                           #sjm<-sum(stri_count_fixed(str = mother, pattern = c("+","*")))
+                                           mother<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           #ltreem<-stringi::stri_length(mother)
+                                           #mother<- stringi::stri_sub(mother,from=1, to = ltreem)
+                                           #sjm<-sum(stringi::stri_count_fixed(str = mother, pattern = c("+","*")))
                                            # generate a father
-                                           father<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
-                                           #ltreef<-stri_length(father)
-                                           #father<-stri_sub(father,from=1, to = ltreef)
-                                           #sjf<-sum(stri_count_fixed(str = father, pattern = c("+","*")))
+                                           father<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           #ltreef<-stringi::stri_length(father)
+                                           #father<- stringi::stri_sub(father,from=1, to = ltreef)
+                                           #sjf<-sum(stringi::stri_count_fixed(str = father, pattern = c("+","*")))
                                          }
 
                                          proposal<-stri_paste("I(",stri_paste(mother,father,sep="*"),")",sep = "")
@@ -4557,7 +4512,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                            proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                          }else
                                          {
-                                           proposal<-ifelse(runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
+                                           proposal<-ifelse(stats::runif(n = 1,min = 0,max = 1)<=pool.cross,fparam[actvars][sample.int(n = length(actvars),size =1)],fparam.pool[sample.int(n = length(fparam.pool),size =1,prob = pool.probs)])
                                            proposal<-stri_paste("I(",sigmas[sample.int(n = length(sigmas),size=1,replace = F,prob = sigmas.prob)],"(",proposal,"))",sep = "")
                                          }
                                        }else if(action.type==4){
@@ -4565,7 +4520,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          actvars<-which(varcurb==1)
                                          # select a subset for the projection
                                          if(length(actvars)>0)
-                                           actvars <- actvars[which(rbinom(n = length(actvars),size = 1,prob = 0.5)==1)]
+                                           actvars <- actvars[which(stats::rbinom(n = length(actvars),size = 1,prob = 0.5)==1)]
 
                                          if(length(actvars)==0)
                                          {
@@ -4573,7 +4528,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                          }else{
                                            # get the projection coefficients as the posterior mode of the fixed effects
-                                           bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
+                                           bet.act <- do.call(.self$estimator, c(estimator.args,stats::as.formula(stri_paste(fobserved,"~ 1 +",paste0(fparam[actvars],collapse = "+")))))$summary.fixed$mean
                                            nab<-which(is.na(bet.act))
                                            if(length(nab)>0)
                                              bet.act[nab]<-0
@@ -4601,7 +4556,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          {
                                            proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
                                          }else{
-                                           cpm<-sum(stri_count_fixed(str = fparam[idel], pattern = c("*")))
+                                           cpm<-sum(stringi::stri_count_fixed(str = fparam[idel], pattern = c("*")))
                                            if(length(cpm)==0)
                                              cpm<-0
 
@@ -4610,16 +4565,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                              t.d<-sample.int(size = 1,n = (cpm))
                                              #print(fparam[idel])
 
-                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stri_length(fparam[idel]))
-                                             proposal<-stri_paste(stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)),stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stri_length(fparam[idel])))
+                                             loc<-c(1,stri_locate_all(str = fparam[idel],regex = "\\*")[[1]][,1],stringi::stri_length(fparam[idel]))
+                                             proposal<-stri_paste( stringi::stri_sub(fparam[idel],from = 1,to = loc[t.d]-1+2*(t.d==1)), stringi::stri_sub(fparam[idel],from = (loc[t.d+1]+(t.d==1)),to = stringi::stri_length(fparam[idel])))
 
-                                             if(runif(n = 1,min = 0,max = 1)<del.sigma){
+                                             if(stats::runif(n = 1,min = 0,max = 1)<del.sigma){
                                                dsigmas<-sample.int(size = 1,n = length(sigmas))
                                                if(sigmas[dsigmas]!="")
-                                                 proposal<-stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
+                                                 proposal<-stringi::stri_replace_all_fixed(replacement = "",str = proposal,pattern = sigmas[dsigmas])
                                              }
-                                             so<-stri_count_fixed(str = proposal, pattern="(")
-                                             sc<-stri_count_fixed(str = proposal, pattern=")")
+                                             so<-stringi::stri_count_fixed(str = proposal, pattern="(")
+                                             sc<-stringi::stri_count_fixed(str = proposal, pattern=")")
                                              #print(proposal)
                                              if(sc>so){
                                                proposal<-stri_paste(stri_paste("I",rep("(",sc-so),  collapse = ''),proposal)
@@ -4637,15 +4592,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          proposal <- fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
 
 
-                                       sj<-(stri_count_fixed(str = proposal, pattern = "*"))
-                                       sj<-sj+(stri_count_fixed(str = proposal, pattern = "+"))
-                                       sj<-sj+sum(stri_count_fixed(str = proposal, pattern = sigmas))
+                                       sj<-(stringi::stri_count_fixed(str = proposal, pattern = "*"))
+                                       sj<-sj+(stringi::stri_count_fixed(str = proposal, pattern = "+"))
+                                       sj<-sj+sum(stringi::stri_count_fixed(str = proposal, pattern = sigmas))
                                        sj<-sj+1
                                        if(sj>max.tree.size || length(sj)==0)
                                          proposal<-fparam.pool[sample.int(n=length(fparam.pool),size = 1,prob = pool.probs)]
 
                                        add<-T
-                                       bet.act <- do.call(.self$estimator, c(estimator.args,as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
+                                       bet.act <- do.call(.self$estimator, c(estimator.args,stats::as.formula(stri_paste(fobserved,"~ 1 +",paste0(c(fparam,proposal),collapse = "+")))))$summary.fixed$mean
                                        if(is.na(bet.act[length(fparam)+2]))
                                        {
                                          add<-F
@@ -4681,15 +4636,15 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                          #varcurb == 0
                                          if(lto.del>0)
                                          {
-                                           id.replace <- to.del[round(runif(n = 1,min = 1,max = lto.del))]
+                                           id.replace <- to.del[round(stats::runif(n = 1,min = 1,max = lto.del))]
                                            #if(printable.opt)
                                            #print(paste("mutation suggested ",proposal," tree  replaced ", fparam[id.replace]))
                                            fparam[id.replace]<<-proposal
-                                           keysarr <- as.array(keys(hashStat))
+                                           keysarr <- as.array(hash::keys(hashStat))
                                            p.add[id.replace]<<-p.allow.replace
                                            for(jjj in 1:length(keysarr))
                                            {
-                                             if(stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
+                                             if( stringi::stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
                                              {
                                                del(x = keysarr[jjj],hash = hashStat)
                                              }
@@ -4715,7 +4670,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                  }else if(allow_offsprings > 0  && j%%mutation_rate == 0 && j>last.mutation)
                                  {
-                                   recalc.margin = 2^Nvars
+                                   recalc.margin <<- 2^Nvars
                                  }
                                  #withRestarts(tryCatch({
 
@@ -4723,7 +4678,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
 
-                                 if(LocImprove<=3)
+                                 if(LocImprove <= as.array(3))
                                  {
                                    vect<-buildmodel(max.cpu = 1,varcur.old = varcurb,statid = 4 + LocImprove,min.N = min.N.glob,max.N = max.N.glob,switch.type = switch.type.glob.buf)
                                    max.cpu.buf = 1
@@ -4791,8 +4746,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else if(exists("hashStat"))
                                      {
                                        iidd<-paste(varcand,collapse = "")
-                                       waiccand<-values(hashStat[iidd])[2]
-                                       mlikcand<-values(hashStat[iidd])[1]
+                                       waiccand<-hash::values(hashStat[iidd])[2]
+                                       mlikcand<-hash::values(hashStat[iidd])[1]
                                      }
 
                                      if((mlikcand>mlikglob)) #update the parameter of interest
@@ -4850,8 +4805,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }else if(exists("hashStat"))
                                    {
                                      iidd<-paste(varcand,collapse = "")
-                                     waiccand<-values(hashStat[iidd])[2]
-                                     mlikcand<-values(hashStat[iidd])[1]
+                                     waiccand<-hash::values(hashStat[iidd])[2]
+                                     mlikcand<-hash::values(hashStat[iidd])[1]
                                    }
 
                                    #p.Q.cand<- p.select.y[ID]/sum(p.select.y)
@@ -4923,8 +4878,8 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        }else if(exists("hashStat"))
                                        {
                                          iidd<-paste(varcand.b,collapse = "")
-                                         waiccand.b<-values(hashStat[iidd])[2]
-                                         mlikcand.b<-values(hashStat[iidd])[1]
+                                         waiccand.b<-hash::values(hashStat[iidd])[2]
+                                         mlikcand.b<-hash::values(hashStat[iidd])[1]
                                        }
 
                                        if((mlikcand.b>mlikglob))
@@ -4976,7 +4931,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                    if(printable.opt)print(paste("max log.w.z is ",max.p.select.z,"normilized log.w.n.z is ", paste(p.select.z,collapse = ", ")))
 
-                                   if(log(runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
+                                   if(log(stats::runif(n = 1,min = 0,max = 1)) < (log(sum(exp(p.select.y)))-log(sum(exp(p.select.z)))) + max.p.select.y - max.p.select.z )
                                    {
                                      mlikcur<-mlikcand
                                      ratcur<-mlikcand
@@ -5037,23 +4992,23 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }else if(exists("hashStat"))
                                    {
                                      iidd<-paste(varcand,collapse = "")
-                                     waiccand<-values(hashStat[iidd])[2]
-                                     mlikcand<-values(hashStat[iidd])[1]
+                                     waiccand<-hash::values(hashStat[iidd])[2]
+                                     mlikcand<-hash::values(hashStat[iidd])[1]
                                    }
 
                                    varcur<-varcand
                                  }
 
                                  # try local improvements
-                                 if(LocImprove<=3)
+                                 if(LocImprove <= as.array(3))
                                  {
                                    # sa improvements
-                                   if(LocImprove == 0 || LocImprove == 3)
+                                   if(LocImprove == as.array(0) || LocImprove == as.array(3))
                                    {
                                      if(printable.opt)print("Try SA imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
                                      buf.change[which(varcur - varcurb!=0)]=0
-                                     #buf.opt[floor(runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
+                                     #buf.opt[floor(stats::runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
 
                                      if(objective ==0)
                                      {
@@ -5066,12 +5021,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        objcur<- -mlikcand
                                      }
                                      model = list(statid = 4 + LocImprove, switch.type = switch.type.buf, change = buf.change,mlikcur = mlikcur,
-                                                  varcur = varcur,varold = varcurb, objcur = objcur,objold = objold, sa2 = ifelse(LocImprove == 3,TRUE,FALSE) ,reverse=FALSE)
+                                                  varcur = varcur,varold = varcurb, objcur = objcur,objold = objold, sa2 = ifelse(LocImprove == as.array(3),TRUE,FALSE) ,reverse=FALSE)
 
                                      SA.forw<-learnlocalSA(model)
                                      ratcand<-SA.forw$mlikcur
 
-                                     if(LocImprove == 0)
+                                     if(LocImprove == as.array(0))
                                      {
 
                                        ids = which(buf.change == 1)
@@ -5104,10 +5059,10 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                                      }
 
-                                     if(LocImprove == 0)
+                                     if(LocImprove == as.array(0))
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,SA.back$log.prob.cur, - SA.back$log.prob.fix,na.rm=T)
-                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                       if(log(stats::runif(n = 1,min = 0,max = 1))<=thact)
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -5144,7 +5099,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      }else
                                      {
                                        thact<-sum(ratcand, - ratcur, - SA.forw$log.prob.cur,SA.forw$log.prob.fix,vect[[mod_id]]$log.mod.switchback.prob, - vect[[mod_id]]$log.mod.switch.prob,na.rm=T)
-                                       if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                       if(log(stats::runif(n = 1,min = 0,max = 1))<=thact)
                                        {
                                          ratcur<-ratcand
                                          mlikcur<-ratcand
@@ -5182,12 +5137,12 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        modglob<-SA.forw$modglob
                                      }
 
-                                   }else  if(LocImprove == 1)
+                                   }else  if(LocImprove == as.array(1))
                                    {
                                      if(printable.opt)print("Try MTMCMC imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
                                      buf.change[which(varcur - varcurb!=0)]=0
-                                     #buf.opt[floor(runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
+                                     #buf.opt[floor(stats::runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
 
 
 
@@ -5214,9 +5169,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                      ratcand<-MTMCMC.forw$mlikcur
 
 
-                                     #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
+                                     #if(log(stats::runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - MTMCMC.forw$log.prob.cur,MTMCMC.forw$log.prob.fix,MTMCMC.back$log.prob.cur,- MTMCMC.back$log.prob.fix,na.rm=T)
-                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                     if(log(stats::runif(n = 1,min = 0,max = 1))<=thact)
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
@@ -5260,14 +5215,14 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                        modglob<-MTMCMC.back$modglob
                                      }
 
-                                   }else if(LocImprove == 2)
+                                   }else if(LocImprove == as.array(2))
                                    {
                                      if(printable.opt)print("Try greedy heuristic imptovements")
                                      buf.change <- array(data = 1,dim = Nvars)
                                      buf.change[which(varcur - varcurb!=0)]=0
 
                                      #buf.opt <- buf.change
-                                     #buf.opt[floor(runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
+                                     #buf.opt[floor(stats::runif(n = n.size,min = 1,max = Nvars+0.999999))] = 1
                                      if(objective ==0)
                                      {
                                        objold<-waiccur
@@ -5315,9 +5270,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
 
 
-                                     #if(log(runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
+                                     #if(log(stats::runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
                                      thact<-sum(ratcand, - ratcur, - GREEDY.forw$log.prob.cur,GREEDY.forw$log.prob.fix,GREEDY.back$log.prob.cur,-GREEDY.back$log.prob.fix,na.rm=T)
-                                     if(log(runif(n = 1,min = 0,max = 1))<=thact)
+                                     if(log(stats::runif(n = 1,min = 0,max = 1))<=thact)
                                      {
                                        ratcur<-ratcand
                                        mlikcur<-ratcand
@@ -5441,7 +5396,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              #save big.data results, if the latter are available
                              save_results_csv = function(statistics1, filename)
                              {
-                               write.big.matrix(x = statistics1,filename = filename)
+                               write.bigmemory::big.matrix(x = statistics1,filename = filename)
                              },
                              #vizualize the results graphically if the latter are available
                              visualize_results = function(statistics1, template, mds_size, crit,draw_dist = FALSE)
@@ -5482,7 +5437,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_legend.jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_legend.jpg",sep = ""))
                                    plot(xlab = "posterior probability of a visit found", ylab="visit type",c(0.1,0.2,0.3,0.4,0.5,0.6,0.7),c(7,7,7,-1,-1,-1,-1),ylim = c(0,9), xlim=c(0,1),pch=19, col = 7,cex= c(2,2,2,0,0,0,0))
                                    points(c(0.1,0.2,0.3,0.4,0.5,0.6,0.7),c(6,6,6,-1,-1,-1,-1),pch=8,  col = 5,cex=  c(1,2,3,0,0,0,0))
@@ -5521,7 +5476,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_waic.jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_waic.jpg",sep = ""))
                                    plot(ylim = waic.lim, xlab = "model_id", ylab="WAIC" ,statistics1[,2],pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,2],pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5538,7 +5493,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_dic.jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_dic.jpg",sep = ""))
                                    plot(ylim = dic.lim, xlab = "model_id", ylab="DIC" ,statistics1[,3],pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,3],pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5555,7 +5510,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_mlik-waic.jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_mlik-waic.jpg",sep = ""))
                                    plot(ylim = mlik.lim, xlim = waic.lim,xlab = "WAIC", ylab="MLIK" ,statistics1[,2],statistics1[,1], pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,2],statistics1[,1],pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5572,7 +5527,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_mlik-dic.jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_mlik-dic.jpg",sep = ""))
                                    plot(ylim = mlik.lim, xlim = dic.lim,xlab = "DIC", ylab="MLIK" ,statistics1[,3],statistics1[,1], pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,3],statistics1[,1],pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5589,7 +5544,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_waic-dic.jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_waic-dic.jpg",sep = ""))
                                    plot(ylim = waic.lim, xlim = dic.lim,xlab = "WAIC", ylab="DIC" ,statistics1[,3],statistics1[,2], pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,3],statistics1[,2],pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5630,7 +5585,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_Pr(MID).jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_Pr(MID).jpg",sep = ""))
                                    plot(xlab = "model_id", ylab="Pr(M(model_id)ID)",ylim = y.post.lim, statistics1[,4]/norm1,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5648,9 +5603,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_waic-Pr(MID).jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_waic-Pr(MID).jpg",sep = ""))
-                                   plot(xlim = waic.lim, ylim = y.post.lim,xlab = "WAIC(M)", ylab="Pr(MID)",statistics1[,2],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                   plot(xlim = waic.lim, ylim = y.post.lim,xlab = "Wstats::AIC(M)", ylab="Pr(MID)",statistics1[,2],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/norm+1,0))
                                    points(statistics1[,2],statistics1[,4]/norm1,pch=3,  col = ifelse(statistics1[,11]>0,3,0),cex= ifelse(statistics1[,11]>0,statistics1[,11]/norm+1,0))
@@ -5666,7 +5621,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  if(printable.opt)print(paste("drawing ",workdir,template,"_dic-Pr(MID).jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    jpeg(file=paste(workdir,template,"_dic-Pr(MID).jpg",sep = ""))
                                    plot(xlim = dic.lim, ylim = y.post.lim,xlab = "dic(M)", ylab="Pr(MID)",statistics1[,3],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,3],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/norm+1,0))
@@ -5685,7 +5640,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
 
                                  jpeg(file=paste(workdir,template,"_mlik-Pr(MID).jpg",sep = ""))
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    plot(xlim = mlik.lim,ylim = y.post.lim, xlab = "MLIK", ylab="Pr(MID)",statistics1[,1],statistics1[,4]/norm1, pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=8,  col = ifelse(statistics1[,4]>0,5,0),cex= ifelse(statistics1[,4]>0,statistics1[,4]/statistics1[,3]*3 +1,0))
                                    points(statistics1[,1],statistics1[,4]/norm1,pch=2,  col = ifelse(statistics1[,10]>0,2,0),cex= ifelse(statistics1[,10]>0,statistics1[,10]/statistics1[,4]*3 +1,0))
@@ -5701,7 +5656,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                if(draw_dist)
                                {
                                  if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
-                                 capture.output({withRestarts(tryCatch(capture.output({
+                                 utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                    lldd<-2^(Nvars)+1
 
                                    moddee<-which(zyx==max(zyx,na.rm = TRUE))
@@ -5745,7 +5700,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
 
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-mlik.jpg",sep = ""))
-                                   capture.output({withRestarts(tryCatch(capture.output({
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                      jpeg(file=paste(workdir,template,"_distance-MLIK.jpg",sep = ""))
                                      plot(xlab = "x = |M* - M| = distance from the main mode", ylab="MLIK(M)",ylim = mlik.lim,y=c(statistics1[moddee,1],statistics1[-moddee,1]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,1],statistics1[-moddee,1]),x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
@@ -5761,9 +5716,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
 
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-waic.jpg",sep = ""))
-                                   capture.output({withRestarts(tryCatch(capture.output({
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                      jpeg(file=paste(workdir,template,"_distance-waic.jpg",sep = ""))
-                                     plot(xlab = "x = |M* - M| = distance from the main mode", ylab="WAIC(M)",ylim = waic.lim,y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
+                                     plot(xlab = "x = |M* - M| = distance from the main mode", ylab="Wstats::AIC(M)",ylim = waic.lim,y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
                                      points(y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=2,  col = ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,2,0),cex= ifelse(c(statistics1[moddee,10],statistics1[-moddee,10])>0,c(statistics1[moddee,10],statistics1[-moddee,10])/norm+1,0))
                                      points(y=c(statistics1[moddee,2],statistics1[-moddee,2]),x=dists,pch=3,  col = ifelse(c(statistics1[moddee,11],statistics1[-moddee,11])>0,3,0),cex= ifelse(c(statistics1[moddee,11],statistics1[-moddee,11])>0,c(statistics1[moddee,11],statistics1[-moddee,11])/norm+1,0))
@@ -5777,7 +5732,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
 
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-dic.jpg",sep = ""))
-                                   capture.output({withRestarts(tryCatch(capture.output({
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                      jpeg(file=paste(workdir,template,"_distance-dic.jpg",sep = ""))
                                      plot(xlab = "x = |M* - M| = distance from the main mode", ylab="DIC(M)",ylim = dic.lim,y=c(statistics1[moddee,3],statistics1[-moddee,3]),x=dists,pch=19, col = 7,cex= 1*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,3],statistics1[-moddee,3]),x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
@@ -5794,7 +5749,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
 
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_distance-Pr(MID).jpg",sep = ""))
-                                   capture.output({withRestarts(tryCatch(capture.output({
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                      jpeg(file=paste(workdir,template,"_distance-Pr(MID).jpg",sep = ""))
                                      plot(xlab = "x = |M* - M| = distance from the main mode",ylim = y.post.lim, ylab="Pr(MID)",y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=19, col = 7,cex= 3*((statistics1[,9]+statistics1[,5]+statistics1[,6]+statistics1[,7]+statistics1[,8])>0))
                                      points(y=c(statistics1[moddee,4],statistics1[-moddee,4])/norm1,x=dists,pch=8,  col = ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,5,0),cex= ifelse(c(statistics1[moddee,4],statistics1[-moddee,4])>0,c(statistics1[moddee,4],statistics1[-moddee,4])/norm+1,0))
@@ -5813,7 +5768,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  {
                                    if(printable.opt)print(paste("drawing ",workdir,template,"_mds-Pr(MID).jpg",sep = ""))
                                    if(printable.opt)print("Calculating distance matrix, may take a significant amount of time, may also produce errors if your machine does not have enough memory")
-                                   capture.output({withRestarts(tryCatch(capture.output({
+                                   utils::capture.output({withRestarts(tryCatch(utils::capture.output({
                                      # further address subset of the set of the best solution of cardinality 1024
 
                                      if(lldd>mds_size)
@@ -5891,7 +5846,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              {
 
                                xyz<-which(!is.na(statistics1[,1]))
-                               g.results[4,2] <- length(xyz)
+                               g.results[4, 2] <<-  length(xyz)
                                xyz<-intersect(xyz,which(statistics1[,1]!=-10000))
                                moddee<-which(statistics1[,1]==max(statistics1[,1],na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = length(statistics1[,1]))
@@ -5961,9 +5916,9 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                }
 
                                lHash<-length(hashStat)
-                               mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+                               mliks <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
                                xyz<-which(mliks!=-10000)
-                               g.results[4,2] <- lHash
+                               g.results[4, 2] <<-  lHash
                                moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
                                zyx<-array(data = NA,dim = lHash)
                                nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
@@ -5982,7 +5937,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                }
 
 
-                               keysarr <- as.array(keys(hashStat))
+                               keysarr <- as.array(hash::keys(hashStat))
                                p.post<-array(data = 0,dim = Nvars)
                                for(i in 1:lHash)
                                {
@@ -6009,7 +5964,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                {
                                  p.post <- array(data = 0.5,dim = Nvars)
                                }
-                               #values(hashStat)[which((1:(lHash * linx)) %%linx == 4)]<-zyx
+                               #hash::values(hashStat)[which((1:(lHash * linx)) %%linx == 4)]<-zyx
 
                                return(list(p.post = p.post, m.post = zyx, s.mass = sum(exp(mliks),na.rm = TRUE)))
                              },
@@ -6041,7 +5996,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              {
                                res<-NULL
                                ncases <- dim(covariates)[1]
-                               formula.cur<-as.formula(paste(fparam[1],"/2 ~",paste0(fparam,collapse = "+")))
+                               formula.cur<-stats::as.formula(paste(fparam[1],"/2 ~",paste0(fparam,collapse = "+")))
                                nvars <- Nvars
                                if(save.beta)
                                {
@@ -6051,7 +6006,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    ids<-which(!is.na(statistics1[,15]))
                                    lids<-length(ids)
                                    statistics1[ids,(17:(nvars+16))][which(is.na(statistics1[ids,(17:(nvars+16))]))]<-0
-                                   res<-t(statistics1[ids,15])%*%g(statistics1[ids,(16:(nvars+16))]%*%t(model.matrix(object = formula.cur,data = covariates)))
+                                   res<-t(statistics1[ids,15])%*%g(statistics1[ids,(16:(nvars+16))]%*%t(stats::model.matrix(object = formula.cur,data = covariates)))
                                  }else if(exists("hashStat"))
                                  {
 
@@ -6079,16 +6034,16 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
 
                                    lHash<-length(hashStat)
-                                   mliks <- values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
-                                   betas <- values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
+                                   mliks <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+                                   betas <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 4)]
                                    for(i in 1:(Nvars-1))
                                    {
-                                     betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
+                                     betas<-cbind(betas,hash::values(hashStat)[which((1:(lHash * linx)) %% linx == (4+i))])
                                    }
-                                   betas<-cbind(betas,values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
+                                   betas<-cbind(betas,hash::values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
                                    betas[which(is.na(betas))]<-0
                                    xyz<-which(mliks!=-10000)
-                                   g.results[4,2] <- lHash
+                                   g.results[4, 2] <<-  lHash
                                    moddee<-which( mliks ==max( mliks ,na.rm = TRUE))[1]
                                    zyx<-array(data = NA,dim = lHash)
                                    nconsum<-sum(exp(- mliks[moddee]+ mliks[xyz]),na.rm = TRUE)
@@ -6107,7 +6062,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    }
 
 
-                                   res<-t(zyx)%*%g(betas%*%t(model.matrix(object = formula.cur,data = covariates)))
+                                   res<-t(zyx)%*%g(betas%*%t(stats::model.matrix(object = formula.cur,data = covariates)))
 
                                  }
                                }else
@@ -6121,34 +6076,34 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                              forecast.matrix.na=function(covariates,link.g,betas,mliks.in)
                              {
 
-                               formula2<-as.formula(paste(fparam[1],"/2 ~ -1+",paste0(fparam,collapse = "+")))
+                               formula2<-stats::as.formula(paste(fparam[1],"/2 ~ -1+",paste0(fparam,collapse = "+")))
                                current.na.action <- options('na.action')
                                options(na.action='na.pass')
-                               covariates<- as.data.frame(model.matrix(object = formula2,data = covariates,na.action=na.include))
+                               covariates<- as.data.frame(stats::model.matrix(object = formula2,data = covariates,na.action=na.include))
                                options('na.action'=  current.na.action$na.action)
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "I",replacement = "Z")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "(",replacement = "o")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = ")",replacement = "c")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "+",replacement = "p")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "-",replacement = "m")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "*",replacement = "M")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "|",replacement = "a")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "&",replacement = "A")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = " ",replacement = "")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "\n",replacement = "")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "cFALSE",replacement = "c")
-                               names(covariates)<-stri_replace_all(str = names(covariates),fixed = "cTRUE",replacement = "c")
-                               fparam.tmp<-stri_replace_all(str = fparam,fixed = "I",replacement = "Z")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "(",replacement = "o")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = ")",replacement = "c")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "+",replacement = "p")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "-",replacement = "m")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "*",replacement = "M")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "|",replacement = "a")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "&",replacement = "A")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = " ",replacement = "")
-                               fparam.tmp<-stri_replace_all(str = fparam.tmp,fixed = "\n",replacement = "")
-                               formula.cur<-as.formula(paste(fparam.tmp[1],"/2 ~",paste0(fparam.tmp,collapse = "+")))
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "I",replacement = "Z")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "(",replacement = "o")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = ")",replacement = "c")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "+",replacement = "p")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "-",replacement = "m")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "*",replacement = "M")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "|",replacement = "a")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "&",replacement = "A")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = " ",replacement = "")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "\n",replacement = "")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "cFALSE",replacement = "c")
+                               names(covariates)<-stringi::stri_replace_all(str = names(covariates),fixed = "cTRUE",replacement = "c")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam,fixed = "I",replacement = "Z")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "(",replacement = "o")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = ")",replacement = "c")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "+",replacement = "p")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "-",replacement = "m")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "*",replacement = "M")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "|",replacement = "a")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "&",replacement = "A")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = " ",replacement = "")
+                               fparam.tmp<-stringi::stri_replace_all(str = fparam.tmp,fixed = "\n",replacement = "")
+                               formula.cur<-stats::as.formula(paste(fparam.tmp[1],"/2 ~",paste0(fparam.tmp,collapse = "+")))
                                na.ids<-matrix(data = 0,nrow = dim(covariates)[1],ncol = dim(covariates)[2])
                                na.ids[which(is.na(covariates))]<-1
                                na.bc<-colSums(na.ids)
@@ -6193,7 +6148,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
 
                                  covariates1<- covariates[ids,]
-                                 res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = as.formula(formula.cur),data = covariates1)))
+                                 res<-t(zyx)%*%g(betas1%*%t(stats::model.matrix(object = stats::as.formula(formula.cur),data = covariates1)))
                                  res.na[ids]<-res
                                  rm(mliks)
                                  rm(res)
@@ -6260,7 +6215,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                    covariates1<- as.matrix(covariates[ids,])
                                    covariates1[which(is.na(covariates1))]<-0
                                    covariates1<-as.data.frame(covariates1)
-                                   res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = formula.cur,data = covariates1)))
+                                   res<-t(zyx)%*%g(betas1%*%t(stats::model.matrix(object = formula.cur,data = covariates1)))
                                    res.na[ids]<-res
                                    rm(mliks)
                                    rm(zyx)
@@ -6274,7 +6229,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
 
                              forecast.matrix.na.fast=function(covariates,link.g,betas,mliks.in)
                              {
-                               formula.cur<-as.formula(paste(fparam[1],"/2 ~",paste0(fparam,collapse = "+")))
+                               formula.cur<-stats::as.formula(paste(fparam[1],"/2 ~",paste0(fparam,collapse = "+")))
                                na.ids<-matrix(data = 0,nrow = dim(covariates)[1],ncol = dim(covariates)[2])
                                na.ids[which(is.na(covariates))]<-1
                                na.bc<-colSums(na.ids)
@@ -6319,7 +6274,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                  }
 
                                  covariates1<- covariates[ids,]
-                                 res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = formula.cur,data = covariates1)))
+                                 res<-t(zyx)%*%g(betas1%*%t(stats::model.matrix(object = formula.cur,data = covariates1)))
                                  res.na[ids]<-res
                                  rm(mliks)
                                  rm(res)
@@ -6367,7 +6322,7 @@ EMJMCMC2016 <- setRefClass(Class = "EMJMCMC2016",
                                covariates1<- as.matrix(covariates[ids,])
                                covariates1[which(is.na(covariates1))]<-0
                                covariates1<-as.data.frame(covariates1)
-                               res<-t(zyx)%*%g(betas1%*%t(model.matrix(object = formula.cur,data = covariates1)))
+                               res<-t(zyx)%*%g(betas1%*%t(stats::model.matrix(object = formula.cur,data = covariates1)))
                                res.na[ids]<-res
                                rm(mliks)
                                rm(zyx)

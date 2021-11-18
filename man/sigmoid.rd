@@ -8,6 +8,6 @@
 \value{
 \item{sigmoid(x)}{sigmoid value}
 }
-\examples{sigmoid(10)}
+\examples{EMJMCMC:::sigmoid(10)}
 \keyword{methods}% use one of  RShowDoc("KEYWORDS")
 \keyword{models}% __ONLY ONE__ keyword per line

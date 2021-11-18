@@ -1,1 +1,0 @@
-../Main/ESS -X Input/prot_x.txt -Y Input/prot_y.txt -par Input/prot_par_file_example.xml -g_set 96 -nsweep 30000000 -burn_in 10000 -seed 1 -out_full Output/prot_Example -top 100 -time -history -log > null  
