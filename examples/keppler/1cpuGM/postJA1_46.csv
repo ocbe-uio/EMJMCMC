@@ -1,3 +1,0 @@
-"posterior","tree"
-0.999999674703951,"I(PeriodDays)"
-0.999999656629603,"I(to35(I(logi(I(I(HostStarRadiusSlrRad)*I(PeriodDays))))))"

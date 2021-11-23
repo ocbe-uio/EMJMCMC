@@ -1,5 +1,0 @@
-"posterior","tree"
-0.999992445252254,"I(to23(I(troot(I(PeriodDays)))))"
-0.960650811844309,"I(PeriodDays)"
-0.909495723675394,"I(I(PeriodDays)*I(RadiusJpt))"
-0.0537946185367691,"I(I(PlanetaryDensJpt)*I(PeriodDays))"

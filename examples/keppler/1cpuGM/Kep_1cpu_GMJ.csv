@@ -1,4 +1,0 @@
-"V1","V2"
-"3","I(troot(I(I(I(PeriodDays)*I(HostStarTempK))*I(PeriodDays))))"
-"4","I(troot(I(I(I(PeriodDays)*I(PeriodDays))*I(HostStarRadiusSlrRad))))"
-"7","I(troot(I(I(I(PeriodDays)*I(HostStarMassSlrMass))*I(PeriodDays))))"
