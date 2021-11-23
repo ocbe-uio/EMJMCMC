@@ -1,8 +1,0 @@
-"posterior","tree"
-1,"I(RadiusJpt)"
-0.999999999966605,"I(PlanetaryDensJpt)"
-0.999984539690103,"I(exp(I(RadiusJpt)))"
-0.999682467348556,"I(logi(m(0.00151274,1) +m(0.00030017,I(PlanetaryDensJpt))+m(0.00862035,I(exp(I(RadiusJpt))))))"
-0.992433756066542,"I(exp(m(-0.00011842,1) +m(8.96e-05,I(RadiusJpt))+m(-1.745e-05,I(exp(I(RadiusJpt))))))"
-0.965990708976949,"I(PeriodDays)"
-0.155986320969776,"I(SemiMajorAxisAU)"

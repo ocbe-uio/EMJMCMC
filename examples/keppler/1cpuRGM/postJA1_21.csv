@@ -1,5 +1,0 @@
-"posterior","tree"
-0.999999990848637,"I(PeriodDays)"
-0.918911295646252,"I(I(PeriodDays)*I(troot(I(PeriodDays))))"
-0.918869274528592,"I(I(HostStarRadiusSlrRad)*I(I(PeriodDays)*I(PlanetaryDensJpt)))"
-0.0810887269833732,"I(troot(I(I(PeriodDays)*I(troot(I(PeriodDays))))))"
