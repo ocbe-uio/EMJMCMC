@@ -1,12 +1,8 @@
 estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50, r = 1, p.a = 1, p.b = 2, p.r = 1.5, p.s = 0, p.v=-1, p.k = 1,k.max=21)
 {
 #define the function estimating parameters of a given Bernoulli logic regression with robust g prior
-  if(length(formula)==0)
+  if(is.null(formula))
     return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-
-  if(is.na(formula))
-    return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-
   X = scale(stats::model.matrix(object = formula,data = data),center = T,scale = F)
   X[,1] = 1
   fmla.proc=as.character(formula)[2:3]

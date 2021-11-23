@@ -1,10 +1,7 @@
-estimate.logic.bern = function(formula = NULL, data, family = stats::binomial(), n=1000, m=50, r = 1,k.max=21)
+estimate.logic.bern = function(formula, data, family = stats::binomial(), n=1000, m=50, r = 1,k.max=21)
 {
 #define the function estimating parameters of a given Bernoulli logic regression with Jeffrey's prior
-  if(length(formula)==0)
-    return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-
-  if(is.na(formula))
+  if(is.null(formula))
     return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
 
   out = stats::lm(formula = formula,data = data, family=family)
