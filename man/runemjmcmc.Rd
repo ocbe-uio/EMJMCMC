@@ -30,7 +30,7 @@ runemjmcmc(
   deep.method = 1,
   relations = c("", "sin", "cos", "sigmoid", "tanh", "atan", "erf"),
   relations.prob = c(0.4, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
-  gen.prob = c(0, 0, 10, 10, 0),
+  gen.prob = c(1, 10, 5, 1, 0),
   pool.cross = 0.9,
   p.epsilon = 1e-04,
   del.sigma = 0.5,

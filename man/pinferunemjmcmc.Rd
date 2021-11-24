@@ -9,9 +9,9 @@ pinferunemjmcmc(
   n.cores = 4,
   mcgmj = mcgmjpse,
   report.level = 0.5,
-  simplify = F,
+  simplify = FALSE,
   num.mod.best = 1000,
-  predict = F,
+  predict = FALSE,
   test.data = 1,
   link.function = function(z) z,
   runemjmcmc.params
@@ -63,7 +63,7 @@ and predictions in an expert but rather easy to use way
 
 #inference
 
-X=read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\\%20supplementaries/kepler\\%20and\\%20mass/exa1.csv")
+X=read.csv("inst/extdata/exa1.csv")
 data.example = as.data.frame(X)
 
 #specify the initial formula
@@ -77,38 +77,6 @@ troot=function(x)abs(x)^(1/3)
 to23=function(x)abs(x)^(2.3)
 to35=function(x)abs(x)^(3.5)
 
-
-#specify the estimator function returning p(Y|m)p(m), model selection criteria and the vector of the modes for the beta coefficients
-estimate.gamma.cpen = function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("to23","expi","logi","to35","sini","troot","sigmoid"))
-{
-  fparam=NULL
-  fmla.proc=as.character(formula)[2:3]
-  fobserved = fmla.proc[1]
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
-  fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
-  sj=(stri_count_fixed(str = fparam, pattern = "*"))
-  sj=sj+(stri_count_fixed(str = fparam, pattern = "+"))
-  for(rel in relat)
-    sj=sj+(stri_count_fixed(str = fparam, pattern = rel))
-  sj=sj+1
-  tryCatch(capture.output({
-    out = glm(formula = formula,data = data, family = gaussian)
-    mlik = (-(out$deviance -2*log(r)*sum(sj)))/2
-    waic = -(out$deviance + 2*out$rank)
-    dic =  -(out$deviance + logn*out$rank)
-    summary.fixed =list(mean = coefficients(out))
-
-  }, error = function(err) {
-    print(err)
-    mlik = -10000
-    waic = -10000
-    dic =  -10000
-    summary.fixed =list(mean = array(0,dim=length(fparam)))
-  }))
-  return(list(mlik = mlik,waic = waic , dic = dic,summary.fixed =summary.fixed))
-
-}
 #define the number or cpus
 M = 32
 #define the size of the simulated samples
@@ -152,8 +120,8 @@ gauss=function(x)exp(-x*x)
 compmax = 21
 
 #read in the train and test data sets
-test = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\\%20supplementaries/breast\\%20cancer/test.csv",header = TRUE, sep=",")[,-1]
-train = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/examples/DBRM\\%20supplementaries/breast\\%20cancer/train.csv",header = TRUE, sep=",")[,-1]
+test = read.csv("inst/extdata/breast_cancer_test.csv",header = TRUE, sep=",")[,-1]
+train = read.csv("inst/extdata/breast_cancer_train.csv",header = TRUE, sep=",")[,-1]
 
 #transform the train data set to a data.example data.frame that EMJMCMC class will internally use
 data.example = as.data.frame(train)
