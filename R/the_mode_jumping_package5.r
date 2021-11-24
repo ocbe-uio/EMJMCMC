@@ -135,21 +135,6 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, s
 
 }
 
-parallelize<-function(X,FUN)
-{
-max.cpu <- length(X)
-cl <-parallel::makeCluster(max.cpu ,type = paral.type,outfile = "")#outfile = ""
-parallel::clusterEvalQ(cl = cl,expr = c(library(INLA),library(bigmemory)))
-if(exists("statistics"))
-{
-  parallel::clusterExport(cl=cl, "statistics")
-  parallel::clusterEvalQ(cl,{statistics <- bigmemory::attach.resource(statistics);1})
-}
-res.par <- parallel::parLapply(cl = cl, X, FUN)
-parallel::stopCluster(cl)
-return(res.par)
-}
-
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and deafault values of other parameters
 runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0), latnames="",
                    estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5, unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,deep.method =1,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(0,0,10,10,0),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
