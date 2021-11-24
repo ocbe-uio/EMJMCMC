@@ -21,7 +21,7 @@ parall.gmj <- function(X, M = 16, preschedule = FALSE) {
 #' \item{fparam}{the final set of covariates returned by the addressed run of runemjmcmc}
 #' @seealso runemjmcmc, parall.gmj
 #' @keywords  methods models
-# TODO: itemize lists above
+# TODO #1: itemize lists above
 do.call.emjmcmc<-function(vect)
 {
 
