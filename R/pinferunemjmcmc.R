@@ -1,4 +1,37 @@
-pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = F, num.mod.best = 1000, predict = F,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
+#' @title A wrapper for running the GLMM, BLR, or DBRM based inference
+#' and predictions in an expert but rather easy to use way
+#' @param n.cores the maximal number of cores (and (R)(G)MJMCMC threads) to
+#' be addressed in the analysis
+#' @param mcgmj an mclapply like function for perfroming for perfroming
+#' parallel computing, do not change the default unless you are using Windows
+#' @param report.level a numeric value in (0,1) specifying the treshold for
+#' detections based on the marginal inclusion probabilities
+#' @param simplify a logical value specifying in simplification of the features
+#' is to be done after the search is completed
+#' @param num.mod.best the number of the best models in the thread to
+#' calculate marginal inclusion probabilities
+#' @param predict a logical value specifying if predictions should be done by
+#' the run of pinferunemjmcmc
+#' @param test.data covariates data.frame to be used for predictions
+#' @param link.function the link functions to be used to make predictions
+#' @param runemjmcmc.params a vector of parameters of runemjmcmc function,
+#' see the help of runemjmcmc for details
+#' @return
+#' a list of
+#' \describe{
+#'  \item{feat.stat}{detected features or logical expressions and their
+#'    marginal inclusion probabilities}
+#'  \item{predictions}{predicted values if they are required, NULL otherwise}
+#'  \item{allposteriors}{all visited by (R)(G)MJMCMC features and logical
+#'    expressions and their marginal inclusion probabilities}
+#' \item{threads.stats}{a vector of detailed outputs of individual n.cores
+#'    threads of (R)(G)MJMCMC run}
+#' }
+#' @seealso runemjmcmc LogrRegr DeepRegr LinRegr
+#' @example inst/examples/pinferunemjmcmc_example.R
+#' @keywords  methods models
+#' @export
+pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = FALSE, num.mod.best = 1000, predict = FALSE,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
 {
 
   if(predict)
