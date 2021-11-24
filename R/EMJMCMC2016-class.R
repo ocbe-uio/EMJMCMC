@@ -473,8 +473,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                            {
                              if(switch.type == 1) # random size random N(x)
                              {
-
-                               #warning("This option should not be chosen for randomization unless p.add == 0.5 ", call. = FALSE)
                                min.N <<- max.N
 
                                log.mod.switch.prob <- log(1/(max.N - min.N +1)) # probability of having that many differences
@@ -486,7 +484,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                              {
                                if(min.N!=max.N)
                                {
-                                 #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                  min.N <<- max.N
                                }
                                log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -503,7 +500,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                              {
                                if(min.N!=max.N)
                                {
-                                 #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                  min.N <<- max.N
                                }
                                log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -570,7 +566,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                {
                                  if(min.N!=max.N)
                                  {
-                                   #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                    min.N <<- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -627,7 +622,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                {
                                  if(min.N!=max.N)
                                  {
-                                   #warning("min.N should be equal to max.N in swap type neighbourhoods min.N:=max.N", call. = FALSE)
                                    min.N <<- max.N
                                  }
                                  log.mod.switch.prob <- log(1/(max.N - min.N +1))
@@ -2804,7 +2798,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                              {
                                p1<-p.post/acc_moves
                                set.seed(stats::runif(n = 1, min = 1, max = seed*100), kind = NULL, normal.kind = NULL)
-                               LocImprove <<- (sample.int(n = 5,size = 1,prob = distrib_of_proposals) - 1)
+                               LocImprove <<- as.array(sample.int(n = 5,size = 1,prob = distrib_of_proposals) - 1)
                                LocNeighbor<-(sample.int(n = 7,size = 1,prob = distrib_of_neighbourhoods[LocImprove+1,]))
                                switch.type.glob.buf = LocNeighbor
                                switch.type.buf = LocNeighbor
@@ -3216,12 +3210,10 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                              forstr = stri_paste("~",estimator.args$link,"(",cursigma,"(","m(0,1) +",paste0("m(",stats::rnorm(length(actvars),0,1),",",fparam[actvars],")",collapse = "+"),"))")
                                              forstr = stringi::stri_replace_all_fixed(str = forstr,pattern = c("m(-"),replacement = "m(")
                                              forstr = stringi::stri_replace_all_fixed(str = forstr,pattern = c("m("),replacement = "m(b_")
-                                             #print(stats::as.formula(forstr))
-
                                              nlrr = gnlr(y=data.example[[fobserved]],
                                                             distribution = estimator.args$distribution,
                                                             mu =  stats::as.formula(forstr),
-                                                            pmu = stats::rnorm(stringi::stri_count_fixed(str = forstr,pattern = "m("),0,0.0001))#$coefficients
+                                                            pmu = stats::rnorm(stringi::stri_count_fixed(str = forstr,pattern = "m("),0,0.0001))
                                              beg.rep = stri_locate_all(str = forstr,fixed = "m(b")[[1]][,2]
                                              end.rep = stri_locate_all(str = forstr,fixed = "," )[[1]][,2]
 
@@ -3237,7 +3229,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                              forstr = stringi::stri_replace_all_fixed(str = forstr,pattern =paste0("~",estimator.args$link),replacement = "I")
 
                                              proposal<-forstr
-
                                            }
                                            else{
                                              bet.act <- stats::rnorm(n = (length(actvars)+1),mean = 0,sd = 1)
@@ -3670,7 +3661,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                        spad = sum(p.add)
                                        actvars <- which(stats::rbinom(n = length(fparam),size = 1,prob = p.add/spad+p.epsilon)==1)
 
-                                       #actvars <- which(stats::rbinom(n = Nvars,size = 1,prob = p.add+p.epsilon)==1)
 
                                        if(length(actvars)<=1)
                                        {
@@ -5293,7 +5283,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                }
                              }else
                              {
-
                                warning("No betas were saved. Prediction is impossible. Please change the search parameters and run the search again.")
                              }
 
