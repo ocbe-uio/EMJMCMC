@@ -1,7 +1,7 @@
 Package: EMJMCMC
 Type: Package
 Title: Flexible Bayesian Nonlinear Model Configuration
-Version: 1.4.4.9000
+Version: 1.4.4.9001
 Date: 2021-09-20
 Author: person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut", "cre"))
 Maintainer: Aliaksandr Hubin<aliaksah@math.uio.no>
