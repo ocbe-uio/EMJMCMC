@@ -35,9 +35,6 @@ a list of
 Obtaining Bayesian estimators of interest from a GLM model
 }
 \examples{
-library(RCurl)
-
-
 X4 <- as.data.frame(
   array(
     data = rbinom(n = 50 * 1000, size = 1, prob = runif(n = 50 * 1000, 0, 1)),

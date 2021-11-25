@@ -1,5 +1,3 @@
-library(RCurl)
-
 X4 <- as.data.frame(
   array(
     data = rbinom(n = 50 * 1000, size = 1, prob = runif(n = 50 * 1000, 0, 1)),

@@ -8,5 +8,5 @@ Maintainer: Aliaksandr Hubin<aliaksah@math.uio.no>
 Description: In package article we introduced approachfor estimating posterior model probabilities and Bayesian model averaging and selection with possible simultaneous feature engineering based on some primitive recursive functions.
 License: GPL
 Depends: R (>= 3.4.1), bigmemory
-Imports: glmnet, biglm, hash, sp, INLA, MASS, ade4, BAS, stringi, parallel, methods, speedglm, stats, RCurl
+Imports: glmnet, biglm, hash, INLA, BAS, stringi, parallel, methods, speedglm, stats
 RoxygenNote: 7.1.2
