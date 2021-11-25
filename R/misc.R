@@ -1,8 +1,6 @@
 # This file hosts small, internal functions that are used as auxiliary to other,
 # user-level functions.
 
-factorial<-function(x) ifelse(x<=170,gamma(abs(x) + 1),gamma(171))
-
 mcgmjpar = function(X,FUN,mc.cores) parallel::mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores)
 
 mcgmjpse = function(X,FUN,mc.cores) lapply(X,FUN)
