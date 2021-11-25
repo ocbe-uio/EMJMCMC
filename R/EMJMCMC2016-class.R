@@ -2859,7 +2859,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                    if(length(to.del)>0)
                                    {
                                      hash::clear(hashStat)
-                                     gc()
                                      hashStat <- hash::hash()
                                      fparam<<-fparam[-to.del]
                                      Nvars<<-length(fparam)

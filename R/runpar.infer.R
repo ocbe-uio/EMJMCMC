@@ -53,12 +53,6 @@ runpar.infer=function(vect)
     else
       ret =err
   },finally = {
-
-    #hash::clear(hashStat)
-    #rm(hashStat)
-    #rm(vals)
-    gc()
     return(ret)
-
   })
 }

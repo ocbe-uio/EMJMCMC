@@ -58,7 +58,6 @@
     params[[i]]$NM <- 1000
     params[[i]]$simlen <- 21
   }
-  gc()
   print(paste0("begin simulation ", j))
   results <- parall.gmj(X = params, M = 1) # increase M if you are not on Windows!
 }

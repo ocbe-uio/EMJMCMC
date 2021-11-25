@@ -58,7 +58,6 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, s
   results=mcgmj(X = params,FUN = runpar.infer,mc.cores = n.cores)
   #print(results)
   #clean up
-  gc()
   #prepare the data structures for final analysis of the runs
   compmax = runemjmcmc.params$interact.param$Nvars.max + 1
   resa=array(data = 0,dim = c(compmax,M*3))
@@ -166,7 +165,6 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, s
   posteriors=posteriors[order(posteriors$x, decreasing = T),]
   colnames(posteriors)=c("feature","posterior")
   rm(params)
-  gc()
   return(list(feat.stat = cbind(res1$feature,res1$posterior),predictions = pred,allposteriors = posteriors, threads.stats = results))
 
 }
