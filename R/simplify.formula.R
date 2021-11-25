@@ -1,3 +1,15 @@
+#' @title A function parsing the formula into the vectors of charactor arrays
+#' of responses and covariates
+#' @param fmla an R formula object
+#' @param names all column names from the data.frame to be used with the formula
+#' @return a list of
+#' \describe{
+#'  \item{fobserved}{a vector of charactor arrays corresponding to the observations}
+#'  \item{fparam}{a vector of charactor arrays corresponding to the covariates}
+#' }
+#' @seealso formula data.frame
+#' @example inst/examples/simplify.formula_example.R
+#' @keywords methods models
 simplify.formula<-function(fmla,names)
 {
 fmla.proc<-as.character(fmla)[2:3]

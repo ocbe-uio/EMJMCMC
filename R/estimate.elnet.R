@@ -1,3 +1,19 @@
+#' @title A test function to work with elastic networks in future, be omitted so far
+#' @param formula a formula object for the model to be addressed
+#' @param data a data frame object containing variables and observations corresponding to the formula used
+#' @param response response in a formula
+#' @param family distribution of the response family object
+#' @param alpha regularization parameter in [0,1]
+#' @return
+#' \describe{
+#'  \item{mlik}{marginal likelihood of the model}
+#'  \item{waic}{AIC model selection criterion}
+#'  \item{dic}{BIC model selection criterion}
+#'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @keywords methods models
+#' @seealso glmnet::glmnet
+#' @export
 estimate.elnet <- function(formula,response, data, family,alpha)
 {
 #estimate elastic nets

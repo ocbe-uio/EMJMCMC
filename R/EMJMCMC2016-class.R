@@ -1,3 +1,5 @@
+#' @importFrom methods new
+#' @importFrom bigmemory big.matrix describe
 EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                          fields = list(estimator.args = "list",
                                        max.cpu = "integer",

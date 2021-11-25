@@ -1,3 +1,20 @@
+#' @title Obtaining Bayesian estimators of interest from a LM model
+#' @param formula a formula object for the model to be addressed
+#' @param data a data frame object containing variables and observations corresponding to the formula used
+#' @param prior integers 1, 2 or 3 are allowed corresponding to AIC, BIC or Gelman's g-prior
+#' @param n sample size
+#' @param g g
+#' @return a list of
+#' \describe{
+#' \item{mlik}{marginal likelihood of the model}
+#' \item{waic}{AIC model selection criterion}
+#' \item{dic}{BIC model selection criterion}
+#' \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @seealso BAS::bayesglm.fit
+#' @example /inst/examples/estimate.bas.lm_example.R
+#' @keywords methods models
+#' @export
 estimate.bas.lm <- function(formula, data, prior, n, g = 0)
 {
 

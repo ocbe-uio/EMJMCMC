@@ -1,3 +1,17 @@
+#' @title Obtaining Bayesian estimators of interest from a GLM model
+#' @param formula a formula object for the model to be addressed
+#' @param args inla arguments
+#' @return
+#' \describe{
+#'  \item{mlik}{marginal likelihood of the model}
+#'  \item{waic}{AIC model selection criterion}
+#'  \item{dic}{BIC model selection criterion}
+#'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @seealso INLA::inla
+#' @example inst/examples/estimate.inla_example.R
+#' @keywords methods models
+#' @export
 estimate.inla <- function(formula, args)
 {
 
