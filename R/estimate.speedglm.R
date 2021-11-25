@@ -1,3 +1,21 @@
+#' @title Obtaining Bayesian estimators of interest from a GLM model
+#' @param formula a formula object for the model to be addressed
+#' @param data a data frame object containing variables and observations
+#' corresponding to the formula used
+#' @param family distribution family foe the responces
+#' @param prior either "AIC" or "BIC"
+#' @param logn log sample size
+#' @return
+#' \describe{
+#'  \item{mlik}{marginal likelihood of the model}
+#'  \item{waic}{AIC model selection criterion}
+#'  \item{dic}{BIC model selection criterion}
+#'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @seealso speedglm::speedglm.wfit
+#' @example inst/examples/estimate.logic.lm_example.R
+#' @keywords methods models
+#' @export
 estimate.speedglm <- function(formula, data, family, prior, logn) # weird behaviour, bad control of singularity
 {
 # use dic and aic as bic and aic correspondinly

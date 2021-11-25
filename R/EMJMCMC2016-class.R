@@ -1,3 +1,4 @@
+#' @importFrom methods new
 EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                          fields = list(estimator.args = "list",
                                        max.cpu = "integer",
