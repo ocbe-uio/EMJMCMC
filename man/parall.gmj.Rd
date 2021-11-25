@@ -72,7 +72,7 @@ data.example <- as.data.frame(X4)
 
 vect <- list(
   formula = formula1, outgraphs = FALSE, data = X4,
-  estimator = EMJMCMC:::estimate.logic.lm,
+  estimator = estimate.logic.lm,
   estimator.args = list(data = data.example, n = 100, m = 50),
   recalc_margin = 249, save.beta = FALSE, interact = TRUE,
   relations = c("", "lgx2", "cos", "sigmoid", "tanh", "atan", "erf"),
