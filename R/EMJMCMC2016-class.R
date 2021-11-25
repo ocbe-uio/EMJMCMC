@@ -71,7 +71,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                          ),
                          methods = list(
                            #class constructor
-                           initialize = function(estimator.function = INLA::inla, estimator.args.list = list(family = "gaussian",data = data.example, control.fixed=list(prec=list(default= 0.00001),prec.intercept = 0.00001,mean=list(default= 0),mean.intercept = 0),
+                           initialize = function(estimator.function = I, estimator.args.list = list(family = "gaussian",data = data.example, control.fixed=list(prec=list(default= 0.00001),prec.intercept = 0.00001,mean=list(default= 0),mean.intercept = 0),
                                                                                                        control.family = list(hyper = list(prec = list(prior = "loggamma",param = c(0.00001,0.00001),initial = 0))),
                                                                                                        control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)), search.args.list = NULL,latent.formula = "")
                            {
@@ -818,18 +818,10 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                  if(is.na(statistics1[id,1]))
                                  {
 
-                                   #if(printable.opt)print("Invoked from EMJMCMC environment")
                                    onerr<-FALSE
-                                   #if(printable.opt)print("INLA internal error")
                                    statistics1[id,c(2,3)]<-100000
                                    statistics1[id,1]<--100000
                                    statistics1[id,4:14]<-0
-
-                                   #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
-
-                                   #       utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-INLA::inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
-                                   #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                   #
                                    utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                    })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the model, get local improvements
 
@@ -895,15 +887,10 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                  {
                                    #if(printable.opt)print("Invoked from EMJMCMC SUB environment")
                                    onerr<-FALSE
-                                   #if(printable.opt)print("INLA internal error")
                                    statistics[id,c(2,3)]<-100000
                                    statistics[id,1]<--100000
                                    statistics[id,4:14]<-0
-                                   #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
 
-                                   #       utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-INLA::inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
-                                   #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                   #
                                    utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                    })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 
@@ -974,15 +961,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
 
                                  if(!hash::has.key(key = idd,hash = hashStat))
                                  {
-                                   #if(printable.opt)print("Invoked from EMJMCMC hash table environment")
                                    onerr<-FALSE
-                                   #if(printable.opt)print("INLA internal error")
-
-                                   #prior = "normal",param = c(model$beta.mu.prior,model$beta.tau.prior))
-
-                                   #       utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-INLA::inla(formula = model$formula,family = "binomial",Ntrials = data$total_bases,data = data,control.fixed = list(mean = list(default = model$beta.mu.prior),mean.intercept = model$beta.mu.prior, prec = list(default = model$beta.tau.prior), prec.intercept = model$beta.tau.prior) ,control.compute = list(dic = model$dic.t, waic = model$waic.t, mlik = model$mlik.t))
-                                   #       })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
-                                   #
                                    utils::capture.output({withRestarts(tryCatch(utils::capture.output({fm<-do.call(estimator, c(estimator.args, model$formula))
                                    })), abort = function(){onerr<-TRUE;fm<-NULL})}) # fit the modal, get local improvements
 

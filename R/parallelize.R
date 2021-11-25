@@ -15,7 +15,7 @@ parallelize<-function(X,FUN)
 {
 max.cpu <- length(X)
 cl <-parallel::makeCluster(max.cpu ,type = paral.type,outfile = "")#outfile = ""
-parallel::clusterEvalQ(cl = cl,expr = c(library(INLA),library(bigmemory)))
+parallel::clusterEvalQ(cl = cl,expr = c(library(bigmemory)))
 if(exists("statistics"))
 {
   parallel::clusterExport(cl=cl, "statistics")
