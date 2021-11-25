@@ -1,3 +1,15 @@
+#' @title An example of user defined parallelization (cluster based) function
+#' for within an MJMCMC chain calculations (mclapply or lapply are used by
+#' default depending on specification and OS).
+#' @param X a vector (atomic or list) or an expressions vector. Other objects
+#' (including classed objects) will be coerced by as.list
+#' @param FUN the function to be applied to each element of X or v, or in
+#' parallel to X
+#' @return \code{parallelize(X,FUN)}, a list of the same length as X and named by X
+#' @details Only allowed when working with big.memory based hash table within
+#' MJMCMC (see runemjmcmc for more details)
+#' @seealso parLapply clusterMap mclapply lapply
+#' @keywords methods models
 #' @importFrom bigmemory attach.resource
 parallelize<-function(X,FUN)
 {
