@@ -1,3 +1,15 @@
+#' @title A function that ads up posteriors for the same expression written
+#' in different character form in different parallel runs of the algorithm
+#' (mainly for Logic Regression and Deep Regression contexts)
+#' @param X a data.frame containing the data on the covariates
+#' @param posteriors a data.frame with expressions in the first column and their posteriors in the second column from all of the runs
+#' @param th initial filtering before summarization treshold
+#' @param thf treshold for final filtering after summarization
+#' @param resp the response to be addressed
+#' @return res, a data.frame with the summirized across runs expressions and
+#' their posteriors
+#' @seealso runemjmcmc
+#' @keywords methods models
 simplifyposteriors<-function(X,posteriors,th=0.0001,thf=0.2, resp)
 {
 posteriors<-posteriors[-which(posteriors[,2]<th),]
