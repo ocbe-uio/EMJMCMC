@@ -1,3 +1,22 @@
+#' @title Obtaining Bayesian estimators of interest from a GLM model in a
+#' logic regression context
+#' @param formula a formula object for the model to be addressed
+#' @param data a data frame object containing variables and observations corresponding to the formula used
+#' @param family either poisson() or binomial(), that are currently adopted within this function
+#' @param n sample size
+#' @param m total number of input binary leaves
+#' @param r omitted
+#' @return a list of
+#' \describe{
+#'  \item{mlik}{marginal likelihood of the model}
+#'  \item{waic}{AIC model selection criterion}
+#'  \item{dic}{BIC model selection criterion}
+#'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @seealso BAS::bayesglm.fit estimate.logic.lm
+#' @example inst/examples/estimate.logic.glm_example.R
+#' @keywords methods models
+#' @export
 estimate.logic.glm <- function(formula, data, family, n, m, r = 1)
 {
 X <- stats::model.matrix(object = formula,data = data)
