@@ -80,7 +80,7 @@ to23 <- function(x) abs(x)^(2.3)
 to35 <- function(x) abs(x)^(3.5)
 
 # define the number or cpus
-M <- 32
+M <- 4
 # define the size of the simulated samples
 NM <- 1000
 # define \k_{max} + 1 from the paper
