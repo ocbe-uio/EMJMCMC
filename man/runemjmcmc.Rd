@@ -2,7 +2,7 @@
 % Please edit documentation in R/runemjmcmc.R
 \name{runemjmcmc}
 \alias{runemjmcmc}
-\title{Mode jumping MJMCMC or Genetically Modified Mode jumping MCMC
+\title{Mode jumping MJMCMC or Genetically Modified Mode jumping MCMC or Reversible Genetically Modified Mode jumping MCMC
 for variable selection, Bayesian model averaging and feature engineering}
 \usage{
 runemjmcmc(
@@ -67,15 +67,21 @@ runemjmcmc(
 
 \item{secondary}{a charactor vector of names other covariates excluded from those defined in formula (relevant for GMJMCMC only)}
 
+\item{latnames}{a charactor vector of names other covariates excluded from populations of GMJMCMC, for example for continious covariates to be combined with BLR (relevant for GMJMCMC only) or the names of latent Gaussian variables to be selected in BGNLMM}
+
 \item{estimator}{a function returning a list with marginal likelihood, waic, dic and coefficients of the addressed model. The list should be of a format: list(mlik = mlik,waic = waic , dic = dic,summary.fixed =list(mean = coefficients))}
 
 \item{estimator.args}{a list of arguments of estimator functions to be used (formula parameter has to be omitted, see the example)}
 
 \item{n.models}{maximal number of models to be estimated during the search}
 
+\item{p.add.default}{a parameter defining sparcity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for paramters in the current pool}
+
 \item{p.add}{a default marginal inclusion probability parameter to be changed during the search to the true value}
 
 \item{unique}{defines whether n.models allows repetitions of the same models (unique=FALSE) or not (unique=TRUE)}
+
+\item{save.beta}{a boolean parameter defining if beta coefficients for the models should be stored (must be set to TRUE if one is interested in predictions)}
 
 \item{locstop.nd}{Defines whether local greedy optimizers stop at the first local optima found (locstop.nd=TRUE) or not (locstop.nd=FALSE)}
 
@@ -96,6 +102,8 @@ runemjmcmc(
 \item{pseudo.paral}{defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table=T)}
 
 \item{interact}{a boolean parameter defining if feature engineering is allowed in the search}
+
+\item{deep.method}{an integer in {1,2,3,4} defining the method of estimating the alpha paramters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047}
 
 \item{relations}{a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = T)}
 
@@ -142,8 +150,6 @@ runemjmcmc(
 \item{distrib_of_neighbourhoods}{a matrix defining probability distribution on 7 types of neighbourhoods within 4 possible local search strategies as well as within global moves}
 
 \item{distrib_of_proposals}{probability distribution up to a constant of proportionality for addressing different local search strategies after large jumps or no large jumps (5th component)}
-
-\item{o.add.default}{a parameter defining sparcity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for paramters in the current pool}
 }
 \value{
 a list containing
