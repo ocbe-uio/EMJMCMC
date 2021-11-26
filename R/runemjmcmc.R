@@ -1,4 +1,4 @@
-#' @title Mode jumping MJMCMC or Genetically Modified Mode jumping MCMC
+#' @title Mode jumping MJMCMC or Genetically Modified Mode jumping MCMC or Reversible Genetically Modified Mode jumping MCMC
 #' for variable selection, Bayesian model averaging and feature engineering
 #' @description The algorithm is an extended Metropolis-Hastings algorithm
 #' (or its Genetically modified version) mixing single site changes with
@@ -7,6 +7,9 @@
 #' @param formula a typical formula for specifying a model with all potential covariates included
 #' @param data a data frame containing both covariates and response
 #' @param secondary a charactor vector of names other covariates excluded from those defined in formula (relevant for GMJMCMC only)
+#' @param latnames a charactor vector of names other covariates excluded from populations of GMJMCMC, for example for continious covariates to be combined with BLR (relevant for GMJMCMC only) or the names of latent Gaussian variables to be selected in BGNLMM
+#' @param save.beta a boolean parameter defining if beta coefficients for the models should be stored (must be set to TRUE if one is interested in predictions)
+#' @param deep.method an integer in {1,2,3,4} defining the method of estimating the alpha paramters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047
 #' @param estimator a function returning a list with marginal likelihood, waic, dic and coefficients of the addressed model. The list should be of a format: list(mlik = mlik,waic = waic , dic = dic,summary.fixed =list(mean = coefficients))
 #' @param estimator.args a list of arguments of estimator functions to be used (formula parameter has to be omitted, see the example)
 #' @param n.models maximal number of models to be estimated during the search
@@ -26,7 +29,7 @@
 #' @param gen.prob a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if interact.param\$allow_offsprings is either 3 or 4)
 #' @param pool.cross a parameter defining the probability of adressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)
 #' @param p.add a default marginal inclusion probability parameter to be changed during the search to the true value
-#' @param o.add.default a parameter defining sparcity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for paramters in the current pool
+#' @param p.add.default a parameter defining sparcity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for paramters in the current pool
 #' @param p.epsilon a parameter to define minimal deviations from 0 and 1 probabilities when allowing adaptive MCMC based on marginal inclusion probabilities
 #' @param del.sigma a parameter decribing probability of deleting each of the function from the selected faeture in the reduction operator(only relevant for the deep regression models context)
 #' @param pool.cor.prob a boolean parameter indicating if inclusion of the filtered covariates during mutations are based on probabilities proportional to the absoulute values of correlations of these parameters and the observations (should not be addressed for multivariate observations, e.g. survival studies with Cox regression)
