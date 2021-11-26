@@ -20,7 +20,7 @@
 estimate.glm <- function(formula, data, family, prior, n=1, g = 0)
 {
 
-out <- stats::lm(formula = formula, family = family, data = data)
+out <- stats::glm(formula = formula, family = family, data = data)
 # 1 for aic, 2 bic prior, else g.prior
 
 p <- out$rank

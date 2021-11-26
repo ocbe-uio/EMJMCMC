@@ -34,8 +34,8 @@ logic regression case
 \examples{
 X4 <- as.data.frame(
   array(
-    data = rbinom(n = 50 * 1000, size = 1,
-    prob = runif(n = 50 * 1000, 0, 1)), dim = c(1000, 50)
+    data = rbinom(n = 50 * 1000, size = 1, prob = runif(n = 50 * 1000, 0, 1)),
+    dim = c(1000, 50)
   )
 )
 Y4 <- rnorm(

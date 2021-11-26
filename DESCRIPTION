@@ -12,3 +12,6 @@ License: GPL
 Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, INLA, BAS, stringi, parallel, methods, speedglm, stats
 RoxygenNote: 7.1.2
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
