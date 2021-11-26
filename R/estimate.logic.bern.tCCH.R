@@ -6,7 +6,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
   X = scale(stats::model.matrix(object = formula,data = data),center = T,scale = F)
   X[,1] = 1
   fmla.proc=as.character(formula)[2:3]
-  out = stats::lm(formula = stats::as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = stats::binomial())
+  out = stats::glm(formula = stats::as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = stats::binomial())
   p = out$rank
   if(p>k.max)
   {

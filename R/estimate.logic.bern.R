@@ -4,7 +4,7 @@ estimate.logic.bern = function(formula, data, family = stats::binomial(), n=1000
   if(is.null(formula))
     return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
 
-  out = stats::lm(formula = formula,data = data, family=family)
+  out = stats::glm(formula = formula,data = data, family=family)
   p = out$rank
   if(p>k.max)
   {

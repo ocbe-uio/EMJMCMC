@@ -12,7 +12,7 @@ for(rel in relat)
   sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = rel))
 #sj<-sj+1
 tryCatch(utils::capture.output({
-  out <- stats::lm(formula = formula,data = data, family = stats::gaussian)
+  out <- stats::glm(formula = formula,data = data, family = stats::gaussian)
   # 1 for aic, 2 bic prior, else g.prior
 
   mlik = (-(stats::BIC(out) -2*log(r)*sum(sj))+1000)/2
