@@ -126,23 +126,6 @@ test_that("estimate.speedglm output matches version 1.4.3", {
   expect_equal(mean(out$summary.fixed$mean), 0.01960784, tolerance = tol)
 })
 
-# TODO #8: fill empty tests
-test_that("LogicRegr output matches version 1.4.3", {
-
-})
-
-test_that("parall.gmj output matches version 1.4.3", {
-
-})
-
-test_that("pinferunemjmcmc output matches version 1.4.3", {
-
-})
-
-test_that("runemjmcmc output matches version 1.4.3", {
-
-})
-
 test_that("simplify.formula output matches version 1.4.3", {
   out <- simplify.formula(fmla = formula1, names = colnames(X1))
   expect_equal(
