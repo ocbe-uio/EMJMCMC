@@ -35,7 +35,7 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                                        switch.type.glob = "integer",
                                        isobsbinary = "array",
                                        filtered = "vector",
-                                       fparam = "character",
+                                       fparam = "vector",
                                        latnames = "vector",
                                        fparam.pool = "character",
                                        p.add = "array",
@@ -3581,10 +3581,6 @@ EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
 
                                        }else{
                                          if(printable.opt)print("mutation is preaccepted")
-
-                                         #fparam<<-tmp.buf.1
-                                         #p.add<<-p.add.buf.1
-                                         #lidmut<-0
                                          preaccepted<-T
 
                                        }
