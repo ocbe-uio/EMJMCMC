@@ -74,7 +74,6 @@ jobs:
         # Installing package dependencies ------------------------ #
         - name: Installing package dependencies
           run: |
-            install.packages("INLA",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/stable"), dep=TRUE) # TEMP
             check_deps <- c("rcmdcheck", "testthat")
             pack_deps <- c(
               "bigmemory", "glmnet", "biglm", "hash", "BAS", "stringi",
