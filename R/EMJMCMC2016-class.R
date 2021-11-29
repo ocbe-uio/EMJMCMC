@@ -1,5 +1,7 @@
 #' @importFrom methods new
 #' @importFrom bigmemory big.matrix describe
+#' @importFrom stringi stri_paste
+#' @importFrom hash del
 EMJMCMC2016 <- methods::setRefClass(Class = "EMJMCMC2016",
                          fields = list(estimator.args = "list",
                                        max.cpu = "integer",
