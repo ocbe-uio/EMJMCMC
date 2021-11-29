@@ -15,7 +15,7 @@
 #' @param n.models maximal number of models to be estimated during the search
 #' @param unique defines whether n.models allows repetitions of the same models (unique=FALSE) or not (unique=TRUE)
 #' @param locstop.nd Defines whether local greedy optimizers stop at the first local optima found (locstop.nd=TRUE) or not (locstop.nd=FALSE)
-#' @param latent a latent random field to be adressed (to be specifucally used when estimator = INLA)
+#' @param latent a latent random field to be adressed (to be specifucally used when estimator = INLA, currently unsupported)
 #' @param create.table a boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results
 #' @param hash.length a paramter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = T)
 #' @param pseudo.paral defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table=T)

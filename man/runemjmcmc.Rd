@@ -85,7 +85,7 @@ runemjmcmc(
 
 \item{locstop.nd}{Defines whether local greedy optimizers stop at the first local optima found (locstop.nd=TRUE) or not (locstop.nd=FALSE)}
 
-\item{latent}{a latent random field to be adressed (to be specifucally used when estimator = INLA)}
+\item{latent}{a latent random field to be adressed (to be specifucally used when estimator = INLA, currently unsupported)}
 
 \item{max.cpu}{maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = F}
 
