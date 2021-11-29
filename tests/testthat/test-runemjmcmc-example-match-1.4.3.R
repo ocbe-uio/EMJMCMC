@@ -1,4 +1,5 @@
 # TODO #8: fill empty tests
+set.seed(9132592)
 X4 <- as.data.frame(
   array(
     data = rbinom(n = 50 * 1000, size = 1, prob = runif(n = 50 * 1000, 0, 1)),
@@ -33,7 +34,8 @@ formula1 <- as.formula(
 # TODO #8: reduce to speed up
 res <- runemjmcmc(
   formula = formula1, outgraphs = FALSE, data = X4,
-  estimator = estimate.gamma.cpen, estimator.args = list(data = data.example),
+  estimator = EMJMCMC:::estimate.gamma.cpen, # TEMP
+  estimator.args = list(data = data.example),
   recalc_margin = 249, save.beta = FALSE, interact = TRUE,
   relations = c("cos", "sigmoid", "tanh", "atan", "sin", "erf"),
   relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
@@ -56,9 +58,9 @@ res <- runemjmcmc(
 test_that("runemjmcmc output matches version 1.4.3", {
   expect_named(res, c("p.post", "m.post", "s.mass"))
   expect_length(res$p.post, 40)
-  expect_length(res$m.post, 20125)
+  expect_length(res$m.post, 20003)
   expect_length(res$s.mass, 1)
-  expect_equal(mean(res$p.post), 0.2955956, tolerance = 1e-4)
-  expect_equal(mean(res$m.post), 4.968944e-05, tolerance = 1e-6)
+  expect_equal(mean(res$p.post), 0.2680142, tolerance = 1e-7)
+  expect_equal(mean(res$m.post), 4.99925e-05, tolerance = 1e-7)
   expect_equal(res$s.mass, 0)
 })
