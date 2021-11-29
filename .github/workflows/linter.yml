@@ -29,6 +29,9 @@ jobs:
         - name: Setting up R
           uses: r-lib/actions/setup-r@v1
 
+        - name: Installing system dependencies
+          run: sudo apt install libcurl4-openssl-dev  # needed by devtools
+
         - name: Installing legacy package dependencies
           run: install.packages("INLA",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/stable"), dep=TRUE) # TEMP
           shell: Rscript {0}
