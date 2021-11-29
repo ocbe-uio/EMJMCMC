@@ -32,10 +32,6 @@ jobs:
         - name: Installing system dependencies
           run: sudo apt install libcurl4-openssl-dev  # needed by covr
 
-        - name: Installing legacy package dependencies
-          run: install.packages("INLA",repos=c(getOption("repos"),INLA="https://inla.r-inla-download.org/R/stable"), dep=TRUE) # TEMP
-          shell: Rscript {0}
-
         - name: Installing package dependencies
           run: |
             pack <- c(
