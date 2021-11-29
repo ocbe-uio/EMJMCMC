@@ -54,5 +54,11 @@ res <- runemjmcmc(
 )
 
 test_that("runemjmcmc output matches version 1.4.3", {
-
+  expect_named(res, c("p.post", "m.post", "s.mass"))
+  expect_length(res$p.post, 40)
+  expect_length(res$m.post, 20125)
+  expect_length(res$s.mass, 1)
+  expect_equal(mean(res$p.post), 0.2955956, tolerance = 1e-4)
+  expect_equal(mean(res$m.post), 4.968944e-05, tolerance = 1e-6)
+  expect_equal(res$s.mass, 0)
 })
