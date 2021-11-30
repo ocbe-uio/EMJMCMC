@@ -449,7 +449,7 @@ EMJMCMC2016 <- methods::setRefClass(
         {
           min.N <<- max.N
 
-          log.mod.switch.prob <- log(1 / (max.N - min.N + 1)) # probability of having that many differences
+          log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1))) # probability of having that many differences
           KK <- sum(abs(varold - varnew))
 
           log.mod.switch.prob <- 0 # always the same probabilities for moves within thenighbourhood for p=0.5
@@ -459,13 +459,13 @@ EMJMCMC2016 <- methods::setRefClass(
           if (min.N != max.N) {
             min.N <<- max.N
           }
-          log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+          log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- max.N
           log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
         } else if (switch.type == 3) # random sized inverse N(x)
         {
-          log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+          log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- sum(abs(varold - varnew))
           log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
@@ -474,7 +474,7 @@ EMJMCMC2016 <- methods::setRefClass(
           if (min.N != max.N) {
             min.N <<- max.N
           }
-          log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+          log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- max.N
           log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
@@ -505,7 +505,7 @@ EMJMCMC2016 <- methods::setRefClass(
         }
         if (switch.type == 1) # random size random N(x) # try avoiding when doing mcmc rather than optimization
           {
-            log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+            log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
             KK <- floor(stats::runif(n = 1, min.N, max.N + 0.999999999))
             log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
             log.mod.switchback.prob <- log.mod.switch.prob
@@ -532,7 +532,7 @@ EMJMCMC2016 <- methods::setRefClass(
             if (min.N != max.N) {
               min.N <<- max.N
             }
-            log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+            log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
             KK <- max.N
             log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
             log.mod.switchback.prob <- log.mod.switch.prob
@@ -556,7 +556,7 @@ EMJMCMC2016 <- methods::setRefClass(
             }
           } else if (switch.type == 3) # random sized inverse N(x)
           {
-            log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+            log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
             KK <- floor(stats::runif(n = 1, min.N, max.N + 0.999999999))
             log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
             log.mod.switchback.prob <- log.mod.switch.prob
@@ -582,7 +582,7 @@ EMJMCMC2016 <- methods::setRefClass(
             if (min.N != max.N) {
               min.N <<- max.N
             }
-            log.mod.switch.prob <- log(1 / (max.N - min.N + 1))
+            log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
             KK <- max.N
             log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
             log.mod.switchback.prob <- log.mod.switch.prob
