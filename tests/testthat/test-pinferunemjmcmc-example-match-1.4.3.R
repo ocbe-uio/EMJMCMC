@@ -15,8 +15,8 @@ troot <- function(x) abs(x)^(1 / 3)
 to23 <- function(x) abs(x)^(2.3)
 to35 <- function(x) abs(x)^(3.5)
 
-M <- 4 # define the number or cpus
-NM <- 1000 # define the size of the simulated samples
+M <- 2 # define the number or cpus
+NM <- 100 # define the size of the simulated samples
 compmax <- 16 # define \k_{max} + 1 from the paper
 th <- (10)^(-5) # define treshold for preinclusion of the tree into the analysis
 thf <- 0.05 # final treshold on the posterior marginal prob for reporting a tree
@@ -32,12 +32,14 @@ res1 <- pinferunemjmcmc(
     save.beta = FALSE, interact = TRUE, outgraphs = FALSE,
     relations = c("to23", "expi", "logi", "to35", "sini", "troot", "sigmoid"),
     relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
-    interact.param = list(allow_offsprings = 3, mutation_rate = 250,
-    last.mutation = 10000, max.tree.size = 5, Nvars.max = 15,
-    p.allow.replace = 0.9, p.allow.tree = 0.01, p.nor = 0.9, p.and = 0.9),
-    n.models = 10000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+    interact.param = list(
+      allow_offsprings = 3, mutation_rate = 250,
+      last.mutation = 10000, max.tree.size = 5, Nvars.max = 15,
+      p.allow.replace = 0.9, p.allow.tree = 0.01, p.nor = 0.9, p.and = 0.9
+    ),
+    n.models = 1000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
     create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
-    burn.in = 100, print.freq = 1000,
+    burn.in = 10, print.freq = 100,
     advanced.param = list(
       max.N.glob = as.integer(10),
       min.N.glob = as.integer(5),
@@ -48,14 +50,13 @@ res1 <- pinferunemjmcmc(
   )
 )
 
-
 test_that("pinferunemjmcmc output matches version 1.4.3", {
   expect_named(
     res1,
     c("feat.stat", "predictions", "allposteriors", "threads.stats")
   )
   expect_length(res1, 4)
-  expect_length(res1$feat.stat, 14)
-  expect_equal(mean(res1$allposteriors$posterior), 0.280891, tolerance = 1e-4)
-  expect_equal(mean(res1$threads.stats[[1]]$p.post), 0.543057, tolerance = 1e-4)
+  expect_length(res1$feat.stat, 10)
+  expect_equal(mean(res1$allposteriors$posterior), 0.309510, tolerance = 1e-4)
+  expect_equal(mean(res1$threads.stats[[1]]$p.post), 0.391782, tolerance = 1e-4)
 })
