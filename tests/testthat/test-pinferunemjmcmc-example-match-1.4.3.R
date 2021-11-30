@@ -24,28 +24,30 @@ thf <- 0.05 # final treshold on the posterior marginal prob for reporting a tree
 # notice that allow_offsprings=3 corresponds to the GMJMCMC runs and
 # allow_offsprings=4 -to the RGMJMCMC runs
 set.seed(9239838)
-res1 <- pinferunemjmcmc(
-  n.cores = M, report.level = 0.5, num.mod.best = NM, simplify = TRUE,
-  runemjmcmc.params = list(
-    formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
-    estimator.args = list(data = data.example), recalc_margin = 249,
-    save.beta = FALSE, interact = TRUE, outgraphs = FALSE,
-    relations = c("to23", "expi", "logi", "to35", "sini", "troot", "sigmoid"),
-    relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
-    interact.param = list(
-      allow_offsprings = 3, mutation_rate = 250,
-      last.mutation = 10000, max.tree.size = 5, Nvars.max = 15,
-      p.allow.replace = 0.9, p.allow.tree = 0.01, p.nor = 0.9, p.and = 0.9
-    ),
-    n.models = 1000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
-    create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
-    burn.in = 10, print.freq = 100,
-    advanced.param = list(
-      max.N.glob = as.integer(10),
-      min.N.glob = as.integer(5),
-      max.N = as.integer(3),
-      min.N = as.integer(1),
-      printable = FALSE
+res1 <- suppressMessages(
+  pinferunemjmcmc(
+    n.cores = M, report.level = 0.5, num.mod.best = NM, simplify = TRUE,
+    runemjmcmc.params = list(
+      formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
+      estimator.args = list(data = data.example), recalc_margin = 249,
+      save.beta = FALSE, interact = TRUE, outgraphs = FALSE,
+      relations = c("to23", "expi", "logi", "to35", "sini", "troot", "sigmoid"),
+      relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+      interact.param = list(
+        allow_offsprings = 3, mutation_rate = 250,
+        last.mutation = 10000, max.tree.size = 5, Nvars.max = 15,
+        p.allow.replace = 0.9, p.allow.tree = 0.01, p.nor = 0.9, p.and = 0.9
+      ),
+      n.models = 1000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+      create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
+      burn.in = 10, print.freq = 1000,
+      advanced.param = list(
+        max.N.glob = as.integer(10),
+        min.N.glob = as.integer(5),
+        max.N = as.integer(3),
+        min.N = as.integer(1),
+        printable = FALSE
+      )
     )
   )
 )

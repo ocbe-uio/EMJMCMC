@@ -2513,24 +2513,7 @@ EMJMCMC2016 <- methods::setRefClass(
               tdl.id <- order(p.add, decreasing = T)
               to.del <- to.del[-tdl.id[1:Nvars.max]]
             }
-            print("Data filtered! Insignificant variables deleted!")
-            # keysarr <- as.array(hash::keys(hashStat))
-            # keysarr.new<-NULL
-            # values.new<-hash::values(hashStat)
-            # for(id.replace in to.del){
-            #   for(jjj in 1:length(keysarr))
-            #   {
-            #     if(! stringi::stri_sub(keysarr[jjj],from  = id.replace, to = id.replace)=="1")
-            #     {
-            #       keysarr.new<-c(keysarr.new, stringi::stri_sub(keysarr[jjj],from = 1, to = Nvars.max))
-            #     }
-            #     else
-            #     {
-            #
-            #     }
-            #   }
-            # }
-            # keysarr.new<-unique(keysarr.new)
+            message("Data filtered! Insignificant variables deleted!")
             if (length(to.del) > 0) {
               hash::clear(hashStat)
               hashStat <- hash::hash()
@@ -2714,7 +2697,7 @@ EMJMCMC2016 <- methods::setRefClass(
               tdl.id <- order(p.add, decreasing = T)
               to.del <- to.del[-tdl.id[1:Nvars.max]]
             }
-            print("Data filtered! Insignificant variables deleted!")
+            message("Data filtered! Insignificant variables deleted!")
             if (length(to.del) > 0) {
               hash::clear(hashStat)
               hashStat <- hash::hash()
@@ -3087,7 +3070,7 @@ EMJMCMC2016 <- methods::setRefClass(
               tdl.id <- order(p.add, decreasing = T)
               to.del <- to.del[-tdl.id[1:Nvars.max]]
             }
-            print("Data filtered! Insignificant variables deleted!")
+            message("Data filtered! Insignificant variables deleted!")
             if (length(to.del) > 0) {
               hash::clear(hashStat)
               fparam <<- fparam[-to.del]
