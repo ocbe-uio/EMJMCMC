@@ -83,7 +83,13 @@ EMJMCMC2016 <- methods::setRefClass(
       estimator <<- estimator.function
       estimator.args <<- estimator.args.list
       latent.formula <<- latent.formula
-      g.results <<- bigmemory::big.matrix(nrow = 4, ncol = 2)
+      temp.file <- gsub("/", "", tempfile(tmpdir = ""))
+      g.results <<- big.matrix(
+        nrow = 4, ncol = 2,
+        backingpath = tempdir(),
+        backingfile = paste0(temp.file, ".bak"),
+        descriptorfile = paste0(temp.file, ".desc"),
+      )
       g.results[1, 1] <<- -Inf
       g.results[1, 2] <<- 1
       g.results[2, 1] <<- Inf
