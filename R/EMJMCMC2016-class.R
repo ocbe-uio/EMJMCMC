@@ -75,7 +75,7 @@ EMJMCMC2016 <- methods::setRefClass(
   ),
   methods = list(
     # class constructor
-    initialize = function(estimator.function = I, estimator.args.list = list(
+    initialize = function(estimator.function = estimate.gamma.cpen, estimator.args.list = list(
                             family = "gaussian", data = data.example, control.fixed = list(prec = list(default = 0.00001), prec.intercept = 0.00001, mean = list(default = 0), mean.intercept = 0),
                             control.family = list(hyper = list(prec = list(prior = "loggamma", param = c(0.00001, 0.00001), initial = 0))),
                             control.compute = list(dic = TRUE, waic = TRUE, mlik = TRUE)
