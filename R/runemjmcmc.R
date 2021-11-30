@@ -49,6 +49,8 @@
 #' @param advanced.param omitted currently
 #' @param distrib_of_neighbourhoods a matrix defining probability distribution on 7 types of neighbourhoods within 4 possible local search strategies as well as within global moves
 #' @param distrib_of_proposals probability distribution up to a constant of proportionality for addressing different local search strategies after large jumps or no large jumps (5th component)
+#' @param quiet defaults to \code{FALSE}. If \code{TRUE}, prints intermediate
+#' messages
 #' @details See Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017),
 #' Hubin & Storvik (2017) details. The local optimization is performed through
 #' stepwise search within a neighborhood in the current gamma vector, allowing
@@ -65,12 +67,24 @@
 #' @example /inst/examples/runemjmcmc_example.R
 #' @keywords methods models
 #' @export
-runemjmcmc<-function(formula, data, secondary = vector(mode="character", length=0), latnames="",
-                   estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5, unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,interact = F,deep.method =1,relations = c("","sin","cos","sigmoid","tanh","atan","erf"),relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,0),pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F, interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T, sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,outgraphs=F,advanced.param=NULL, distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),  distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852))
+runemjmcmc<-function(
+  formula, data, secondary = vector(mode="character", length=0), latnames="",
+  estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5,
+  unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,
+  create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,
+  interact = F,deep.method =1,
+  relations = c("","sin","cos","sigmoid","tanh","atan","erf"),
+  relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,0),
+  pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F,
+  interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000,
+  max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,
+  p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T,
+  sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,
+  burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,
+  outgraphs=F,advanced.param=NULL,
+  distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434, 0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458, 1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774, 14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602, 6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),
+  distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852),
+  quiet = TRUE)
 {
 # a function that creates an EMJMCMC2016 object with specified values of some parameters and default values of other parameters
 
@@ -189,30 +203,31 @@ if(unique)
 else
   resm<-mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit =  n.models, trest = n.models*100, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
 ppp<-1
-print("MJMCMC is completed")
+if (!quiet) message("MJMCMC is completed")
 if(create.table)
 {
-  print("Post Proceed Results")
   ppp<-mySearch$post_proceed_results(statistics1 = statistics1)
   truth = ppp$p.post # make sure it is equal to Truth column from the article
   truth.m = ppp$m.post
   truth.prob = ppp$s.mass
   ordering = sort(ppp$p.post,index.return=T)
-  print("pi truth")
-  sprintf("%.10f",truth[ordering$ix])
-  sprintf(fparam.example[ordering$ix])
 }
 else if(create.hash)
 {
-  print("Post Proceed Results")
   ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
   truth = ppp$p.post # make sure it is equal to Truth column from the article
   truth.m = ppp$m.post
   truth.prob = ppp$s.mass
   ordering = sort(ppp$p.post,index.return=T)
-  print("pi truth")
-  sprintf("%.10f",truth[ordering$ix])
-  sprintf(fparam.example[ordering$ix])
+}
+if (!quiet) {
+  message("Post Proceed Results")
+  cat(
+    "pi truth",
+    sprintf("%.10f",truth[ordering$ix]),
+    sprintf(fparam.example[ordering$ix]),
+    sep = "\n"
+  )
 }
 
 if(outgraphs)
