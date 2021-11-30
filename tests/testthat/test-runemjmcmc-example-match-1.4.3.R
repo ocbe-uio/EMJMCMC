@@ -1,4 +1,3 @@
-# TODO #8: fill empty tests
 set.seed(9132592)
 X4 <- as.data.frame(
   array(
@@ -27,23 +26,21 @@ formula1 <- as.formula(
   paste(colnames(X4)[51], "~ 1 +", paste0(colnames(X4)[-c(51)], collapse = "+"))
 )
 
-
 # specify tuning parameters of the algorithm for exploring DBRM of interest
 # notice that allow_offsprings=3 corresponds to the GMJMCMC runs and
 # allow_offsprings=4 -to the RGMJMCMC runs
-# TODO #8: reduce to speed up
 res <- runemjmcmc(
   formula = formula1, outgraphs = FALSE, data = X4,
-  estimator = EMJMCMC:::estimate.gamma.cpen, # TEMP
+  estimator = estimate.gamma.cpen,
   estimator.args = list(data = data.example),
   recalc_margin = 249, save.beta = FALSE, interact = TRUE,
   relations = c("cos", "sigmoid", "tanh", "atan", "sin", "erf"),
   relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
   interact.param = list(
-    allow_offsprings = 4, mutation_rate = 250, last.mutation = 15000,
+    allow_offsprings = 4, mutation_rate = 250, last.mutation = 1500,
     max.tree.size = 4, Nvars.max = 40, p.allow.replace = 0.7,
     p.allow.tree = 0.2, p.nor = 0, p.and = 0.9
-  ), n.models = 20000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+  ), n.models = 2000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
   create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 50,
   print.freq = 1000,
   advanced.param = list(
@@ -57,10 +54,10 @@ res <- runemjmcmc(
 
 test_that("runemjmcmc output matches version 1.4.3", {
   expect_named(res, c("p.post", "m.post", "s.mass"))
-  expect_length(res$p.post, 40)
-  expect_length(res$m.post, 20003)
+  expect_length(res$p.post, 50)
+  expect_length(res$m.post, 2455)
   expect_length(res$s.mass, 1)
-  expect_equal(mean(res$p.post), 0.2680142, tolerance = 1e-7)
-  expect_equal(mean(res$m.post), 4.99925e-05, tolerance = 1e-7)
+  expect_equal(mean(res$p.post), 0.3602442, tolerance = 1e-4)
+  expect_equal(mean(res$m.post), 0.000407332, tolerance = 1e-4)
   expect_equal(res$s.mass, 0)
 })
