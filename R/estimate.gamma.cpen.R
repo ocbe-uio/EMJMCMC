@@ -1,4 +1,3 @@
-#' @export
 estimate.gamma.cpen <- function(formula, data,r = 1.0/1000.0,logn=log(1000.0),relat=c("cos","sigmoid","tanh","atan","sin","erf"))
 {
 fparam<-NULL

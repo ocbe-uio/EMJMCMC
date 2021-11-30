@@ -28,6 +28,7 @@
 #' @example /inst/examples/parall.gmj_example.R
 #' @seealso runemjmcmc parall.gmj
 #' @keywords methods models
+#' @importFrom stringi stri_locate_all
 #' @export
 parall.gmj <- function(X, M = 16, preschedule = FALSE) {
   parallel::mclapply(

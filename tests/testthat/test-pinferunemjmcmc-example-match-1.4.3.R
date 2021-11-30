@@ -1,4 +1,4 @@
-X <- read.csv("../../inst/extdata/exa1.csv")
+X <- read.csv(system.file("extdata", "exa1.csv", package="EMJMCMC"))
 data.example <- as.data.frame(X)
 
 # specify the initial formula
