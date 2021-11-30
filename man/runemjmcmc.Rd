@@ -57,7 +57,8 @@ runemjmcmc(
     2.923767, 15.318774, 14.529538, 1.52196, 11.804457, 5.070282, 6.93438, 10.578945,
     12.455602, 6.0826035, 2.453729, 14.340435, 14.863495, 1.028312, 12.685017,
     13.806295), dim = c(7, 5))),
-  distrib_of_proposals = c(76.9187, 71.25264, 87.68184, 60.55921, 15812.39852)
+  distrib_of_proposals = c(76.9187, 71.25264, 87.68184, 60.55921, 15812.39852),
+  quiet = TRUE
 )
 }
 \arguments{
@@ -150,6 +151,9 @@ runemjmcmc(
 \item{distrib_of_neighbourhoods}{a matrix defining probability distribution on 7 types of neighbourhoods within 4 possible local search strategies as well as within global moves}
 
 \item{distrib_of_proposals}{probability distribution up to a constant of proportionality for addressing different local search strategies after large jumps or no large jumps (5th component)}
+
+\item{quiet}{defaults to \code{FALSE}. If \code{TRUE}, prints intermediate
+messages}
 }
 \value{
 a list containing
