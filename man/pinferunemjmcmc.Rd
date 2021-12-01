@@ -71,14 +71,6 @@ formula1 <- as.formula(
   paste(colnames(X)[5], "~ 1 +", paste0(colnames(X)[-5], collapse = "+"))
 )
 
-# a set of nonlinearities that will be used in the DBRM model
-sini <- function(x) sin(x / 180 * pi)
-expi <- function(x) exp(-abs(x))
-logi <- function(x) log(abs(x) + 1)
-troot <- function(x) abs(x)^(1 / 3)
-to23 <- function(x) abs(x)^(2.3)
-to35 <- function(x) abs(x)^(3.5)
-
 # define the number or cpus
 M <- 4
 # define the size of the simulated samples
@@ -96,7 +88,7 @@ thf <- 0.05
 res1 <- pinferunemjmcmc(
   n.cores = M, report.level = 0.5, num.mod.best = NM, simplify = TRUE,
   runemjmcmc.params = list(
-    formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
+    formula = formula1, data = data.example, estimator = estimate.gamma.cpen_2,
     estimator.args = list(data = data.example), recalc_margin = 249,
     save.beta = FALSE, interact = TRUE, outgraphs = FALSE,
     relations = c("to23", "expi", "logi", "to35", "sini", "troot", "sigmoid"),
@@ -122,21 +114,6 @@ print(res1$feat.stat)
 
 # prediction
 
-# load some of the possible nonlinearities of interest
-troot <- function(x) abs(x)^(1 / 3)
-sini <- function(x) sin(x / 180 * pi)
-logi <- function(x) log(abs(x + 0.1))
-gfquar <- function(x) as.integer(x < quantile(x, probs = 0.25))
-glquar <- function(x) as.integer(x > quantile(x, probs = 0.75))
-gmedi <- function(x) as.integer(x > median(x))
-cosi <- function(x) cos(x / 180 * pi)
-gmean <- function(x) as.integer(x > mean(x))
-gone <- function(x) as.integer(x > 0)
-gthird <- function(x) (abs(x)^(1 / 3))
-gfifth <- function(x) (abs(x)^(1 / 5))
-grelu <- function(x) (x * (x > 0))
-contrelu <- function(x) log(1 + exp(x))
-gauss <- function(x) exp(-x * x)
 compmax <- 21
 
 # read in the train and test data sets

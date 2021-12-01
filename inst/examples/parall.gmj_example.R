@@ -51,11 +51,10 @@ vect <- list(
 
 params <- list(vect)[rep(1, M)]
 
-for (i in 1:M)
-{
+for (i in 1:M) {
   params[[i]]$cpu <- i
   params[[i]]$NM <- 1000
   params[[i]]$simlen <- 21
 }
-print(paste0("begin simulation ", j))
-results <- parall.gmj(X = params, M = 1) # increase M if you are not on Windows!
+message("begin simulation ", j)
+results <- parall.gmj(X = params, M = 1)

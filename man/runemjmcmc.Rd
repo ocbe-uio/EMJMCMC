@@ -164,12 +164,15 @@ a list containing
 }
 }
 \description{
+A function that creates an EMJMCMC2ocbe016 object with
+specified values of some parameters and default values of other parameters.
+}
+\details{
 The algorithm is an extended Metropolis-Hastings algorithm
 (or its Genetically modified version) mixing single site changes with
 occationally large jumps. The models are described through the gamma vector,
 a binary vector indicating which variables that are included in the model.
-}
-\details{
+
 See Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017),
 Hubin & Storvik (2017) details. The local optimization is performed through
 stepwise search within a neighborhood in the current gamma vector, allowing

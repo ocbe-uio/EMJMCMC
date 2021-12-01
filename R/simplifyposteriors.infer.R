@@ -8,7 +8,6 @@ simplifyposteriors.infer=function(X,posteriors,th=0.0000001,thf=0.5, resp)
   for(i in 1:length(posteriors[,1]))
   {
     expr=posteriors[i,1]
-    #print(expr)
     res=stats::model.matrix(data=X,object = stats::as.formula(paste0(resp,"~",expr)))
     res[,1]=res[,1]-res[,2]
     ress=c( stringi::stri_flatten(res[,1],collapse = ""), stringi::stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
