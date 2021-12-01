@@ -2499,6 +2499,7 @@ EMJMCMC2016 <- methods::setRefClass(
           seed <<- stats::runif(n = 1, min = 0, max = 100000)
         }
         # the small part of the code to be upgraded at least slightly
+        trigger <- FALSE # TEMP
         if (allow_offsprings %in% c(1, 2) && j %% mutation_rate == 0 && (j <= last.mutation || Nvars != Nvars.max)) {
           if (Nvars > Nvars.max || j == mutation_rate) {
             # do the stuff here
@@ -2514,6 +2515,8 @@ EMJMCMC2016 <- methods::setRefClass(
               to.del <- to.del[-tdl.id[1:Nvars.max]]
             }
             message("Data filtered! Insignificant variables deleted!")
+            print("Data filtered 1") # TEMP
+            trigger <- TRUE # TEMP
             if (length(to.del) > 0) {
               hash::clear(hashStat)
               hashStat <- hash::hash()
@@ -2686,7 +2689,6 @@ EMJMCMC2016 <- methods::setRefClass(
                 pool.probs <- abs(cor(estimator.args$data[[fobserved.cleaned]], estimator.args$data[, which(fparam.pool.cleaned %in% names(estimator.args$data))])) + p.epsilon
                 rm(fobserved.cleaned)
                 rm(fparam.pool.cleaned)
-                # print(pool.probs[1:100])
               }
             }
             to.del <- which(p.add < p.allow.tree)
@@ -2698,6 +2700,7 @@ EMJMCMC2016 <- methods::setRefClass(
               to.del <- to.del[-tdl.id[1:Nvars.max]]
             }
             message("Data filtered! Insignificant variables deleted!")
+            print("Data filtered 2") # TEMP
             if (length(to.del) > 0) {
               hash::clear(hashStat)
               hashStat <- hash::hash()
@@ -3071,6 +3074,7 @@ EMJMCMC2016 <- methods::setRefClass(
               to.del <- to.del[-tdl.id[1:Nvars.max]]
             }
             message("Data filtered! Insignificant variables deleted!")
+            print("Data filtered 3") # TEMP
             if (length(to.del) > 0) {
               hash::clear(hashStat)
               fparam <<- fparam[-to.del]
@@ -3517,8 +3521,11 @@ EMJMCMC2016 <- methods::setRefClass(
               iidd <- bittodec(varcand) + 1
               waiccand <- statistics1[iidd, 2]
               mlikcand <- statistics1[iidd, 1]
-            } else if (exists("hashStat")) {
+            } else if (exists("hashStat") & length(hashStat) > 0) {
               iidd <- paste(varcand, collapse = "")
+              print("EMJMCMC2016-class.R:L3525") # TEMP
+              print(iidd) # TEMP
+              if (iidd == "1111111111111111111111111111111111011111") browser("EMJMCMC2016-class.R:L3525") # TEMP
               waiccand <- hash::values(hashStat[iidd])[2]
               mlikcand <- hash::values(hashStat[iidd])[1]
             }
@@ -3572,8 +3579,10 @@ EMJMCMC2016 <- methods::setRefClass(
             iidd <- bittodec(varcand) + 1
             waiccand <- statistics1[iidd, 2]
             mlikcand <- statistics1[iidd, 1]
-          } else if (exists("hashStat")) {
+          } else if (exists("hashStat") & length(hashStat) > 0) {
             iidd <- paste(varcand, collapse = "")
+            print("EMJMCMC2016-class.R:L3581") # TEMP
+            if (trigger) browser("EMJMCMC2016-class.R:L3581") # TEMP
             waiccand <- hash::values(hashStat[iidd])[2]
             mlikcand <- hash::values(hashStat[iidd])[1]
           }
@@ -3631,8 +3640,12 @@ EMJMCMC2016 <- methods::setRefClass(
                 iidd <- bittodec(varcand.b) + 1
                 waiccand.b <- statistics1[iidd, 2]
                 mlikcand.b <- statistics1[iidd, 1]
-              } else if (exists("hashStat")) {
+              } else if (exists("hashStat") & length(hashStat) > 0) {
                 iidd <- paste(varcand.b, collapse = "")
+                print("EMJMCMC2016-class.R:L3641") # TEMP
+                print(iidd) # TEMP
+                print(hashStat[iidd]) # TEMP
+                if (iidd == "1100111110110111111111111111111111111111") browser("EMJMCMC2016-class.R:L3641") # TEMP
                 waiccand.b <- hash::values(hashStat[iidd])[2]
                 mlikcand.b <- hash::values(hashStat[iidd])[1]
               }
@@ -3729,6 +3742,8 @@ EMJMCMC2016 <- methods::setRefClass(
             mlikcand <- statistics1[iidd, 1]
           } else if (exists("hashStat")) {
             iidd <- paste(varcand, collapse = "")
+            # browser("EMJMCMC2016-class.R:L3738") # TEMP
+            print("EMJMCMC2016-class.R:L3738") # TEMP
             waiccand <- hash::values(hashStat[iidd])[2]
             mlikcand <- hash::values(hashStat[iidd])[1]
           }
