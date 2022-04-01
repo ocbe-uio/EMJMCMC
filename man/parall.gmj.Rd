@@ -101,6 +101,7 @@ for (i in 1:M) {
   params[[i]]$simlen <- 21
 }
 message("begin simulation ", j)
+set.seed(363571)
 results <- parall.gmj(X = params, M = 1)
 }
 \seealso{
