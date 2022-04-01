@@ -2648,8 +2648,10 @@ EMJMCMC2016 <- methods::setRefClass(
                     p.add[id.replace] <<- p.allow.replace
                     for (jjj in 1:length(keysarr))
                     {
-                      if (stringi::stri_sub(keysarr[jjj], from = id.replace, to = id.replace) == "1") {
-                        del(x = keysarr[jjj], hash = hashStat)
+                      if (length(keysarr > 0)) {
+                        if (stringi::stri_sub(keysarr[jjj], from = id.replace, to = id.replace) == "1") {
+                          del(x = keysarr[jjj], hash = hashStat)
+                        }
                       }
                     }
                   }
@@ -3017,8 +3019,10 @@ EMJMCMC2016 <- methods::setRefClass(
                     p.add[id.replace] <<- p.allow.replace
                     for (jjj in 1:length(keysarr))
                     {
-                      if (stringi::stri_sub(keysarr[jjj], from = id.replace, to = id.replace) == "1") {
-                        del(x = keysarr[jjj], hash = hashStat)
+                      if (length(keysarr > 0)) {
+                        if (stringi::stri_sub(keysarr[jjj], from = id.replace, to = id.replace) == "1") {
+                          del(x = keysarr[jjj], hash = hashStat)
+                        }
                       }
                     }
                   }
@@ -3438,8 +3442,10 @@ EMJMCMC2016 <- methods::setRefClass(
                     p.add[id.replace] <<- p.allow.replace
                     for (jjj in 1:length(keysarr))
                     {
-                      if (stringi::stri_sub(keysarr[jjj], from = id.replace, to = id.replace) == "1") {
-                        del(x = keysarr[jjj], hash = hashStat)
+                      if (length(keysarr > 0)) {
+                        if (stringi::stri_sub(keysarr[jjj], from = id.replace, to = id.replace) == "1") {
+                          del(x = keysarr[jjj], hash = hashStat)
+                        }
                       }
                     }
                   }
@@ -4630,7 +4636,6 @@ EMJMCMC2016 <- methods::setRefClass(
         if (length(varcur) > Nvars) {
           varcur <- varcur[1:Nvars]
         }
-
         p.post <- (p.post + varcur * zyx[i])
       }
 
