@@ -4603,9 +4603,9 @@ EMJMCMC2016 <- methods::setRefClass(
 
       lHash <- length(hashStat)
       mliks <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
-      xyz <- which(mliks != -10000)
+      xyz <- which(unlist(mliks) != -10000)
       g.results[4, 2] <<- lHash
-      moddee <- which(mliks == max(mliks, na.rm = TRUE))[1]
+      moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
       zyx <- array(data = NA, dim = lHash)
       nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
 
@@ -4702,9 +4702,9 @@ EMJMCMC2016 <- methods::setRefClass(
           }
           betas <- cbind(betas, hash::values(hashStat)[which((1:(lHash * linx)) %% linx == (0))])
           betas[which(is.na(betas))] <- 0
-          xyz <- which(mliks != -10000)
+          xyz <- which(unlist(mliks) != -10000)
           g.results[4, 2] <<- lHash
-          moddee <- which(mliks == max(mliks, na.rm = TRUE))[1]
+          moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
           zyx <- array(data = NA, dim = lHash)
           nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
 
@@ -4777,8 +4777,8 @@ EMJMCMC2016 <- methods::setRefClass(
       if (lv.br[1] == 0) {
         ids <- which(na.br == 0)
         mliks <- mliks.in
-        xyz <- which(mliks != -10000)
-        moddee <- which(mliks == max(mliks, na.rm = TRUE))[1]
+        xyz <- which(unlist(mliks) != -10000)
+        moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
         zyx <- array(data = NA, dim = length(mliks))
         nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
         betas1 <- betas
@@ -4839,8 +4839,8 @@ EMJMCMC2016 <- methods::setRefClass(
             warning("not enough models for bagging in prediction. please train the model longer!")
             return(-1)
           }
-          xyz <- which(mliks != -10000)
-          moddee <- which(mliks == max(mliks, na.rm = TRUE))[1]
+          xyz <- which(unlist(mliks) != -10000)
+          moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
           zyx <- array(data = NA, dim = length(mliks))
           nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
           betas1 <- betas[-w.ids, ]
@@ -4889,8 +4889,8 @@ EMJMCMC2016 <- methods::setRefClass(
       if (lv.br[1] == 0) {
         ids <- which(na.br == 0)
         mliks <- mliks.in
-        xyz <- which(mliks != -10000)
-        moddee <- which(mliks == max(mliks, na.rm = TRUE))[1]
+        xyz <- which(unlist(mliks) != -10000)
+        moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
         zyx <- array(data = NA, dim = lHash)
         nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
         betas1 <- betas
@@ -4929,8 +4929,8 @@ EMJMCMC2016 <- methods::setRefClass(
         warning("not enough models for bagging in prediction. please train the model longer!")
         return(-1)
       }
-      xyz <- which(mliks != -10000)
-      moddee <- which(mliks == max(mliks, na.rm = TRUE))[1]
+      xyz <- which(unlist(mliks) != -10000)
+      moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
       zyx <- array(data = NA, dim = length(mliks))
       nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
       betas1 <- betas[-w.ids, ]
