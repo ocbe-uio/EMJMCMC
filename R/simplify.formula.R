@@ -10,6 +10,7 @@
 #' @seealso formula data.frame
 #' @example inst/examples/simplify.formula_example.R
 #' @keywords methods models
+#' @export
 simplify.formula<-function(fmla,names)
 {
 fmla.proc<-as.character(fmla)[2:3]

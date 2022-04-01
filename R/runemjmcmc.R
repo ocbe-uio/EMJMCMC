@@ -200,8 +200,6 @@ initsol=stats::rbinom(n = length(fparam.example),size = 1,prob = 0.5)
 if(unique)
   resm <- mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
 else
-  # browser("runemjmcmc.R:L203") # TEMP
-  print("runemjmcmc.R:L203") # TEMP
   resm<-mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit =  n.models, trest = n.models*100, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
 ppp<-1
 if (!quiet) message("MJMCMC is completed")
