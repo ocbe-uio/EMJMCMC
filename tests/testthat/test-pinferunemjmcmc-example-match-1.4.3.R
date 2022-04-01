@@ -6,15 +6,6 @@ formula1 <- as.formula(
   paste(colnames(X)[5], "~ 1 +", paste0(colnames(X)[-5], collapse = "+"))
 )
 
-# a set of nonlinearities that will be used in the DBRM model as well as the
-# "relations" argument of pinferunemjmcmc
-sini <- function(x) sin(x / 180 * pi)
-expi <- function(x) exp(-abs(x))
-logi <- function(x) log(abs(x) + 1)
-troot <- function(x) abs(x)^(1 / 3)
-to23 <- function(x) abs(x)^(2.3)
-to35 <- function(x) abs(x)^(3.5)
-
 M <- 2 # define the number or cpus
 NM <- 100 # define the size of the simulated samples
 compmax <- 16 # define \k_{max} + 1 from the paper
@@ -31,7 +22,7 @@ res1 <- suppressMessages(
       formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
       estimator.args = list(data = data.example), recalc_margin = 249,
       save.beta = FALSE, interact = TRUE, outgraphs = FALSE,
-      relations = c("to23", "expi", "logi", "to35", "sini", "troot", "sigmoid"),
+      relations = c("to23", "expi", "logi2", "to35", "sini", "troot", "sigmoid"),
       relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
       interact.param = list(
         allow_offsprings = 3, mutation_rate = 250,

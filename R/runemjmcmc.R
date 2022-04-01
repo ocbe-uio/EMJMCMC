@@ -1,6 +1,8 @@
 #' @title Mode jumping MJMCMC or Genetically Modified Mode jumping MCMC or Reversible Genetically Modified Mode jumping MCMC
 #' for variable selection, Bayesian model averaging and feature engineering
-#' @description The algorithm is an extended Metropolis-Hastings algorithm
+#' @description A function that creates an EMJMCMC2ocbe016 object with
+#' specified values of some parameters and default values of other parameters.
+#' @details The algorithm is an extended Metropolis-Hastings algorithm
 #' (or its Genetically modified version) mixing single site changes with
 #' occationally large jumps. The models are described through the gamma vector,
 #' a binary vector indicating which variables that are included in the model.
@@ -86,7 +88,6 @@ runemjmcmc<-function(
   distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852),
   quiet = TRUE)
 {
-# a function that creates an EMJMCMC2016 object with specified values of some parameters and default values of other parameters
 
 #first create the object
 assign("data.example",data, envir=globalenv())
@@ -104,8 +105,6 @@ if(latnames[1]!="")
   fparam.example<<-c(fparam.tmp,latnames)
 else
   fparam.example<<-fparam.tmp
-#print(fparam.tmp)
-#print(fparam.example)
 assign("mySearch",methods::new(structure("EMJMCMC2016", package = "EMJMCMC")), envir=globalenv())
 if(length(secondary)>0)
   mySearch$filtered <<- sapply(FUN = paste,"I(",secondary,")",sep="")
@@ -199,7 +198,7 @@ if(create.table)
 # now as the object is created run the algorithm
 initsol=stats::rbinom(n = length(fparam.example),size = 1,prob = 0.5)
 if(unique)
-  resm<-mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
+  resm <- mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit = n.models*100, trest = n.models, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
 else
   resm<-mySearch$modejumping_mcmc(list(varcur=initsol,locstop=locstop,presearch=presearch,statid=5, distrib_of_proposals =distrib_of_proposals,distrib_of_neighbourhoods=distrib_of_neighbourhoods, eps = eps, trit =  n.models, trest = n.models*100, burnin = burn.in, max.time = max.time, maxit = max.it, print.freq = print.freq))
 ppp<-1

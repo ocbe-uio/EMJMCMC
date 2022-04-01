@@ -56,7 +56,6 @@ pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, s
   M = n.cores
   #results = runpar.infer(params[[1]])
   results=mcgmj(X = params,FUN = runpar.infer,mc.cores = n.cores)
-  #print(results)
   #clean up
   #prepare the data structures for final analysis of the runs
   compmax = runemjmcmc.params$interact.param$Nvars.max + 1

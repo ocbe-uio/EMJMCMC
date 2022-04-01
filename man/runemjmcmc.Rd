@@ -164,12 +164,15 @@ a list containing
 }
 }
 \description{
+A function that creates an EMJMCMC2ocbe016 object with
+specified values of some parameters and default values of other parameters.
+}
+\details{
 The algorithm is an extended Metropolis-Hastings algorithm
 (or its Genetically modified version) mixing single site changes with
 occationally large jumps. The models are described through the gamma vector,
 a binary vector indicating which variables that are included in the model.
-}
-\details{
+
 See Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017),
 Hubin & Storvik (2017) details. The local optimization is performed through
 stepwise search within a neighborhood in the current gamma vector, allowing
@@ -207,27 +210,29 @@ formula1 <- as.formula(
 # specify tuning parameters of the algorithm for exploring DBRM of interest
 # notice that allow_offsprings=3 corresponds to the GMJMCMC runs and
 # allow_offsprings=4 -to the RGMJMCMC runs
-res <- runemjmcmc(
-  formula = formula1, outgraphs = FALSE, data = X4,
-  estimator = estimate.gamma.cpen, estimator.args = list(data = data.example),
-  recalc_margin = 249, save.beta = FALSE, interact = TRUE,
-  relations = c("cos", "sigmoid", "tanh", "atan", "sin", "erf"),
-  relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
-  interact.param = list(
-    allow_offsprings = 4, mutation_rate = 250, last.mutation = 15000,
-    max.tree.size = 4, Nvars.max = 40, p.allow.replace = 0.7,
-    p.allow.tree = 0.2, p.nor = 0, p.and = 0.9
-  ), n.models = 20000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
-  create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 50,
-  print.freq = 1000,
-  advanced.param = list(
-    max.N.glob = as.integer(10),
-    min.N.glob = as.integer(5),
-    max.N = as.integer(3),
-    min.N = as.integer(1),
-    printable = FALSE
+\dontrun{
+  res <- runemjmcmc(
+    formula = formula1, outgraphs = FALSE, data = X4,
+    estimator = estimate.gamma.cpen, estimator.args = list(data = data.example),
+    recalc_margin = 249, save.beta = FALSE, interact = TRUE,
+    relations = c("cos", "sigmoid", "tanh", "atan", "sin", "erf"),
+    relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+    interact.param = list(
+      allow_offsprings = 4, mutation_rate = 250, last.mutation = 15000,
+      max.tree.size = 4, Nvars.max = 40, p.allow.replace = 0.7,
+      p.allow.tree = 0.2, p.nor = 0, p.and = 0.9
+    ), n.models = 20000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+    create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 50,
+    print.freq = 1000,
+    advanced.param = list(
+      max.N.glob = as.integer(10),
+      min.N.glob = as.integer(5),
+      max.N = as.integer(3),
+      min.N = as.integer(1),
+      printable = FALSE
+    )
   )
-)
+}
 }
 \references{
 Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017), Hubin & Storvik (2017)

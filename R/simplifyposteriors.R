@@ -17,7 +17,6 @@ rhash <- hash::hash()
 for(i in 1:length(posteriors[,1]))
 {
   expr<-posteriors[i,1]
-  #print(expr)
   res<-stats::model.matrix(data=X,object = stats::as.formula(paste0(resp,"~",expr)))
   ress<-c( stringi::stri_flatten(round(res[,2],digits = 4),collapse = ""), stringi::stri_flatten(res[,2],collapse = ""),posteriors[i,2],expr)
   if(!((ress[1] %in% hash::values(rhash))))
