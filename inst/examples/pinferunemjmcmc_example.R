@@ -1,7 +1,7 @@
 
 # inference
 
-X <- read.csv("inst/extdata/exa1.csv")
+X <- read.csv(system.file("extdata", "exa1.csv", package="EMJMCMC"))
 data.example <- as.data.frame(X)
 
 # specify the initial formula
@@ -55,8 +55,14 @@ thf <- 0.05
 compmax <- 21
 
 # read in the train and test data sets
-test <- read.csv("inst/extdata/breast_cancer_test.csv", header = TRUE, sep = ",")[, -1]
-train <- read.csv("inst/extdata/breast_cancer_train.csv", header = TRUE, sep = ",")[, -1]
+test <- read.csv(
+  system.file("extdata", "breast_cancer_test.csv", package="EMJMCMC"),
+  header = TRUE, sep = ","
+)[, -1]
+train <- read.csv(
+  system.file("extdata", "breast_cancer_train.csv", package="EMJMCMC"),
+  header = TRUE, sep = ","
+)[, -1]
 
 # transform the train data set to a data.example data.frame that EMJMCMC class
 # will internally use
