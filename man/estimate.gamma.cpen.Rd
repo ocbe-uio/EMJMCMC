@@ -12,6 +12,17 @@ estimate.gamma.cpen(
   relat = c("cos", "sigmoid", "tanh", "atan", "sin", "erf")
 )
 }
+\arguments{
+\item{formula}{formula}
+
+\item{data}{dataset}
+
+\item{r}{r}
+
+\item{logn}{logn}
+
+\item{relat}{relations}
+}
 \description{
 Estimate gamma cpen
 }

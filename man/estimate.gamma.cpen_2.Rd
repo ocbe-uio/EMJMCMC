@@ -12,6 +12,17 @@ estimate.gamma.cpen_2(
   relat = c("to23", "expi", "logi", "to35", "sini", "troot", "sigmoid")
 )
 }
+\arguments{
+\item{formula}{formula}
+
+\item{data}{dataset}
+
+\item{r}{r}
+
+\item{logn}{logn}
+
+\item{relat}{relations}
+}
 \description{
 Estimate gamma cpen 2
 }

@@ -1,6 +1,11 @@
 #' @title Estimate gamma cpen
 #' @export
 #' @importFrom stringi stri_replace_all stri_split_fixed stri_count_fixed
+#' @param formula formula
+#' @param data dataset
+#' @param r r
+#' @param logn logn
+#' @param relat relations
 estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000.0), relat = c("cos", "sigmoid", "tanh", "atan", "sin", "erf")) {
   fparam <- NULL
   fmla.proc <- as.character(formula)[2:3]

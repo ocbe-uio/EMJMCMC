@@ -2,7 +2,8 @@
 #' @importFrom bigmemory big.matrix describe
 #' @importFrom stringi stri_paste
 #' @importFrom hash del
-#TODO: study setRefClass to simplify code
+#' @importFrom stats coefficients gaussian glm median quantile
+#' @importFrom utils capture.output
 EMJMCMC2016 <- methods::setRefClass(
   Class = "EMJMCMC2016",
   fields = list(
