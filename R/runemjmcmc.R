@@ -107,26 +107,26 @@ else
   assign("fparam.example", fparam.tmp, envir=global_env)
 assign("mySearch",methods::new(structure("EMJMCMC2016", package = "EMJMCMC")), envir=global_env)
 if(length(secondary)>0)
-  mySearch$filtered <<- sapply(FUN = paste,"I(",secondary,")",sep="")
-mySearch$estimator <<- estimator
-mySearch$latnames <<- latnames
-mySearch$estimator.args <<- estimator.args
-mySearch$latent.formula <<- latent
-mySearch$save.beta <<- save.beta
-mySearch$prand<<-prand
-mySearch$p.add<<-array(p.add,length(fparam.example))
-mySearch$p.add.default<<-p.add.default
-mySearch$recalc.margin <<- as.integer(recalc_margin)
-mySearch$max.cpu <<- as.integer(max.cpu)
-mySearch$locstop.nd <<- locstop.nd
-mySearch$pool.cor.prob<<-pool.cor.prob
-mySearch$sup.large.n<<-as.integer(sup.large.n)
-mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
-mySearch$deep.method <<- as.integer(deep.method)
+  assign("mySearch$filtered", sapply(FUN = paste,"I(",secondary,")",sep=""), envir = global_env)
+assign("mySearch$estimator", estimator, envir = global_env)
+assign("mySearch$latnames", latnames, envir = global_env)
+mySearch$estimator.args <<- estimator.args # FIXME: assign solution not working
+assign("mySearch$latent.formula", latent, envir = global_env)
+assign("mySearch$save.beta", save.beta, envir = global_env)
+assign("mySearch$prand", prand, envir = global_env)
+assign("mySearch$p.add", array(p.add,length(fparam.example)), envir = global_env)
+assign("mySearch$p.add.default", p.add.default, envir = global_env)
+mySearch$recalc.margin <<- as.integer(recalc_margin) # FIXME: assign solution not working
+mySearch$max.cpu <<- as.integer(max.cpu) # FIXME: assign solution not working
+assign("mySearch$locstop.nd", locstop.nd, envir = global_env)
+assign("mySearch$pool.cor.prob", pool.cor.prob, envir = global_env)
+assign("mySearch$sup.large.n", as.integer(sup.large.n), envir = global_env)
+mySearch$max.cpu.glob <<- as.integer(max.cpu.glob) # FIXME: assign solution not working
+assign("mySearch$deep.method", as.integer(deep.method), envir = global_env)
 if(interact)
 {
-  mySearch$allow_offsprings <<- as.integer(interact.param$allow_offsprings)
-  mySearch$mutation_rate <<- as.integer(interact.param$mutation_rate)
+  mySearch$allow_offsprings <<- as.integer(interact.param$allow_offsprings) # FIXME: assign solution not working
+  mySearch$mutation_rate <<- as.integer(interact.param$mutation_rate) # FIXME: assign solution not working
   mySearch$Nvars.max <<- as.integer(interact.param$Nvars.max)
   mySearch$max.tree.size <<- as.integer(interact.param$max.tree.size)
   mySearch$p.allow.replace <<-  interact.param$p.allow.replace
