@@ -1,7 +1,7 @@
 Package: EMJMCMC
 Type: Package
 Title: Flexible Bayesian Nonlinear Model Configuration
-Version: 1.4.4.9010
+Version: 1.4.4.9011
 Date: 2021-09-20
 Author:
   c(person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
@@ -15,3 +15,4 @@ RoxygenNote: 7.1.2
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Encoding: UTF-8
