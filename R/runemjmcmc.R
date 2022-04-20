@@ -90,11 +90,11 @@ runemjmcmc<-function(
 {
 
 #first create the object
-assign("data.example",data, envir=globalenv())
-
+global_env <- as.environment(1L)
+assign("data.example",data, envir=global_env)
 variables <- simplify.formula(formula,names(data.example))
-assign("fparam.example",variables$fparam, envir=globalenv())
-assign("fobserved.example",variables$fobserved, envir=globalenv())
+assign("fparam.example",variables$fparam, envir=global_env)
+assign("fobserved.example",variables$fobserved, envir=global_env)
 
 #for(i in 1:length(fparam.example))
 #{
@@ -102,10 +102,10 @@ assign("fobserved.example",variables$fobserved, envir=globalenv())
 #}
 fparam.tmp<- as.vector(sapply(FUN = paste,"I(",variables$fparam,")",sep="")[,1])
 if(latnames[1]!="")
-  fparam.example<<-c(fparam.tmp,latnames)
+  assign("fparam.example", c(fparam.tmp,latnames), envir=global_env)
 else
-  fparam.example<<-fparam.tmp
-assign("mySearch",methods::new(structure("EMJMCMC2016", package = "EMJMCMC")), envir=globalenv())
+  assign("fparam.example", fparam.tmp, envir=global_env)
+assign("mySearch",methods::new(structure("EMJMCMC2016", package = "EMJMCMC")), envir=global_env)
 if(length(secondary)>0)
   mySearch$filtered <<- sapply(FUN = paste,"I(",secondary,")",sep="")
 mySearch$estimator <<- estimator
@@ -155,17 +155,17 @@ if(!is.null(advanced.param))
 if(exists("hashStat"))
 {
   hash::clear(hashStat)
-  remove(hashStat,envir=globalenv())
+  remove(hashStat,envir=global_env)
 }
 if(exists("statistics1"))
 {
-  remove(statistics,envir=globalenv() )
-  remove(statistics1,envir=globalenv())
+  remove(statistics,envir=global_env )
+  remove(statistics1,envir=global_env)
 }
 if(exists("hash.keys1"))
 {
-  remove(hash.keys,envir=globalenv())
-  remove(hash.keys1,envir=globalenv())
+  remove(hash.keys,envir=global_env)
+  remove(hash.keys1,envir=global_env)
 }
 
 if(create.table)
@@ -173,8 +173,8 @@ if(create.table)
   if(pseudo.paral)
     mySearch$parallelize <<- lapply
   #carry the search (training out)
-  assign("statistics1",bigmemory::big.matrix(nrow = 2 ^min((length(fparam.example)),hash.length)+1, ncol =  16+length(fparam.example)*save.beta,init = NA, type = "double"), envir=globalenv())
-  assign("statistics",bigmemory::describe(statistics1), envir=globalenv())
+  assign("statistics1",bigmemory::big.matrix(nrow = 2 ^min((length(fparam.example)),hash.length)+1, ncol =  16+length(fparam.example)*save.beta,init = NA, type = "double"), envir=global_env)
+  assign("statistics",bigmemory::describe(statistics1), envir=global_env)
 
   mySearch$g.results[4,1]<<-0
   mySearch$g.results[4,2]<<-0
@@ -183,14 +183,14 @@ if(create.table)
   {
     mySearch$hash.length<<-as.integer(hash.length)
     mySearch$double.hashing<<-T
-    hash.keys1 <<- bigmemory::big.matrix(nrow = 2 ^(hash.length)+1, ncol = length(fparam.example),init = 0, type = "char")
-    hash.keys <<- bigmemory::describe(hash.keys1)
+    assign(hash.keys1, bigmemory::big.matrix(nrow = 2 ^(hash.length)+1, ncol = length(fparam.example),init = 0, type = "char"), global_env)
+    assign(hash.keys, bigmemory::describe(hash.keys1), global_env)
   }
 
 }else if(create.hash)
 {
 
-  assign("hashStat", hash::hash(), envir=globalenv())
+  assign("hashStat", hash::hash(), envir=global_env)
   mySearch$parallelize <<- lapply
   mySearch$hash.length<<-as.integer(20)
   mySearch$double.hashing<<-F
