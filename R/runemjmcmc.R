@@ -1,6 +1,6 @@
 #' @title Mode jumping MJMCMC or Genetically Modified Mode jumping MCMC or Reversible Genetically Modified Mode jumping MCMC
 #' for variable selection, Bayesian model averaging and feature engineering
-#' @description A function that creates an EMJMCMC2ocbe016 object with
+#' @description A function that creates an EMJMCMC2016 object with
 #' specified values of some parameters and default values of other parameters.
 #' @details The algorithm is an extended Metropolis-Hastings algorithm
 #' (or its Genetically modified version) mixing single site changes with

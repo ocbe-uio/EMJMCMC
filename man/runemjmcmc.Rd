@@ -164,7 +164,7 @@ a list containing
 }
 }
 \description{
-A function that creates an EMJMCMC2ocbe016 object with
+A function that creates an EMJMCMC2016 object with
 specified values of some parameters and default values of other parameters.
 }
 \details{
