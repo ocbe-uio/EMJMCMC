@@ -128,7 +128,7 @@ EMJMCMC2016$methods(
         if (printable.opt) print(paste("max log.w.y is ", max.p.select.y, "normilized log.w.n.y is ", paste(p.select.y, collapse = ", ")))
 
 
-        ID <- sample.int(n = max.cpu, size = 1, prob = exp(p.select.y))
+        ID <- sample(x = max.cpu, size = 1, prob = exp(p.select.y))
 
         if (printable.opt) print(paste("cand ", ID, " selected"))
 
