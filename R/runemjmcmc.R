@@ -107,49 +107,49 @@ else
   assign("fparam.example", fparam.tmp, envir=global_env)
 assign("mySearch",methods::new(structure("EMJMCMC2016", package = "EMJMCMC")), envir=global_env)
 if(length(secondary)>0)
-  assign("mySearch$filtered", sapply(FUN = paste,"I(",secondary,")",sep=""), envir = global_env)
-assign("mySearch$estimator", estimator, envir = global_env)
-assign("mySearch$latnames", latnames, envir = global_env)
-mySearch$estimator.args <<- estimator.args # FIXME: assign solution not working
-assign("mySearch$latent.formula", latent, envir = global_env)
-assign("mySearch$save.beta", save.beta, envir = global_env)
-assign("mySearch$prand", prand, envir = global_env)
-assign("mySearch$p.add", array(p.add,length(fparam.example)), envir = global_env)
-assign("mySearch$p.add.default", p.add.default, envir = global_env)
-mySearch$recalc.margin <<- as.integer(recalc_margin) # FIXME: assign solution not working
-mySearch$max.cpu <<- as.integer(max.cpu) # FIXME: assign solution not working
-assign("mySearch$locstop.nd", locstop.nd, envir = global_env)
-assign("mySearch$pool.cor.prob", pool.cor.prob, envir = global_env)
-assign("mySearch$sup.large.n", as.integer(sup.large.n), envir = global_env)
-mySearch$max.cpu.glob <<- as.integer(max.cpu.glob) # FIXME: assign solution not working
-assign("mySearch$deep.method", as.integer(deep.method), envir = global_env)
+  mySearch$filtered <- sapply(FUN = paste,"I(",secondary,")",sep="")
+mySearch$estimator <- estimator
+mySearch$latnames <- latnames
+mySearch$estimator.args <<- estimator.args
+mySearch$latent.formula <- latent
+mySearch$save.beta <- save.beta
+mySearch$prand <- prand
+mySearch$p.add <- array(p.add,length(fparam.example))
+mySearch$p.add.default <- p.add.default
+mySearch$recalc.margin <<- as.integer(recalc_margin)
+mySearch$max.cpu <<- as.integer(max.cpu)
+mySearch$locstop.nd <- locstop.nd
+mySearch$pool.cor.prob <- pool.cor.prob
+mySearch$sup.large.n <- as.integer(sup.large.n)
+mySearch$max.cpu.glob <<- as.integer(max.cpu.glob)
+mySearch$deep.method <- as.integer(deep.method)
 if(interact)
 {
-  mySearch$allow_offsprings <<- as.integer(interact.param$allow_offsprings) # FIXME: assign solution not working
-  mySearch$mutation_rate <<- as.integer(interact.param$mutation_rate) # FIXME: assign solution not working
-  mySearch$Nvars.max <<- as.integer(interact.param$Nvars.max) # FIXME: assign solution not working
-  assign("mySearch$max.tree.size", as.integer(interact.param$max.tree.size), envir = global_env)
-  assign("mySearch$p.allow.replace", interact.param$p.allow.replace, envir = global_env)
-  mySearch$p.allow.tree <<-  interact.param$p.allow.tree # FIXME: assign solution not working
-  assign("mySearch$p.epsilon", p.epsilon, envir = global_env)
-  assign("mySearch$keep.origin", keep.origin, envir = global_env)
-  mySearch$sigmas<<-relations # FIXME: assign solution not working
-  assign("mySearch$sigmas.prob", relations.prob, envir = global_env)
-  assign("mySearch$del.sigma", del.sigma, envir = global_env)
-  assign("mySearch$pool.cross", pool.cross, envir = global_env)
-  mySearch$gen.prob<<-gen.prob # FIXME: assign solution not working
-  assign("mySearch$p.nor", interact.param$p.nor, envir = global_env)
-  assign("mySearch$p.and", interact.param$p.and, envir = global_env)
-  assign("mySearch$last.mutation", as.integer(interact.param$last.mutation), envir = global_env)
+  mySearch$allow_offsprings <<- as.integer(interact.param$allow_offsprings)
+  mySearch$mutation_rate <<- as.integer(interact.param$mutation_rate)
+  mySearch$Nvars.max <<- as.integer(interact.param$Nvars.max)
+  mySearch$max.tree.size <- as.integer(interact.param$max.tree.size)
+  mySearch$p.allow.replace <- interact.param$p.allow.replace
+  mySearch$p.allow.tree <<-  interact.param$p.allow.tree
+  mySearch$p.epsilon <- p.epsilon
+  mySearch$keep.origin <- keep.origin
+  mySearch$sigmas<<-relations
+  mySearch$sigmas.prob <<- relations.prob
+  mySearch$del.sigma <- del.sigma
+  mySearch$pool.cross <- pool.cross
+  mySearch$gen.prob<<-gen.prob
+  mySearch$p.nor <- interact.param$p.nor
+  mySearch$p.and <- interact.param$p.and
+  mySearch$last.mutation <- as.integer(interact.param$last.mutation)
 }
 
 if(!is.null(advanced.param))
 {
-  mySearch$max.N.glob<<-as.integer(advanced.param$max.N.glob) # FIXME: assign solution not working
-  mySearch$min.N.glob<<-as.integer(advanced.param$min.N.glob) # FIXME: assign solution not working
-  mySearch$max.N<<-as.integer(advanced.param$max.N) # FIXME: assign solution not working
-  assign("mySearch$min.N", as.integer(advanced.param$min.N), envir = global_env)
-  assign("mySearch$printable.opt", advanced.param$printable, envir = global_env)
+  mySearch$max.N.glob<<-as.integer(advanced.param$max.N.glob)
+  mySearch$min.N.glob<<-as.integer(advanced.param$min.N.glob)
+  mySearch$max.N<<-as.integer(advanced.param$max.N)
+  mySearch$min.N <- as.integer(advanced.param$min.N)
+  mySearch$printable.opt <- advanced.param$printable
 }
 
 if(exists("hashStat"))
@@ -170,17 +170,17 @@ if(exists("hash.keys1"))
 
 if(create.table)
 {
-  if(pseudo.paral) assign("mySearch$parallelize", lapply, envir = global_env)
+  if(pseudo.paral) mySearch$parallelize <- lapply
   #carry the search (training out)
   assign("statistics1",bigmemory::big.matrix(nrow = 2 ^min((length(fparam.example)),hash.length)+1, ncol =  16+length(fparam.example)*save.beta,init = NA, type = "double"), envir=global_env)
   assign("statistics",bigmemory::describe(statistics1), envir=global_env)
-  assign("mySearch$g.results[4,1]", 0, envir = global_env)
-  assign("mySearch$g.results[4,2]", 0, envir = global_env)
-  assign("mySearch$p.add", array(data = 0.5,dim = length(fparam.example)), envir = global_env)
+  mySearch$g.results[4,1] <- 0
+  mySearch$g.results[4,2] <- 0
+  mySearch$p.add <- array(data = 0.5,dim = length(fparam.example))
   if((length(fparam.example))>20)
   {
-    assign("mySearch$hash.length", as.integer(hash.length), envir = global_env)
-    assign("mySearch$double.hashing", TRUE, envir = global_env)
+    mySearch$hash.length <- as.integer(hash.length)
+    mySearch$double.hashing <- TRUE
     assign(hash.keys1, bigmemory::big.matrix(nrow = 2 ^(hash.length)+1, ncol = length(fparam.example),init = 0, type = "char"), global_env)
     assign(hash.keys, bigmemory::describe(hash.keys1), global_env)
   }
@@ -189,9 +189,9 @@ if(create.table)
 {
 
   assign("hashStat", hash::hash(), envir=global_env)
-  mySearch$parallelize <<- lapply # FIXME: assign solution not working
-  assign("mySearch$hash.length", as.integer(20), envir = global_env)
-  mySearch$double.hashing<<-F # FIXME: assign solution not working
+  mySearch$parallelize <<- lapply
+  mySearch$hash.length <- as.integer(20)
+  mySearch$double.hashing<<- FALSE
 }
 # now as the object is created run the algorithm
 initsol=stats::rbinom(n = length(fparam.example),size = 1,prob = 0.5)
