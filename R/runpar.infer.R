@@ -31,7 +31,7 @@ runpar.infer=function(vect)
     preds = NULL
     if(vect$predict)
     {
-      preds=mySearch$forecast.matrix.na(link.g = vect$link, covariates = (vect$test),betas = betas,mliks.in = mliks)$forecast
+      preds=mySearch$forecast.matrix.na.fast(link.g = vect$link, covariates = (vect$test),betas = betas,mliks.in = mliks)$forecast
     }
 
 
