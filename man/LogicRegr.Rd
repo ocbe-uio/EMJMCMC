@@ -25,7 +25,8 @@ LogicRegr(
     "atan", "erf"), relations.prob = c(0.4, 0, 0, 0, 0, 0, 0), interact.param =
     list(allow_offsprings = 1, mutation_rate = 300, last.mutation = 5000, max.tree.size =
     1, Nvars.max = 100, p.allow.replace = 0.9, p.allow.tree = 0.2, p.nor = 0.2, p.and =
-    1), n.models = 10000,      unique = T, max.cpu = 4, max.cpu.glob = 4, create.table =
+    1), n.models = 10000, 
+     unique = T, max.cpu = 4, max.cpu.glob = 4, create.table =
     F, create.hash = T, pseudo.paral = T, burn.in = 50, outgraphs = F, print.freq = 1000,
     advanced.param = list(max.N.glob = as.integer(10), min.N.glob = as.integer(5), max.N
     = as.integer(3), min.N = as.integer(1), printable = F))

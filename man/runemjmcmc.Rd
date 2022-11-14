@@ -35,9 +35,9 @@ runemjmcmc(
   p.epsilon = 1e-04,
   del.sigma = 0.5,
   pool.cor.prob = F,
-  interact.param = list(allow_offsprings = 2, mutation_rate = 100, last.mutation =
-    2000, max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7, p.allow.tree =
-    0.1, p.nor = 0.3, p.and = 0.7),
+  interact.param = list(allow_offsprings = 2, mutation_rate = 100, last.mutation = 2000,
+    max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7, p.allow.tree = 0.1,
+    p.nor = 0.3, p.and = 0.7),
   prand = 0.01,
   keep.origin = T,
   sup.large.n = 5000,

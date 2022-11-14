@@ -11,7 +11,7 @@ Description: In package article we introduced approachfor estimating posterior m
 License: GPL
 Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, BAS, stringi, parallel, methods, speedglm, stats
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

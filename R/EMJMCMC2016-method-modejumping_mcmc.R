@@ -82,8 +82,8 @@ EMJMCMC2016$methods(
     while ((eps.emp >= glob.model$eps || j <= glob.model$maxit || j <= glob.model$burnin) && delta.time < glob.model$max.time && g.results[4, 1] <= glob.model$trit && g.results[4, 2] <= glob.model$trest) {
       p1 <- p.post / acc_moves
       set.seed(stats::runif(n = 1, min = 1, max = seed * 100), kind = NULL, normal.kind = NULL)
-      LocImprove <<- as.array(sample.int(n = 5, size = 1, prob = distrib_of_proposals) - 1)
-      LocNeighbor <- (sample.int(n = 7, size = 1, prob = distrib_of_neighbourhoods[LocImprove + 1, ]))
+      LocImprove <<- as.array(sample(x = 5, size = 1, prob = distrib_of_proposals) - 1)
+      LocNeighbor <- (sample(x = 7, size = 1, prob = distrib_of_neighbourhoods[LocImprove + 1, ]))
       switch.type.glob.buf <- LocNeighbor
       switch.type.buf <- LocNeighbor
       if (LocNeighbor == 7) {
@@ -94,8 +94,18 @@ EMJMCMC2016$methods(
       # if(printable.opt)print(LocImprove)
       j <- j + 1
       j.a <- j.a + 1
-      if (j %% glob.model$print.freq == 0) {
-        print(paste(j, " iterations completed up to now after ", delta.time, " cpu minutes", " best MLIK found ", g.results[1, 1], " current mlik found ", mlikcur, "current acceptance ratio ", acc_moves / j.a))
+      if (glob.model$print.freq > 0 && j %% glob.model$print.freq == 0) {
+        cat(
+          formatC(j, width = 4L), "iterations completed up to now after",
+          formatC(delta.time, digits = 6L, flag = "-", format = "f"),
+          "cpu minutes",
+          "best MLIK found",
+          formatC(g.results[1, 1], digits = 3L, flag = "-", format = "f"),
+          "current mlik found",
+          formatC(mlikcur, digits = 3L, flag = "-", format = "f"),
+          "current acceptance ratio",
+          formatC(acc_moves / j.a, digits = 6L, flag = "-", format = "f"), "\n"
+        )
       }
       if (j %% 100 == 0) {
         seed <<- stats::runif(n = 1, min = 0, max = 100000)
@@ -109,7 +119,8 @@ EMJMCMC2016$methods(
           }
           to.del <- which(p.add < p.allow.tree)
           if (length(to.del) == Nvars) {
-            to.del <- to.del[-sample.int(n = Nvars, size = sample.int(n = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
+
+            to.del <- to.del[-sample(x = Nvars, size = sample(x = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
           }
           if (length(to.del) < Nvars - Nvars.max) {
             tdl.id <- order(p.add, decreasing = T)
@@ -176,7 +187,7 @@ EMJMCMC2016$methods(
                     proposal <- stri_paste(paste(ifelse(stats::runif(n = 1, min = 0, max = 1) < p.nor, "I((1-", "I(("), mother, sep = ""), paste(ifelse(stats::runif(n = 1, min = 0, max = 1) < p.nor, "(1-", "("), father, "))", sep = ""), sep = ifelse(stats::runif(n = 1, min = 0, max = 1) < p.and, ")&", ")|"))
                   } else {
                     if (max(sjm, sjf) > 1) {
-                      t.d <- sample.int(size = 1, n = (max(sjm, sjf) + 1))
+                      t.d <- sample(size = 1, x = (max(sjm, sjf) + 1))
                       if (sjm >= sjf) {
                         loc <- c(1, stri_locate_all(str = mother, regex = "\\&|\\||\\*|\\+")[[1]][, 1], stringi::stri_length(mother))
                         proposal <- stri_paste(stringi::stri_sub(mother, from = 1, to = loc[t.d] - 1), stringi::stri_sub(mother, from = (loc[t.d + 1] + (t.d == 1)), to = stringi::stri_length(mother)))
@@ -201,13 +212,13 @@ EMJMCMC2016$methods(
                   # proposal<-stri_paste("I",mother)
                 } else {
                   proposal <- stri_paste(paste(ifelse(stats::runif(n = 1, min = 0, max = 1) < p.nor, "I(", "I(-"), mother, sep = ""), paste("(", father, "))", sep = ""), sep = ifelse(stats::runif(n = 1, min = 0, max = 1) < p.and, "*", "+"))
-                  proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+                  proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
                   while ((proposal %in% fparam)) {
-                    proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+                    proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
                   }
                 }
               } else {
-                t.d <- sample.int(size = 1, n = (max(sjm, sjf) + 1))
+                t.d <- sample(size = 1, x = (max(sjm, sjf) + 1))
                 if (sjm >= sjf) {
                   loc <- c(1, stri_locate_all(str = mother, regex = "\\&|\\||\\*|\\+")[[1]][, 1], stringi::stri_length(mother))
                   proposal <- stri_paste(stringi::stri_sub(mother, from = 1, to = loc[t.d] - 1), stringi::stri_sub(mother, from = (loc[t.d + 1] + (t.d == 1)), to = stringi::stri_length(mother)))
@@ -294,7 +305,7 @@ EMJMCMC2016$methods(
           }
           to.del <- which(p.add < p.allow.tree)
           if (length(to.del) == Nvars) {
-            to.del <- to.del[-sample.int(n = Nvars, size = sample.int(n = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
+            to.del <- to.del[-sample(x = Nvars, size = sample(x = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
           }
           if (length(to.del) < Nvars - Nvars.max) {
             tdl.id <- order(p.add, decreasing = T)
@@ -349,30 +360,30 @@ EMJMCMC2016$methods(
           while (idel <= lidmut && repsd <= lidmut * 100) {
             repsd <- repsd + 1
             # gen.prob<-c(1,1,1,1,1)#just uniform for now
-            action.type <- sample.int(n = 5, size = 1, prob = gen.prob)
+            action.type <- sample(x = 5, size = 1, prob = gen.prob)
 
 
             if (action.type == 1) {
               # mutation (add a leave not in the search space)
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)]
             } else if (action.type == 2) {
               # crossover type of a proposal
               # generate a mother
               # actvars<-which(varcurb==1)
-              mother <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample.int(n = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)])
+              mother <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample(x = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)])
               ltreem <- stringi::stri_length(mother)
               mother <- stringi::stri_sub(mother, from = 1, to = ltreem)
               # sjm<-sum(stringi::stri_count_fixed(str = mother, pattern = c("+","*")))
               # generate a father
-              father <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample.int(n = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)])
+              father <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample(x = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)])
               ltreef <- stringi::stri_length(father)
               father <- stringi::stri_sub(father, from = 1, to = ltreef)
               # sjf<-sum(stringi::stri_count_fixed(str = father, pattern = c("+","*")))
 
               proposal <- stri_paste("I(", stri_paste(mother, father, sep = "*"), ")", sep = "")
             } else if (action.type == 3) {
-              proposal <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample.int(n = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)])
-              proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+              proposal <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample(x = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)])
+              proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
             } else if (action.type == 4) {
 
 
@@ -382,7 +393,7 @@ EMJMCMC2016$methods(
 
 
               if (length(actvars) <= 1) {
-                proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+                proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
               } else {
                 utils::capture.output(withRestarts(tryCatch(
                   {
@@ -400,10 +411,10 @@ EMJMCMC2016$methods(
                       bet.act <- stri_paste(bet.act, c("1", fparam[actvars]), ")", sep = "")
                       bet.act <- stri_paste("I(", bet.act, ")", sep = "")
                       proposal <- stri_paste("I(", stri_paste(bet.act, collapse = "+"), ")", collapse = "")
-                      proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+                      proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
                       # print(proposal)
                     } else if (deep.method == 2) {
-                      cursigma <- sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)]
+                      cursigma <- sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)]
                       bet.act <- gnlr(
                         y = data.example[[fobserved]],
                         distribution = estimator.args$distribution,
@@ -425,7 +436,7 @@ EMJMCMC2016$methods(
                       proposal <- stri_paste("I(", stri_paste(bet.act, collapse = "+"), ")", collapse = "")
                       proposal <- stri_paste("I(", cursigma, "(", proposal, "))", sep = "")
                     } else if (deep.method == 3) {
-                      cursigma <- sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)]
+                      cursigma <- sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)]
                       forstr <- stri_paste("~", estimator.args$link, "(", cursigma, "(", "m(0,1) +", paste0("m(", stats::rnorm(length(actvars), 0, 1), ",", fparam[actvars], ")", collapse = "+"), "))")
                       forstr <- stringi::stri_replace_all_fixed(str = forstr, pattern = c("m(-"), replacement = "m(")
                       forstr <- stringi::stri_replace_all_fixed(str = forstr, pattern = c("m("), replacement = "m(b_")
@@ -464,12 +475,12 @@ EMJMCMC2016$methods(
                       bet.act <- stri_paste(bet.act, c("1", fparam[actvars]), ")", sep = "")
                       bet.act <- stri_paste("I(", bet.act, ")", sep = "")
                       proposal <- stri_paste("I(", stri_paste(bet.act, collapse = "+"), ")", collapse = "")
-                      proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+                      proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
                     }
                   },
                   error = function(err) {
                     # print(err)
-                    proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+                    proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
                   },
                   finally = {
                     proposal <- proposal
@@ -488,7 +499,7 @@ EMJMCMC2016$methods(
               # print("reduction")
               # print(idel)
               if (idel > length(fparam)) {
-                proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+                proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
               } else {
                 cpm <- sum(stringi::stri_count_fixed(str = fparam[idel], pattern = c("*")))
                 if (length(cpm) == 0) {
@@ -496,14 +507,14 @@ EMJMCMC2016$methods(
                 }
 
                 if (cpm > 0) {
-                  t.d <- sample.int(size = 1, n = (cpm))
+                  t.d <- sample(size = 1, x = (cpm))
                   # print(fparam[idel])
 
                   loc <- c(1, stri_locate_all(str = fparam[idel], regex = "\\*")[[1]][, 1], stringi::stri_length(fparam[idel]))
                   proposal <- stri_paste(stringi::stri_sub(fparam[idel], from = 1, to = loc[t.d] - 1 + 2 * (t.d == 1)), stringi::stri_sub(fparam[idel], from = (loc[t.d + 1] + (t.d == 1)), to = stringi::stri_length(fparam[idel])))
 
                   if (stats::runif(n = 1, min = 0, max = 1) < del.sigma) {
-                    dsigmas <- sample.int(size = 1, n = length(sigmas))
+                    dsigmas <- sample(size = 1, x = length(sigmas))
                     if (sigmas[dsigmas] != "") {
                       proposal <- stringi::stri_replace_all_fixed(replacement = "", str = proposal, pattern = sigmas[dsigmas])
                     }
@@ -529,13 +540,13 @@ EMJMCMC2016$methods(
             sj <- sj + sum(stringi::stri_count_fixed(str = proposal, pattern = sigmas))
             sj <- sj + 1
             if (length(sj) == 0) {
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
               sj <- 0
             } else if (is.na(proposal) || is.na(sj)) {
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
               sj <- 0
             } else if (sj > max.tree.size) {
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
             }
 
 
@@ -669,7 +680,7 @@ EMJMCMC2016$methods(
           }
           to.del <- which(p.add < p.allow.tree)
           if (length(to.del) == Nvars) {
-            to.del <- to.del[-sample.int(n = Nvars, size = sample.int(n = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
+            to.del <- to.del[-sample(x = Nvars, size = sample(x = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
           }
           if (length(to.del) < Nvars - Nvars.max) {
             tdl.id <- order(p.add, decreasing = T)
@@ -811,29 +822,29 @@ EMJMCMC2016$methods(
           while (idel <= lidmut) {
 
             # gen.prob<-c(1,1,1,1,1)#just uniform for now
-            action.type <- sample.int(n = 5, size = 1, prob = gen.prob)
+            action.type <- sample(x = 5, size = 1, prob = gen.prob)
 
             if (action.type == 1) {
               # mutation (add a leave not in the search space)
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)]
             } else if (action.type == 2) {
               # crossover type of a proposal
               # generate a mother
               # actvars<-which(varcurb==1)
-              mother <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample.int(n = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)])
+              mother <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample(x = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)])
               ltreem <- stringi::stri_length(mother)
               mother <- stringi::stri_sub(mother, from = 1, to = ltreem)
               # sjm<-sum(stringi::stri_count_fixed(str = mother, pattern = c("+","*")))
               # generate a father
-              father <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample.int(n = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)])
+              father <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample(x = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)])
               ltreef <- stringi::stri_length(father)
               father <- stringi::stri_sub(father, from = 1, to = ltreef)
               # sjf<-sum(stringi::stri_count_fixed(str = father, pattern = c("+","*")))
 
               proposal <- stri_paste("I(", stri_paste(mother, father, sep = "*"), ")", sep = "")
             } else if (action.type == 3) {
-              proposal <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample.int(n = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample.int(n = length(fparam.pool), size = 1, prob = pool.probs)])
-              proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+              proposal <- ifelse(stats::runif(n = 1, min = 0, max = 1) <= pool.cross, fparam[sample(x = Nvars, size = 1, prob = p.add + p.epsilon)], fparam.pool[sample(x = length(fparam.pool), size = 1, prob = pool.probs)])
+              proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
             } else if (action.type == 4) {
 
 
@@ -862,10 +873,10 @@ EMJMCMC2016$methods(
                       bet.act <- stri_paste(bet.act, c("1", fparam[actvars]), ")", sep = "")
                       bet.act <- stri_paste("I(", bet.act, ")", sep = "")
                       proposal <- stri_paste("I(", stri_paste(bet.act, collapse = "+"), ")", collapse = "")
-                      proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+                      proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
                       # print(proposal)
                     } else if (deep.method == 2) {
-                      cursigma <- sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)]
+                      cursigma <- sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)]
                       bet.act <- gnlr(
                         y = data.example[[fobserved]],
                         distribution = estimator.args$distribution,
@@ -887,7 +898,7 @@ EMJMCMC2016$methods(
                       proposal <- stri_paste("I(", stri_paste(bet.act, collapse = "+"), ")", collapse = "")
                       proposal <- stri_paste("I(", cursigma, "(", proposal, "))", sep = "")
                     } else if (deep.method == 3) {
-                      cursigma <- sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)]
+                      cursigma <- sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)]
                       forstr <- stri_paste("~", estimator.args$link, "(", cursigma, "(", "m(0,1) +", paste0("m(", stats::rnorm(length(actvars), 0, 1), ",", fparam[actvars], ")", collapse = "+"), "))")
                       forstr <- stringi::stri_replace_all_fixed(str = forstr, pattern = c("m(-"), replacement = "m(")
                       forstr <- stringi::stri_replace_all_fixed(str = forstr, pattern = c("m("), replacement = "m(b_")
@@ -928,12 +939,12 @@ EMJMCMC2016$methods(
                       bet.act <- stri_paste(bet.act, c("1", fparam[actvars]), ")", sep = "")
                       bet.act <- stri_paste("I(", bet.act, ")", sep = "")
                       proposal <- stri_paste("I(", stri_paste(bet.act, collapse = "+"), ")", collapse = "")
-                      proposal <- stri_paste("I(", sigmas[sample.int(n = length(sigmas), size = 1, replace = F, prob = sigmas.prob)], "(", proposal, "))", sep = "")
+                      proposal <- stri_paste("I(", sigmas[sample(x = length(sigmas), size = 1, prob = sigmas.prob)], "(", proposal, "))", sep = "")
                     }
                   },
                   error = function(err) {
                     # print(err)
-                    proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+                    proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
                   },
                   finally = {
                     proposal <- proposal
@@ -960,14 +971,14 @@ EMJMCMC2016$methods(
                 }
 
                 if (cpm > 0) {
-                  t.d <- sample.int(size = 1, n = (cpm))
+                  t.d <- sample(size = 1, x = (cpm))
                   # print(fparam[idel])
 
                   loc <- c(1, stri_locate_all(str = fparam[idel], regex = "\\*")[[1]][, 1], stringi::stri_length(fparam[idel]))
                   proposal <- stri_paste(stringi::stri_sub(fparam[idel], from = 1, to = loc[t.d] - 1 + 2 * (t.d == 1)), stringi::stri_sub(fparam[idel], from = (loc[t.d + 1] + (t.d == 1)), to = stringi::stri_length(fparam[idel])))
 
                   if (stats::runif(n = 1, min = 0, max = 1) < del.sigma) {
-                    dsigmas <- sample.int(size = 1, n = length(sigmas))
+                    dsigmas <- sample(size = 1, x = length(sigmas))
                     if (sigmas[dsigmas] != "") {
                       proposal <- stringi::stri_replace_all_fixed(replacement = "", str = proposal, pattern = sigmas[dsigmas])
                     }
@@ -993,10 +1004,10 @@ EMJMCMC2016$methods(
             sj <- sj + sum(stringi::stri_count_fixed(str = proposal, pattern = sigmas))
             sj <- sj + 1
             if (sj > max.tree.size || length(sj) == 0) {
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
             }
             if (is.na(proposal)) {
-              proposal <- fparam.pool[sample.int(n = length(fparam.pool), size = 1)]
+              proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
             }
 
             add <- T
@@ -1166,7 +1177,7 @@ EMJMCMC2016$methods(
         if (printable.opt) print(paste("max log.w.y is ", max.p.select.y, "normilized log.w.n.y is ", paste(p.select.y, collapse = ", ")))
 
 
-        ID <- sample.int(n = max.cpu.glob, size = 1, prob = exp(p.select.y))
+        ID <- sample(x = max.cpu.glob, size = 1, prob = exp(p.select.y))
 
         if (printable.opt) print(paste("cand ", ID, " selected"))
 
