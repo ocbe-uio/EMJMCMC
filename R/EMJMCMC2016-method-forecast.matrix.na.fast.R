@@ -23,7 +23,7 @@ EMJMCMC2016$methods(
       mliks <- mliks.in
       xyz <- which(unlist(mliks) != -10000)
       moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
-      zyx <- array(data = NA, dim = lHash)
+      zyx <- vector(mode = "double", length = nrow(betas))
       nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
       betas1 <- betas
       betas1[which(is.na(betas1))] <- 0
@@ -35,18 +35,17 @@ EMJMCMC2016$methods(
         nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
         zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
       }
-
-      covariates1 <- covariates[ids, ]
-      res <- t(zyx) %*% g(betas1 %*% t(stats::model.matrix(object = formula.cur, data = covariates1)))
+      res <- t(zyx) %*% g(betas1 %*% t(stats::model.matrix(object = formula.cur, data = covariates)))
       res.na[ids] <- res
       rm(mliks)
       rm(res)
       rm(zyx)
       rm(xyz)
-      rm(covariates1)
+      # rm(covariates1)
       rm(betas1)
     }
     ids <- (which(is.na(res.na)))
+    w.ids <- vector()
     for (iii in which(na.bc > 0))
     {
       if (sum(na.ids[ids, iii]) > 0) {
@@ -56,7 +55,13 @@ EMJMCMC2016$methods(
         }
       }
     }
-    mliks <- mliks.in[-w.ids]
+    if (length(w.ids) > 0) {
+      mliks <- mliks.in[-w.ids]
+      betas1 <- betas[-w.ids, ]
+    } else {
+      mliks <- mliks.in
+      betas1 <- betas
+    }
     if (length(mliks) == 0) {
       warning("not enough models for bagging in prediction. please train the model longer!")
       return(-1)
@@ -65,7 +70,6 @@ EMJMCMC2016$methods(
     moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
     zyx <- array(data = NA, dim = length(mliks))
     nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
-    betas1 <- betas[-w.ids, ]
     betas1[which(is.na(betas1))] <- 0
     if (nconsum > 0) {
       zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
@@ -75,9 +79,14 @@ EMJMCMC2016$methods(
       nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
       zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
     }
-    covariates1 <- as.matrix(covariates[ids, ])
+    if (length(ids) > 0) {
+      covariates1 <- as.matrix(covariates[ids, ])
+    } else {
+      covariates1 <- as.matrix(covariates)
+    }
     covariates1[which(is.na(covariates1))] <- 0
     covariates1 <- as.data.frame(covariates1)
+
     res <- t(zyx) %*% g(betas1 %*% t(stats::model.matrix(object = formula.cur, data = covariates1)))
     res.na[ids] <- res
     rm(mliks)
