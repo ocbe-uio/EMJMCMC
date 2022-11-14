@@ -94,8 +94,18 @@ EMJMCMC2016$methods(
       # if(printable.opt)print(LocImprove)
       j <- j + 1
       j.a <- j.a + 1
-      if (j %% glob.model$print.freq == 0) {
-        print(paste(j, " iterations completed up to now after ", delta.time, " cpu minutes", " best MLIK found ", g.results[1, 1], " current mlik found ", mlikcur, "current acceptance ratio ", acc_moves / j.a))
+      if (glob.model$print.freq > 0 && j %% glob.model$print.freq == 0) {
+        cat(
+          formatC(j, width = 4L), "iterations completed up to now after",
+          formatC(delta.time, digits = 6L, flag = "-", format = "f"),
+          "cpu minutes",
+          "best MLIK found",
+          formatC(g.results[1, 1], digits = 3L, flag = "-", format = "f"),
+          "current mlik found",
+          formatC(mlikcur, digits = 3L, flag = "-", format = "f"),
+          "current acceptance ratio",
+          formatC(acc_moves / j.a, digits = 6L, flag = "-", format = "f"), "\n"
+        )
       }
       if (j %% 100 == 0) {
         seed <<- stats::runif(n = 1, min = 0, max = 100000)
