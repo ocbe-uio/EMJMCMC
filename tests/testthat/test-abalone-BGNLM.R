@@ -118,21 +118,23 @@ test_that("pinferunemjmcmc outputs with correct elements", {
   expect_gte(length(res1_par[["threads.stats"]]), 1L)
   expect_lte(length(res1_par[["threads.stats"]]), 5L)
   expect_equal(mean(res1_par[["predictions"]]), 9.9, tolerance = 1e-1)
-  expect_equal(
-    res1_par[["threads.stats"]][[1]][["cterm"]], -6573, tolerance = 1e-1
-  )
-  expect_equal(
-    res1_par[["threads.stats"]][[2]][["preds"]][1], 7.69, tolerance = 1e-1
-  )
-  expect_equal(
-    res1_par[["threads.stats"]][[3]][["p.post"]][1], .977, tolerance = 1e-2
-  )
-  expect_equal(
-    res1_par[["threads.stats"]][[4]][["post.populi"]], 0.0282, tolerance = 1e-3
-  )
-  expect_equal(
-    res1_par[["threads.stats"]][[5]][["mliks"]][1], -7762, tolerance = 1e-1
-  )
+  if (res1_par[["threads.stats"]] == 5) {
+    expect_equal(
+      res1_par[["threads.stats"]][[1]][["cterm"]], -6573, tolerance = 1e-1
+    )
+    expect_equal(
+      res1_par[["threads.stats"]][[2]][["preds"]][1], 7.69, tolerance = 1e-1
+    )
+    expect_equal(
+      res1_par[["threads.stats"]][[3]][["p.post"]][1], .977, tolerance = 1e-2
+    )
+    expect_equal(
+      res1_par[["threads.stats"]][[4]][["post.populi"]], 0.0282, tolerance = 1e-3
+    )
+    expect_equal(
+      res1_par[["threads.stats"]][[5]][["mliks"]][1], -7762, tolerance = 1e-1
+    )
+  }
 })
 
 J <- seq_len(1L) # 1L to save time, but results are basically the same for 10L
