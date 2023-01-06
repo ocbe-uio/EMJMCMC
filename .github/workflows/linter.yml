@@ -24,25 +24,17 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
         - name: Checking out the repository
-          uses: actions/checkout@v2
+          uses: actions/checkout@v3
 
         - name: Setting up R
-          uses: r-lib/actions/setup-r@v1
+          uses: r-lib/actions/setup-r@v2
+          with:
+            use-public-rspm: true
 
-        - name: Installing system dependencies
-          run: sudo apt install libcurl4-openssl-dev  # needed by devtools
-
-        - name: Installing package dependencies
-          run: |
-            pack <- c(
-              "glmnet", "biglm", "hash", "BAS", "stringi", "parallel",
-              "methods", "speedglm", "stats"
-            )
-            install.packages(c(pack, "lintr", "devtools"))
-          shell: Rscript {0}
-
-        - name: Installing EMJMCMC
-          run: Rscript -e 'devtools::install()'
+        - name: Installing dependencies
+          uses: r-lib/actions/setup-r-dependencies@v2
+          with:
+            extra-packages: lintr
 
         - name: Picking on the coding style
           run: |

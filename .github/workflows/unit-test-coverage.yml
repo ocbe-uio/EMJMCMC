@@ -1,51 +1,25 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-#
-# See https://github.com/r-lib/actions/tree/master/examples#readme for
-# additional example workflows available for the R community.
-
-# ======================================================== #
-# Determines when the action is triggered                  #
-# ======================================================== #
-
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on: [push, pull_request]
-name: unit-test-coverage
-
-# ======================================================== #
-# Determine actions to take                                #
-# ======================================================== #
+name: test-coverage
 
 jobs:
-  unit-test-coverage:
+  test-coverage:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
-        - name: Checking out the repository
-          uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-        - name: Setting up R
-          uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
 
-        - name: Installing system dependencies
-          run: sudo apt install libcurl4-openssl-dev  # needed by covr
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: covr
 
-        - name: Installing package dependencies
-          run: |
-            pack <- c(
-              "glmnet", "biglm", "hash", "BAS", "stringi", "parallel",
-              "methods", "speedglm", "stats"
-            )
-            install.packages(c(pack, "covr", "devtools"))
-          shell: Rscript {0}
-
-        - name: Installing EMJMCMC
-          run: Rscript -e 'devtools::install()'
-
-        - name: Checking unit test coverage
-          run: |
-            devtools::install()
-            covr::codecov(quiet=FALSE)
-          shell: Rscript {0}
+      - name: Test coverage
+        run: covr::codecov()
+        shell: Rscript {0}
