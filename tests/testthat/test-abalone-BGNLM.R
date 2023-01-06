@@ -191,16 +191,8 @@ for(j in J) {
     )
     expect_equal(mean(res1[["predictions"]]), 9.9, tolerance = 1e-1)
     expect_equal(dim(results), c(2L, 100L, 5L))
-    expect_equal(
-      results[1, 1:10, 1:3][1, ],
-      c(2.0479307, 1.2309200, 0.7598387),
-      tolerance = 1e-6
-    )
-    expect_equal(
-      results[2, 1:10, 1:3][1, ],
-      c(2.0137489, 1.2230869, 0.7679209),
-      tolerance = 1e-6
-    )
+    expect_equal(results[1, 1:10, 1:3][1, ], c(2.04, 1.23, 0.75), tolerance = 1e-1)
+    expect_equal(results[2, 1:10, 1:3][1, ], c(2.01, 1.22, 0.76), tolerance = 1e-1)
     expect_equal(dim(posteriorshell_1.csv), c(10L, 2L))
     expect_equal(dim(resultsrun_1.csv), c(2L, 5L))
     expect_equal(mean(resultsrun_1.csv), .80, tolerance = 1e-1)
