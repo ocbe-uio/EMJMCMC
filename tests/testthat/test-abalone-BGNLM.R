@@ -204,23 +204,17 @@ for(j in J) {
   })
 }
 
-# for(j in 1:100)
-# {
+for(j in J) {
+  tmp = resultsrun_1.csv
 
-#   tmp = read.csv(paste0("resultsrun_",j,".csv"))
+  results[1,j,1]=  tmp[1,2]
+  results[1,j,2]=  tmp[1,3]
+  results[1,j,3] =   tmp[1,4]
 
-#   results[1,j,1]=  tmp[1,2]
-#   results[1,j,2]=  tmp[1,3]
-#   results[1,j,3] =   tmp[1,4]
-
-#   if(tmp[2,2] == 0)
-#     print(j)
-
-#   results[2,j,1]=  tmp[2,2]
-#   results[2,j,2]=   tmp[2,3]
-#   results[2,j,3] =   tmp[2,4]
-
-# }
+  results[2,j,1]=  tmp[2,2]
+  results[2,j,2]=   tmp[2,3]
+  results[2,j,3] =   tmp[2,4]
+}
 
 # #make the joint summary of the runs, including min, max and medians of the performance metrics
 # summary.results=array(data = NA,dim = c(2,15))
