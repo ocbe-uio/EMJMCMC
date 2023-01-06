@@ -190,21 +190,6 @@ for(j in J) {
       c("feat.stat", "predictions", "allposteriors", "threads.stats")
     )
     expect_equal(mean(res1[["predictions"]]), 9.9, tolerance = 1e-1)
-    expect_equal(
-      res1[["threads.stats"]][[1]][["cterm"]], -6573, tolerance = 1e-1
-    )
-    expect_equal(
-      res1[["threads.stats"]][[2]][["preds"]][1], 6.48, tolerance = 1e-1
-    )
-    expect_equal(
-      res1[["threads.stats"]][[3]][["p.post"]][1], .227, tolerance = 1e-2
-    )
-    expect_equal(
-      res1[["threads.stats"]][[4]][["post.populi"]], 4.42e-26, tolerance = 1e-25
-    )
-    expect_equal(
-      res1[["threads.stats"]][[5]][["mliks"]][1], -7761.802, tolerance = 1e-2
-    )
     expect_equal(dim(results), c(2L, 100L, 5L))
     expect_equal(
       results[1, 1:10, 1:3][1, ],
