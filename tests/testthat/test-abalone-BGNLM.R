@@ -78,6 +78,8 @@ test_that("runemjmcmc outputs with correct elements", {
   expect_equal(res1_seq[["s.mass"]], 0)
 })
 
+set.seed(2915224)
+
 res1_par <- suppressMessages(pinferunemjmcmc(
   n.cores = M, report.level =  0.2, num.mod.best = NM, simplify = TRUE,
   predict = TRUE, test.data = as.data.frame(test), link.function = g,
