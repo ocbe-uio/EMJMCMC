@@ -7,7 +7,7 @@ EMJMCMC2016$methods(initialize = function(estimator.function = estimate.gamma.cp
   estimator <<- estimator.function
   estimator.args <<- estimator.args.list
   latent.formula <<- latent.formula
-  temp.file <- gsub("/", "", tempfile(tmpdir = ""))
+  temp.file <- gsub("\\W", "", tempfile(tmpdir = ""))
   g.results <<- big.matrix(
     nrow = 4, ncol = 2,
     backingpath = tempdir(),
