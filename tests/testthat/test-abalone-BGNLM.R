@@ -216,18 +216,24 @@ for(j in J) {
   results[2,j,3] =   tmp[2,4]
 }
 
-# #make the joint summary of the runs, including min, max and medians of the performance metrics
-# summary.results=array(data = NA,dim = c(2,15))
+#make the joint summary of the runs, including min, max and medians of the performance metrics
+summary.results=array(data = NA,dim = c(2,15))
 
-# for(i in 1:2){
-# for(j in 1:5)
-# {
-#   summary.results[i,(j-1)*3+1]=min(results[i,,j])
-#   summary.results[i,(j-1)*3+2]=median(results[i,,j])
-#   summary.results[i,(j-1)*3+3]=max(results[i,,j])
-# }
-# }
-# summary.results=as.data.frame(summary.results)
+for(i in 1:2) {
+  for(j in 1:5) {
+    summary.results[i,(j-1)*3+1]=min(results[i,,j])
+    summary.results[i,(j-1)*3+2]=median(results[i,,j])
+    summary.results[i,(j-1)*3+3]=max(results[i,,j])
+  }
+}
+summary.results=as.data.frame(summary.results)
+
+test_that("summary has reasonable values", {
+  expect_gte(mean(summary.results[, "V3"]), 1)
+  expect_lte(mean(summary.results[, "V3"]), 2)
+  expect_gte(mean(summary.results[, "V6"]), 0)
+  expect_lte(mean(summary.results[, "V6"]), 1)
+})
 
 
 # #featgmj = hash()
