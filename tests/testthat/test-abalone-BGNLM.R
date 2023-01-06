@@ -118,7 +118,7 @@ test_that("pinferunemjmcmc outputs with correct elements", {
   expect_gte(length(res1_par[["threads.stats"]]), 1L)
   expect_lte(length(res1_par[["threads.stats"]]), 5L)
   expect_equal(mean(res1_par[["predictions"]]), 9.9, tolerance = 1e-1)
-  if (res1_par[["threads.stats"]] == 5) {
+  if (length(res1_par[["threads.stats"]]) == 5) {
     expect_equal(
       res1_par[["threads.stats"]][[1]][["cterm"]], -6573, tolerance = 1e-1
     )
