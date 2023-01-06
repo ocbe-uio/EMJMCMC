@@ -1,7 +1,7 @@
 Package: EMJMCMC
 Type: Package
 Title: Flexible Bayesian Nonlinear Model Configuration
-Version: 1.4.4.9015
+Version: 1.4.4.9016
 Date: 2021-09-20
 Author:
   c(person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
@@ -11,7 +11,7 @@ Description: In package article we introduced approachfor estimating posterior m
 License: GPL
 Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, BAS, stringi, parallel, methods, speedglm, stats
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

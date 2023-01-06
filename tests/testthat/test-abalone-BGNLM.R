@@ -46,7 +46,6 @@ thf=0.05
 g = function(x) x
 results=array(0,dim = c(2,100,5))
 
-# TODO: use runemjmcmc() for debugging before using pinferunemjmcmc()
 res1_seq <- suppressMessages(runemjmcmc(
   formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
   estimator.args = list(data = data.example), recalc_margin = 249,
@@ -68,6 +67,16 @@ res1_seq <- suppressMessages(runemjmcmc(
     printable = FALSE
   )
 ))
+
+test_that("runemjmcmc outputs with correct elements", {
+  expect_named(res1_seq, c("p.post", "m.post", "s.mass"))
+  expect_length(res1_seq[["p.post"]], 15L)
+  expect_gt(length(res1_seq[["m.post"]]), 1000L)
+  expect_length(res1_seq[["s.mass"]], 1L)
+  expect_lte(mean(res1_seq[["p.post"]]), 1)
+  expect_lte(mean(res1_seq[["m.post"]]), 1)
+  expect_equal(res1_seq[["s.mass"]], 0)
+})
 
 res1_par <- suppressMessages(pinferunemjmcmc(
   n.cores = M, report.level =  0.2, num.mod.best = NM, simplify = TRUE,
@@ -95,62 +104,142 @@ res1_par <- suppressMessages(pinferunemjmcmc(
   )
 ))
 
-# TODO: pick testable objects from loop below
-# for(j in seq_len(10)) {
-#   message(Sys.time(), " Starting iteration ", j)
-#   #specify the initial formula
-#   set.seed(j)
+test_that("pinferunemjmcmc outputs with correct elements", {
+  expect_named(
+    res1_par,
+    c("feat.stat", "predictions", "allposteriors", "threads.stats")
+  )
+  expect_equal(
+    sapply(res1_par, length),
+    c("feat.stat" = 24, "predictions" = 1e3, "allposteriors" = 2, "threads.stats" = 5)
+  )
+  expect_equal(
+    sapply(res1_par, dim),
+    list(
+      "feat.stat" = c(12, 2),
+      "predictions" = 1e3,
+      "allposteriors" = c(39, 2),
+      "threads.stats" = NULL
+    )
+  )
+  expect_equal(mean(res1_par[["predictions"]]), 9.9, tolerance = 1e-1)
+  expect_equal(
+    res1_par[["threads.stats"]][[1]][["cterm"]], -6573, tolerance = 1e-1
+  )
+  expect_equal(
+    res1_par[["threads.stats"]][[2]][["preds"]][1], 7.69, tolerance = 1e-1
+  )
+  expect_equal(
+    res1_par[["threads.stats"]][[3]][["p.post"]][1], .977, tolerance = 1e-2
+  )
+  expect_equal(
+    res1_par[["threads.stats"]][[4]][["post.populi"]], 0.0282, tolerance = 1e-3
+  )
+  expect_equal(
+    res1_par[["threads.stats"]][[5]][["mliks"]][1], -7762, tolerance = 1e-1
+  )
+})
 
-#   res1 <- pinferunemjmcmc(
-#     n.cores = M, report.level =  0.2, num.mod.best = NM, simplify = TRUE,
-#     predict = TRUE, test.data = as.data.frame(test), link.function = g,
-#     runemjmcmc.params = list(
-#       formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
-#       estimator.args = list(data = data.example), recalc_margin = 249,
-#       save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
-#       relations = c("to25", "expi", "logi", "to35", "troot", "sigmoid"),
-#       relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
-#       interact.param = list(
-#         allow_offsprings = 3, mutation_rate = 250, last.mutation = 100,
-#         max.tree.size = 5, Nvars.max =15, p.allow.replace = 0.9,
-#         p.allow.tree = 0.01, p.nor = 0.9, p.and = 0.9
-#       ), n.models = 1000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
-#       create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
-#       burn.in = 100, print.freq = 100,
-#       advanced.param = list(
-#         max.N.glob = 10L,
-#         min.N.glob = 5L,
-#         max.N = 3L,
-#         min.N = 1L,
-#         printable = FALSE
-#       )
-#     )
-#   )
+J <- seq_len(1L) # 1L to save time, but results are basically the same for 10L
+for(j in J) {
+  #specify the initial formula
+  set.seed(j)
 
-#   print(res1$feat.stat)
+  res1 <- suppressMessages(
+    pinferunemjmcmc(
+      n.cores = M, report.level =  0.2, num.mod.best = NM, simplify = TRUE,
+      predict = TRUE, test.data = as.data.frame(test), link.function = g,
+      runemjmcmc.params = list(
+        formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
+        estimator.args = list(data = data.example), recalc_margin = 249,
+        save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
+        relations = c("to25", "expi", "logi", "to35", "troot", "sigmoid"),
+        relations.prob = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+        interact.param = list(
+          allow_offsprings = 3, mutation_rate = 250, last.mutation = 100,
+          max.tree.size = 5, Nvars.max =15, p.allow.replace = 0.9,
+          p.allow.tree = 0.01, p.nor = 0.9, p.and = 0.9
+        ), n.models = 1000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+        create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
+        burn.in = 100, print.freq = 0L,
+        advanced.param = list(
+          max.N.glob = 10L,
+          min.N.glob = 5L,
+          max.N = 3L,
+          min.N = 1L,
+          printable = FALSE
+        )
+      )
+    )
+  )
 
-#   results[1,j,1]=  sqrt(mean((res1$threads.stats[[1]]$preds - test$Age)^2))
-#   results[1,j,2]=   sqrt(mean(abs(res1$threads.stats[[1]]$preds - test$Age)))
-#   results[1,j,3] =   cor(res1$threads.stats[[1]]$preds,test$Age)
-
-
-#   results[2,j,1]=  sqrt(mean((res1$predictions - test$Age)^2))
-#   results[2,j,2]=   sqrt(mean(abs(res1$predictions - test$Age)))
-#   results[2,j,3] =   cor(res1$predictions,test$Age)
-
-#   # write.csv(x =res1$feat.stat,row.names = F,file = paste0("posteriorshell_",j,".csv")) # TODO: store somewhere to use in test_that()
-#   message(Sys.time(), " End of simulation ", j)
-
-#   #print the run's metrics and clean the results
-#   # write.csv(file =paste0("resultsrun_",j,".csv"),x= results[,j,]) # TODO: store somewhere to use in test_that()
-#   #rm(results)
+  results[1,j,1]=  sqrt(mean((res1$threads.stats[[1]]$preds - test$Age)^2))
+  results[1,j,2]=   sqrt(mean(abs(res1$threads.stats[[1]]$preds - test$Age)))
+  results[1,j,3] =   cor(res1$threads.stats[[1]]$preds,test$Age)
 
 
-#   # print(sqrt(mean((res1$predictions - test$Age)^2))) # TODO: store somewhere to use in test_that()
+  results[2,j,1]=  sqrt(mean((res1$predictions - test$Age)^2))
+  results[2,j,2]=   sqrt(mean(abs(res1$predictions - test$Age)))
+  results[2,j,3] =   cor(res1$predictions,test$Age)
 
-#   gc()
-# }
+  posteriorshell_1.csv <- res1$feat.stat # replaced write.csv()
 
+  #print the run's metrics and clean the results
+  resultsrun_1.csv <- results[, j, ] # replaces write.csv()
+
+  sqrt_mean_preds <- sqrt(mean((res1$predictions - test$Age)^2))
+
+  test_that(paste("Iteration", j, "results look ok"), {
+    expect_named(
+      res1,
+      c("feat.stat", "predictions", "allposteriors", "threads.stats")
+    )
+    expect_equal(
+      sapply(res1, length),
+      c("feat.stat" = 20, "predictions" = 1e3, "allposteriors" = 2, "threads.stats" = 5)
+    )
+    expect_equal(
+      sapply(res1, dim),
+      list(
+        "feat.stat" = c(10, 2),
+        "predictions" = 1e3,
+        "allposteriors" = c(38, 2),
+        "threads.stats" = NULL
+      )
+    )
+    expect_equal(mean(res1[["predictions"]]), 9.9, tolerance = 1e-1)
+    expect_equal(
+      res1[["threads.stats"]][[1]][["cterm"]], -6573, tolerance = 1e-1
+    )
+    expect_equal(
+      res1[["threads.stats"]][[2]][["preds"]][1], 6.48, tolerance = 1e-1
+    )
+    expect_equal(
+      res1[["threads.stats"]][[3]][["p.post"]][1], .227, tolerance = 1e-2
+    )
+    expect_equal(
+      res1[["threads.stats"]][[4]][["post.populi"]], 4.42e-26, tolerance = 1e-25
+    )
+    expect_equal(
+      res1[["threads.stats"]][[5]][["mliks"]][1], -7761.802, tolerance = 1e-2
+    )
+    expect_equal(dim(results), c(2L, 100L, 5L))
+    expect_equal(
+      results[1, 1:10, 1:3][1, ],
+      c(2.0479307, 1.2309200, 0.7598387),
+      tolerance = 1e-6
+    )
+    expect_equal(
+      results[2, 1:10, 1:3][1, ],
+      c(2.0137489, 1.2230869, 0.7679209),
+      tolerance = 1e-6
+    )
+    expect_equal(dim(posteriorshell_1.csv), c(10L, 2L))
+    expect_equal(dim(resultsrun_1.csv), c(2L, 5L))
+    expect_equal(mean(resultsrun_1.csv), .80, tolerance = 1e-1)
+    expect_equal(sqrt_mean_preds, 2.01, tolerance = 1e-1)
+  })
+}
 
 # for(j in 1:100)
 # {
