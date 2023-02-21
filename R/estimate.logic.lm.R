@@ -29,7 +29,7 @@ fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty =
 sj<-(stringi::stri_count_fixed(str = fparam, pattern = "&"))
 sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
 sj<-sj+1
-Jprior <- prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
+Jprior <- prod(truncfactorial(sj)/((m^sj)*2^(2*sj-2)))
 #tn<-sum(stringi::stri_count_fixed(str = fmla.proc[2], pattern = "I("))
 mlik = (-stats::BIC(out)+2*log(Jprior) + 2*p*log(r)+n)/2
 if(mlik==-Inf)

@@ -22,7 +22,7 @@ EMJMCMC2016$methods(
         {
           log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- floor(stats::runif(n = 1, min.N, max.N + 0.999999999))
-          log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+          log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
           change.buf <- array(data = 0, dim = Nvars)
           if (changeble) {
@@ -49,7 +49,7 @@ EMJMCMC2016$methods(
           }
           log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- max.N
-          log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+          log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
 
           change.buf <- array(data = 0, dim = Nvars)
@@ -73,7 +73,7 @@ EMJMCMC2016$methods(
         {
           log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- floor(stats::runif(n = 1, min.N, max.N + 0.999999999))
-          log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+          log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
           change.buf <- array(data = 0, dim = Nvars)
           if (changeble) {
@@ -99,7 +99,7 @@ EMJMCMC2016$methods(
           }
           log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
           KK <- max.N
-          log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+          log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
           log.mod.switchback.prob <- log.mod.switch.prob
           ids <- which(changeble.coord == 0)
           change.buf <- array(data = 0, dim = Nvars)

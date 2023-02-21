@@ -30,7 +30,7 @@ fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty =
 sj<-(stringi::stri_count_fixed(str = fparam, pattern = "&"))
 sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
 sj<-sj+1
-Jprior <- sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
+Jprior <- sum(log(truncfactorial(sj)/((m^sj)*2^(2*sj-2))))
 mlik = (-(out$deviance + log(n)*(out$rank)) + 2*(Jprior))/2+n
 if(mlik==-Inf)
   mlik = -10000

@@ -19,7 +19,7 @@ estimate.logic.lm.tCCH = function(formula = NULL, data, n=1000, m=50, r = 1, p.a
   sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
   sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1
-  Jprior = prod(factorial(sj)/((m^sj)*2^(2*sj-2)))
+  Jprior = prod(truncfactorial(sj)/((m^sj)*2^(2*sj-2)))
   p.v = (n+1)/(p+1)
   R.2 = summary(out)$r.squared
 
