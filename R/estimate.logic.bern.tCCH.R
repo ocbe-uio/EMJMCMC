@@ -35,7 +35,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
     return(list(mlik = -10000 + stats::rnorm(1,0,1),waic = 10000 , dic =  10000,summary.fixed =list(mean = 0)))
   }
 
-  Jprior = sum(log(factorial(sj)/((m^sj)*2^(2*sj-2))))
+  Jprior = sum(log(truncfactorial(sj)/((m^sj)*2^(2*sj-2))))
   mlik = (stats::logLik(out)- 0.5*log(J.a.hat) - 0.5*p*log(p.v) -0.5*Q/p.v + log(beta((p.a+p)/2,p.b/2)) + log(BAS::phi1(p.b/2,p.r,(p.a+p.b+p)/2,(p.s+Q)/2/p.v,1-p.k))+Jprior + p*log(r)+n)
   if(is.na(mlik)||mlik==-Inf)
     mlik = -10000+ stats::rnorm(1,0,1)

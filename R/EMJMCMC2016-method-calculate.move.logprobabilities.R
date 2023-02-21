@@ -17,13 +17,13 @@ EMJMCMC2016$methods(
         }
         log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
         KK <- max.N
-        log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+        log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
         log.mod.switchback.prob <- log.mod.switch.prob
       } else if (switch.type == 3) # random sized inverse N(x)
       {
         log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
         KK <- sum(abs(varold - varnew))
-        log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+        log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
         log.mod.switchback.prob <- log.mod.switch.prob
       } else if (switch.type == 4) # fixed N(x) for reverse from type 2 swaps
       {
@@ -32,7 +32,7 @@ EMJMCMC2016$methods(
         }
         log.mod.switch.prob <- ifelse(max.N < min.N, 0, log(1 / (max.N - min.N + 1)))
         KK <- max.N
-        log.mod.switch.prob <- log.mod.switch.prob + KK * log(factorial(Nvars - KK + 1) / factorial(Nvars))
+        log.mod.switch.prob <- log.mod.switch.prob + KK * log(truncfactorial(Nvars - KK + 1) / truncfactorial(Nvars))
         log.mod.switchback.prob <- log.mod.switch.prob
       } else if (switch.type > 4) {
       log.mod.switch.prob <- log(x = 1)
