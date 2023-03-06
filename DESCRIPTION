@@ -2,10 +2,12 @@ Package: EMJMCMC
 Type: Package
 Title: Flexible Bayesian Nonlinear Model Configuration
 Version: 1.4.4.9027
-Date: 2021-09-20
-Author:
-  c(person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
-    person("Waldir", "Leoncio", email = "w.l.netto@medisin.uio.no", role = c("cre")))
+Date: 2022-03-06
+Authors@R:
+  c(
+    person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
+    person("Waldir", "Leoncio", email = "w.l.netto@medisin.uio.no", role = c("cre"))
+  )
 Maintainer: Waldir Leoncio <w.l.netto@medisin.uio.no>
 Description: In package article we introduced approachfor estimating posterior model probabilities and Bayesian model averaging and selection with possible simultaneous feature engineering based on some primitive recursive functions.
 License: GPL
