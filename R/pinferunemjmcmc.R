@@ -31,8 +31,11 @@
 #' @example inst/examples/pinferunemjmcmc_example.R
 #' @keywords  methods models
 #' @export
-pinferunemjmcmc = function(n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = FALSE, num.mod.best = 1000, predict = FALSE,  test.data = 1, link.function = function(z)z, runemjmcmc.params)
-{
+pinferunemjmcmc = function(
+  n.cores = 4, mcgmj = mcgmjpse, report.level =  0.5, simplify = FALSE,
+  num.mod.best = 1000, predict = FALSE,  test.data = 1,
+  link.function = function(z)z, runemjmcmc.params
+) {
 
   if(predict)
   {
