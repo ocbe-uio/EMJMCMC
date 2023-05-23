@@ -15,6 +15,7 @@
 # omp_set_num_threads(1)
 # #***********************IMPORTANT******************************************************
 
+# TODO: create n_threads so ncores is not fixed at 32 in the LogicRegr() call below
 # # set the seed
 # set.seed(040590)
 # # construct a correlation matrix for M = 50 variables
@@ -49,7 +50,7 @@
 # res4G = LogicRegr(formula = formula1, data = df,
 #                   family = "Gaussian", prior = "G", report.level = 0.5,
 #                   d = 15,cmax = 2,kmax = 15, p.and = 0.9, p.not = 0.1, p.surv = 0.2,
-#                   ncores = 32)
+#                   ncores = 32) # FIXME: returns NULL objects even if ran at full power
 # # Bayesian logic regression with the Jeffreys prior
 # res4J = LogicRegr(formula = formula1, data = df,
 #                   family = "Gaussian", prior = "J", report.level = 0.5,
