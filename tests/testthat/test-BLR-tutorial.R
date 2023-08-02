@@ -17,7 +17,7 @@ m <- clusterGeneration::rcorrmatrix(M, alphad = 2.5)
 
 # simulate 1000 binary variables with this correlation matrix
 sample_size <- 100L
-X <- bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m)
+X <- suppressWarnings(bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m))
 
 # prepare the correlation matrix in the melted format
 melted_cormat <- reshape2::melt(cor(X))
