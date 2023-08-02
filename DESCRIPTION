@@ -15,6 +15,6 @@ Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, BAS, stringi, parallel, methods, speedglm, stats
 RoxygenNote: 7.2.3
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0), bindata, clusterGeneration, reshape2
 Config/testthat/edition: 3
 Encoding: UTF-8
