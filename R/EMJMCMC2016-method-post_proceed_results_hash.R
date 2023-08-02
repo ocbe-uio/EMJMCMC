@@ -22,16 +22,16 @@ EMJMCMC2016$methods(
     mliks <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
     xyz <- which(unlist(mliks) != -10000)
     g.results[4, 2] <<- lHash
-    moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
+    moddee <- calc_moddee(mliks)
     zyx <- array(data = NA, dim = lHash)
-    nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
+    nconsum <- calc_nconsum(mliks, moddee, xyz)
 
     if (nconsum > 0) {
       zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
     } else {
       diff <- 0 - mliks[moddee]
       mliks <- mliks + diff
-      nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
+      nconsum <- calc_nconsum(mliks, moddee, xyz)
       zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
     }
 

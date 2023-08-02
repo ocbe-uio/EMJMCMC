@@ -22,9 +22,9 @@ EMJMCMC2016$methods(
       ids <- which(na.br == 0)
       mliks <- mliks.in
       xyz <- which(unlist(mliks) != -10000)
-      moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
+      moddee <- calc_moddee(mliks)
       zyx <- vector(mode = "double", length = nrow(betas))
-      nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
+      nconsum <- calc_nconsum(mliks, moddee, xyz)
       betas1 <- betas
       betas1[which(is.na(betas1))] <- 0
       if (nconsum > 0) {
@@ -32,7 +32,7 @@ EMJMCMC2016$methods(
       } else {
         diff <- 0 - mliks[moddee]
         mliks <- mliks + diff
-        nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
+        nconsum <- calc_nconsum(mliks, moddee, xyz)
         zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
       }
       res <- t(zyx) %*% g(betas1 %*% t(stats::model.matrix(object = formula.cur, data = covariates)))
@@ -67,16 +67,16 @@ EMJMCMC2016$methods(
       return(-1)
     }
     xyz <- which(unlist(mliks) != -10000)
-    moddee <- which(unlist(mliks) == max(unlist(mliks), na.rm = TRUE))[1]
+    moddee <- calc_moddee(mliks)
     zyx <- array(data = NA, dim = length(mliks))
-    nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
+    nconsum <- calc_nconsum(mliks, moddee, xyz)
     betas1[which(is.na(betas1))] <- 0
     if (nconsum > 0) {
       zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
     } else {
       diff <- 0 - mliks[moddee]
       mliks <- mliks + diff
-      nconsum <- sum(exp(-mliks[moddee] + mliks[xyz]), na.rm = TRUE)
+      nconsum <- calc_nconsum(mliks, moddee, xyz)
       zyx[xyz] <- exp(mliks[xyz] - mliks[moddee]) / nconsum
     }
     if (length(ids) > 0) {
