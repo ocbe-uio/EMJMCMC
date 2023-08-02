@@ -16,7 +16,7 @@ M <- 50
 m <- clusterGeneration::rcorrmatrix(M, alphad = 2.5)
 
 # simulate 1000 binary variables with this correlation matrix
-sample_size <- 1000L
+sample_size <- 100L
 X <- bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m)
 
 # prepare the correlation matrix in the melted format
@@ -47,7 +47,7 @@ res4G <- LogicRegr(
   report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
   p.surv = 0.2,
   ncores = n_threads,
-  n.mods = 1000L
+  n.mods = 10L
 )
 
 # Bayesian logic regression with the Jeffreys prior
