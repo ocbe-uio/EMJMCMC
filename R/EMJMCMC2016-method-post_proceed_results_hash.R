@@ -19,7 +19,11 @@ EMJMCMC2016$methods(
     }
 
     lHash <- length(hashStat)
-    mliks <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+    if (length(hashStat) > 0) {
+      mliks <- hash::values(hashStat)[which((1:(lHash * linx)) %% linx == 1)]
+    } else {
+      mliks <- array(data = NA, dim = lHash)
+    }
     xyz <- which(unlist(mliks) != -10000)
     g.results[4, 2] <<- lHash
     moddee <- calc_moddee(mliks)
@@ -38,7 +42,7 @@ EMJMCMC2016$methods(
 
     keysarr <- as.array(hash::keys(hashStat))
     p.post <- array(data = 0, dim = Nvars)
-    for (i in 1:lHash)
+    for (i in seq_len(lHash))
     {
       if (is.na(zyx[i])) {
         del(x = keysarr[i], hash = hashStat)
