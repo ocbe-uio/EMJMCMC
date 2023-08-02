@@ -1,10 +1,3 @@
-# #check the tutorial
-
-# library(EMJMCMC)
-# library(clusterGeneration)
-# library(bindata)
-# library(ggplot2)
-
 # #***********************IMPORTANT******************************************************
 # # if a multithreaded backend openBLAS for matrix multiplications
 # # is installed on your machine, please force it to use 1 thread explicitly
@@ -15,47 +8,54 @@
 # omp_set_num_threads(1)
 # #***********************IMPORTANT******************************************************
 
-# TODO: create n_threads so ncores is not fixed at 32 in the LogicRegr() call below
-# # set the seed
-# set.seed(040590)
-# # construct a correlation matrix for M = 50 variables
-# M = 50
-# m = clusterGeneration::rcorrmatrix(M,alphad=2.5)
-# # simulate 1000 binary variables with this correlation matrix
-# X = bindata::rmvbin(1000, margprob = rep(0.5,M), bincorr = m)
+n_threads <- min(parallel::detectCores() - 1, 7L)
+set.seed(040590)
 
-# # prepare the correlation matrix in the melted format
-# melted_cormat = reshape2::melt(cor(X))
-# # plot the heat-map of the correlations
-# ggplot2::ggplot(data = melted_cormat,
-#                 ggplot2::aes(x=Var1, y=Var2, fill=value)) +
-#   ggplot2::geom_tile() +
-#   ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-#                  axis.title.y =  ggplot2::element_blank(),
-#                  axis.text.x = ggplot2::element_blank())
+# construct a correlation matrix for M = 50 variables
+M <- 50
+m <- clusterGeneration::rcorrmatrix(M, alphad = 2.5)
 
-# # simulate Gaussian responses from a model with two-way interactions
-# # which is considered in S.4 of the paper
-# df = data.frame(X)
-# df$Y=rnorm(n = 1000,mean = 1+1.43*(df$X5*df$X9)+
-#              0.89*(df$X8*df$X11)+0.7*(df$X1*df$X4),sd = 1)
+# simulate 1000 binary variables with this correlation matrix
+sample_size <- 1000L
+X <- bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m)
 
-# help("LogicRegr")
+# prepare the correlation matrix in the melted format
+melted_cormat <- reshape2::melt(cor(X))
 
+# simulate Gaussian responses from a model with two-way interactions
+# which is considered in S.4 of the paper
+df <- data.frame(X)
+df$Y <- rnorm(
+  n = sample_size,
+  mean = 1 + 1.43 * (df$X5 * df$X9) + 0.89 * (df$X8 * df$X11) + 0.7 * (df$X1 * df$X4),
+  sd = 1
+)
 
-# # specify the initial formula
-# formula1 = as.formula(paste(colnames(df)[M+1],"~ 1 + ",
-#                             paste0(colnames(df)[-c(M+1)],collapse = "+")))
-# # Bayesian logic regression with the robust-g-prior
-# res4G = LogicRegr(formula = formula1, data = df,
-#                   family = "Gaussian", prior = "G", report.level = 0.5,
-#                   d = 15,cmax = 2,kmax = 15, p.and = 0.9, p.not = 0.1, p.surv = 0.2,
-#                   ncores = 32) # FIXME: returns NULL objects even if ran at full power
-# # Bayesian logic regression with the Jeffreys prior
-# res4J = LogicRegr(formula = formula1, data = df,
-#                   family = "Gaussian", prior = "J", report.level = 0.5,
-#                   d = 15, cmax = 2,kmax = 15, p.and = 0.9, p.not = 0.1, p.surv = 0.2,
-#                   ncores = 32)
+# specify the initial formula
+formula1 <- as.formula(
+  paste(
+    colnames(df)[M + 1],
+    "~ 1 + ",
+    paste0(colnames(df)[-c(M + 1)], collapse = "+")
+  )
+)
+
+# Bayesian logic regression with the robust-g-prior
+# FIXME: returns NULL objects even if ran at full power
+res4G <- LogicRegr(
+  formula = formula1, data = df, family = "Gaussian", prior = "G",
+  report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
+  p.surv = 0.2,
+  ncores = n_threads,
+  n.mods = 1000L
+)
+
+# Bayesian logic regression with the Jeffreys prior
+# res4J <- LogicRegr(
+#   formula = formula1, data = df, family = "Gaussian", prior = "J",
+#   report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
+#   p.surv = 0.2, ncores = n_threads
+# )
 
 # # print the results for the robust g-prior
 # print(base::rbind(c("expressions","probabilities"),res4G$feat.stat))
@@ -67,12 +67,12 @@
 # # simulate Gaussian responses from a model with two-way interactions
 # # and an age effect which is an extension of S.4 of the paper
 # Xp = data.frame(X)
-# Xp$age = rpois(1000,lambda = 34)
-# Xp$Y=rnorm(n = 1000,mean = 1+0.7*(Xp$X1*Xp$X4) +
+# Xp$age = rpois(sample_size,lambda = 34)
+# Xp$Y=rnorm(n = sample_size,mean = 1+0.7*(Xp$X1*Xp$X4) +
 #              0.89*(Xp$X8*Xp$X11)+1.43*(Xp$X5*Xp$X9) + 2*Xp$age, sd = 1)
 
 
-# teid  = sample.int(size =100,n = 1000,replace = F)
+# teid  = sample.int(size =100,n = sample_size,replace = F)
 # test  = Xp[teid,]
 # train = Xp[-teid,]
 
