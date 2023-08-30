@@ -17,7 +17,9 @@ m <- clusterGeneration::rcorrmatrix(M, alphad = 2.5)
 
 # simulate 1000 binary variables with this correlation matrix
 sample_size <- 1000L
-X <- suppressWarnings(bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m))
+X <- suppressWarnings(
+  bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m)
+)
 
 # prepare the correlation matrix in the melted format
 melted_cormat <- reshape2::melt(cor(X))
@@ -41,26 +43,44 @@ formula1 <- as.formula(
 )
 
 # Bayesian logic regression with the robust-g-prior
-# FIXME: returns NULL objects even if ran at full power
 res4G <- LogicRegr(
   formula = formula1, data = df, family = "Gaussian", prior = "G",
-  report.level = 0, d = 10, cmax = 2, kmax = 25, p.and = 0.5, p.not = 0.1,
-  p.surv = 0.2, ncores = 1L, n.mods = 3L
+  report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
+  p.surv = 0.2, ncores = n_threads
 )
 
 # Bayesian logic regression with the Jeffreys prior
-# res4J <- LogicRegr(
-#   formula = formula1, data = df, family = "Gaussian", prior = "J",
-#   report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
-#   p.surv = 0.2, ncores = n_threads
-# )
+res4J <- LogicRegr(
+  formula = formula1, data = df, family = "Gaussian", prior = "J",
+  report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
+  p.surv = 0.2, ncores = n_threads
+)
+
+# NULLs are expected because predict = FALSE on LogicRegr
 
 # # print the results for the robust g-prior
-# print(base::rbind(c("expressions","probabilities"),res4G$feat.stat))
+test_that("Results for the G-prior are sensible", {
+  for (i in seq_len(nrow(res4G$allposteriors))) {
+    expect_gte(res4G$allposteriors[i, 2], 0)
+    expect_lte(res4G$allposteriors[i, 2], 1)
+  }
+  expect_gte(res4G$threads.stats[[1]]$post.populi, 0)
+  expect_gt(res4G$threads.stats[[1]]$cterm, 1000)
+  expect_equal(res4G$threads.stats[[1]]$preds, NULL)
+  expect_length(res4G, 4L)
+})
 
 # #print the results for the Jeffreys prior
-# print(base::rbind(c("expressions","probabilities"),res4J$feat.stat))
-
+test_that("Results for the Jeffrey's prior are sensible", {
+  for (i in seq_len(nrow(res4J$allposteriors))) {
+    expect_gte(res4J$allposteriors[i, 2], 0)
+    expect_lte(res4J$allposteriors[i, 2], 1)
+  }
+  expect_gte(res4J$threads.stats[[1]]$post.populi, 0)
+  expect_gt(res4J$threads.stats[[1]]$cterm, -1000)
+  expect_equal(res4J$threads.stats[[1]]$preds, NULL)
+  expect_length(res4J, 4L)
+})
 
 # # simulate Gaussian responses from a model with two-way interactions
 # # and an age effect which is an extension of S.4 of the paper
