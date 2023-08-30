@@ -42,19 +42,23 @@
 #' @export
 LogicRegr = function(
   formula, data, family = "Gaussian",prior = "J",report.level = 0.5, d = 20,
-  cmax = 5, kmax = 20, p.and = 0.9, p.not = 0.05, p.surv = 0.1,ncores = -1,
-  n.mods = 1000 ,advanced = list(presearch = T,locstop = F ,
-  estimator = estimate.logic.bern.tCCH,
-  estimator.args =  list(data = data.example,n = 1000, m = 50,r=1),
-  recalc_margin = 250, save.beta = FALSE, interact = TRUE,
-  relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),
-  relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),
-  interact.param = list(
-    allow_offsprings=1,mutation_rate = 300,last.mutation = 5000,
-    max.tree.size = 1, Nvars.max = 100,p.allow.replace=0.9,p.allow.tree=0.2,
-    p.nor=0.2,p.and = 1),n.models = 10000,unique = TRUE,max.cpu = 4,
-    max.cpu.glob = 4,create.table = FALSE, create.hash = TRUE,
-    pseudo.paral = TRUE, burn.in = 50, outgraphs = FALSE, print.freq = 1000,
+  cmax = 5, kmax = 20, p.and = 0.9, p.not = 0.05, p.surv = 0.1, ncores = -1,
+  n.mods = 1000,
+  advanced = list(
+    presearch = TRUE,locstop = FALSE,
+    estimator = estimate.logic.bern.tCCH,
+    estimator.args =  list(data = data.example,n = 1000, m = 50,r=1),
+    recalc_margin = 250, save.beta = FALSE, interact = TRUE,
+    relations = c("","lgx2","cos","sigmoid","tanh","atan","erf"),
+    relations.prob =c(0.4,0.0,0.0,0.0,0.0,0.0,0.0),
+    interact.param = list(
+      allow_offsprings=1, mutation_rate = 300, last.mutation = 5000,
+      max.tree.size = 1, Nvars.max = 100, p.allow.replace=0.9, p.allow.tree=0.2,
+      p.nor=0.2, p.and = 1
+    ),
+    n.models = 10000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+    create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 50,
+    outgraphs = FALSE, print.freq = 1000,
     advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),
@@ -108,6 +112,10 @@ LogicRegr = function(
   if(ncores<1)
     ncores = parallel::detectCores()
 
-  return(pinferunemjmcmc(n.cores = ncores,report.level =  report.level, simplify = T, num.mod.best = n.mods, predict = F, runemjmcmc.params = advanced))
-
+  return(
+    pinferunemjmcmc(
+      n.cores = ncores, report.level = report.level, simplify = TRUE,
+      num.mod.best = n.mods, predict = FALSE, runemjmcmc.params = advanced
+    )
+  )
 }
