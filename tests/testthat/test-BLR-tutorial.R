@@ -8,7 +8,7 @@
 # omp_set_num_threads(1)
 # #***********************IMPORTANT******************************************************
 
-n_threads <- min(parallel::detectCores() - 1, 7L)
+n_threads <- 1L
 set.seed(040590)
 
 # construct a correlation matrix for M = 50 variables
@@ -16,7 +16,7 @@ M <- 50
 m <- clusterGeneration::rcorrmatrix(M, alphad = 2.5)
 
 # simulate 1000 binary variables with this correlation matrix
-sample_size <- 100L
+sample_size <- 1000L
 X <- suppressWarnings(bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m))
 
 # prepare the correlation matrix in the melted format
@@ -44,10 +44,8 @@ formula1 <- as.formula(
 # FIXME: returns NULL objects even if ran at full power
 res4G <- LogicRegr(
   formula = formula1, data = df, family = "Gaussian", prior = "G",
-  report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
-  p.surv = 0.2,
-  ncores = n_threads,
-  n.mods = 10L
+  report.level = 0, d = 10, cmax = 2, kmax = 25, p.and = 0.5, p.not = 0.1,
+  p.surv = 0.2, ncores = 1L, n.mods = 3L
 )
 
 # Bayesian logic regression with the Jeffreys prior
