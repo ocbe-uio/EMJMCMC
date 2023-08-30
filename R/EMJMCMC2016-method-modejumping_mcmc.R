@@ -96,7 +96,8 @@ EMJMCMC2016$methods(
       j.a <- j.a + 1
       if (glob.model$print.freq > 0 && j %% glob.model$print.freq == 0) {
         cat(
-          formatC(j, width = 4L), "iterations completed up to now after",
+          formatC(j, width = 4L, format = "d"),
+          "iterations completed up to now after",
           formatC(delta.time, digits = 6L, flag = "-", format = "f"),
           "cpu minutes",
           "best MLIK found",
