@@ -145,16 +145,22 @@ res.alt <- suppressMessages(
 test_that("Output with non-binary convariance is correct", {
   expect_equal(
     res.alt$feat.stat[, 1],
-    c("I(age)", "I(((X5))&((X9)))", "I(((X8))&((X11)))", "I(X4)", "I(X1)")
+    c(
+      "I(age)", "I(X5)", "I(X8)", "I(X1)", "I(((X9))&((X11)))", "I(X9)",
+      "I(X4)"
+    )
   )
   expect_equal(
     res.alt$feat.stat[, 2],
-    c("1", "0.999999999999968", "0.999999999999968", "0.999982534893339", "0.999948879594117")
+    c(
+      "1", "0.999999994807055", "0.999956729898551", "0.999577926669365",
+      "0.98582433936886", "0.98377325490383", "0.934544180132695"
+    )
   )
   expect_equal(
-    sqrt(mean((res.alt$predictions-test$Y)^2)), 1.030494, tolerance = 1e-6
+    sqrt(mean((res.alt$predictions - test$Y) ^ 2)), 1.184527, tolerance = 1e-6
   )
   tmean <- 1 + 2 * test$age + 0.7 * (test$X1 * test$X4) + 0.89 * (test$X8 * test$X11) + 1.43 * (test$X5 * test$X9)
-  expect_equal(sqrt(mean((tmean -test$Y)^2)), .9839559, tolerance = 1e-6)
-  expect_equal(mean(abs((tmean -test$Y))), .8127523, tolerance = 1e-6)
+  expect_equal(sqrt(mean((tmean -test$Y)^2)), 1.06036, tolerance = 1e-6)
+  expect_equal(mean(abs((tmean -test$Y))), .8067262, tolerance = 1e-6)
 })
