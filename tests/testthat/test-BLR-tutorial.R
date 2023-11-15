@@ -99,37 +99,46 @@ train <- Xp[-teid, ]
 formula1 = as.formula(
   paste("Y ~ 1 +", paste0(colnames(test)[-c(51, 52)], collapse = "+"))
 )
+
 # specify the link function
 g = function(x) x
+
 # specify the parameters of the custom estimator function
 estimator.args <- list(
   data = train,
   n = dim(train)[1],
-  m = stri_count_fixed(as.character(formula1)[3],"+"),
+  m = stringi::stri_count_fixed(as.character(formula1)[3],"+"),
   k.max = 15
 )
+
 # specify the parameters of gmjmcmc algorithm
 gmjmcmc.params <- list(
   allow_offsprings = 1, mutation_rate = 250, last.mutation = 10000,
   max.tree.size = 5, Nvars.max = 15, p.allow.replace = 0.9, p.allow.tree = 0.01,
   p.nor = 0.01, p.and = 0.9
 )
+
 # specify some advenced parameters of mjmcmc
 mjmcmc.params <- list(
   max.N.glob = 10, min.N.glob = 5, max.N = 3, min.N = 1, printable = FALSE
 )
+
 # run the inference of BLR with a non-binary covariate and predicions
-res.alt <- pinferunemjmcmc(
-  n.cores = 30, report.level = 0.2, num.mod.best = 100, simplify = TRUE,
-  predict = TRUE, test.data = test, link.function = g,
-  runemjmcmc.params = list(
-    formula = formula1,latnames = c("I(age)"), data = train,
-    estimator = estimate.logic.lm.jef, estimator.args = estimator.args,
-    recalc_margin = 249, save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
-    interact.param = gmjmcmc.params, n.models = 10000, unique = FALSE,
-    max.cpu = 4, max.cpu.glob = 4, create.table = FALSE, create.hash = TRUE,
-    pseudo.paral = TRUE, burn.in = 100, print.freq = 1000,
-    advanced.param = mjmcmc.params
+set.seed(4)
+res.alt <- suppressMessages(
+  pinferunemjmcmc(
+    n.cores = min(20, parallel::detectCores() - 1), report.level = 0.2,
+    num.mod.best = 10, simplify = TRUE,
+    predict = TRUE, test.data = test, link.function = g,
+    runemjmcmc.params = list(
+      formula = formula1, latnames = c("I(age)"), data = train,
+      estimator = estimate.logic.lm.jef, estimator.args = estimator.args,
+      recalc_margin = 249, save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
+      interact.param = gmjmcmc.params, n.models = 10000, unique = FALSE,
+      max.cpu = 4, max.cpu.glob = 4, create.table = FALSE, create.hash = TRUE,
+      pseudo.paral = FALSE, burn.in = 1000, print.freq = 0,
+      advanced.param = mjmcmc.params
+    )
   )
 )
 
