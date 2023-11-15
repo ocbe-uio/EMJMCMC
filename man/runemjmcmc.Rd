@@ -110,7 +110,7 @@ runemjmcmc(
 
 \item{relations.prob}{probability distribution of addressing modifications defined in relations parameter (both vectors must be of the same length)}
 
-\item{gen.prob}{a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if interact.param\$allow_offsprings is either 3 or 4)}
+\item{gen.prob}{a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if \code{interact.param$allow_offsprings} is either 3 or 4)}
 
 \item{pool.cross}{a parameter defining the probability of adressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)}
 
