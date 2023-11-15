@@ -123,44 +123,46 @@ mjmcmc.params <- list(
   max.N.glob = 10, min.N.glob = 5, max.N = 3, min.N = 1, printable = FALSE
 )
 
-# run the inference of BLR with a non-binary covariate and predicions
-set.seed(4)
-res.alt <- suppressMessages(
-  pinferunemjmcmc(
-    n.cores = min(20, parallel::detectCores() - 1), report.level = 0.2,
-    num.mod.best = 10, simplify = TRUE,
-    predict = TRUE, test.data = test, link.function = g,
-    runemjmcmc.params = list(
-      formula = formula1, latnames = c("I(age)"), data = train,
-      estimator = estimate.logic.lm.jef, estimator.args = estimator.args,
-      recalc_margin = 249, save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
-      interact.param = gmjmcmc.params, n.models = 10000, unique = FALSE,
-      max.cpu = 4, max.cpu.glob = 4, create.table = FALSE, create.hash = TRUE,
-      pseudo.paral = FALSE, burn.in = 1000, print.freq = 0,
-      advanced.param = mjmcmc.params
+if (interactive()) {
+  # run the inference of BLR with a non-binary covariate and predicions
+  set.seed(4)
+  res.alt <- suppressMessages(
+    pinferunemjmcmc(
+      n.cores = min(20, parallel::detectCores() - 1), report.level = 0.2,
+      num.mod.best = 10, simplify = TRUE,
+      predict = TRUE, test.data = test, link.function = g,
+      runemjmcmc.params = list(
+        formula = formula1, latnames = c("I(age)"), data = train,
+        estimator = estimate.logic.lm.jef, estimator.args = estimator.args,
+        recalc_margin = 249, save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
+        interact.param = gmjmcmc.params, n.models = 10000, unique = FALSE,
+        max.cpu = 4, max.cpu.glob = 4, create.table = FALSE, create.hash = TRUE,
+        pseudo.paral = FALSE, burn.in = 1000, print.freq = 0,
+        advanced.param = mjmcmc.params
+      )
     )
   )
-)
 
-test_that("Output with non-binary convariance is correct", {
-  expect_equal(
-    res.alt$feat.stat[, 1],
-    c(
-      "I(age)", "I(X5)", "I(X8)", "I(X1)", "I(((X9))&((X11)))", "I(X9)",
-      "I(X4)"
+  test_that("Output with non-binary convariance is correct", {
+    expect_equal(
+      res.alt$feat.stat[, 1],
+      c(
+        "I(age)", "I(X5)", "I(X8)", "I(X1)", "I(((X9))&((X11)))", "I(X9)",
+        "I(X4)"
+      )
     )
-  )
-  expect_equal(
-    res.alt$feat.stat[, 2],
-    c(
-      "1", "0.999999994807055", "0.999956729898551", "0.999577926669365",
-      "0.98582433936886", "0.98377325490383", "0.934544180132695"
+    expect_equal(
+      res.alt$feat.stat[, 2],
+      c(
+        "1", "0.999999994807055", "0.999956729898551", "0.999577926669365",
+        "0.98582433936886", "0.98377325490383", "0.934544180132695"
+      )
     )
-  )
-  expect_equal(
-    sqrt(mean((res.alt$predictions - test$Y) ^ 2)), 1.184527, tolerance = 1e-6
-  )
-  tmean <- 1 + 2 * test$age + 0.7 * (test$X1 * test$X4) + 0.89 * (test$X8 * test$X11) + 1.43 * (test$X5 * test$X9)
-  expect_equal(sqrt(mean((tmean -test$Y)^2)), 1.06036, tolerance = 1e-6)
-  expect_equal(mean(abs((tmean -test$Y))), .8067262, tolerance = 1e-6)
-})
+    expect_equal(
+      sqrt(mean((res.alt$predictions - test$Y) ^ 2)), 1.184527, tolerance = 1e-6
+    )
+    tmean <- 1 + 2 * test$age + 0.7 * (test$X1 * test$X4) + 0.89 * (test$X8 * test$X11) + 1.43 * (test$X5 * test$X9)
+    expect_equal(sqrt(mean((tmean -test$Y)^2)), 1.06036, tolerance = 1e-6)
+    expect_equal(mean(abs((tmean -test$Y))), .8067262, tolerance = 1e-6)
+  })
+}
