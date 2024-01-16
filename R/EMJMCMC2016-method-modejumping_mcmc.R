@@ -127,7 +127,9 @@ EMJMCMC2016$methods(
             tdl.id <- order(p.add, decreasing = T)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
-          message("Data filtered! Insignificant variables deleted!")
+          if (glob.model$print.freq > 0L) {
+            message("Data filtered! Insignificant variables deleted!")
+          }
           if (length(to.del) > 0) {
             hash::clear(hashStat)
             hashStat <- hash::hash()
@@ -312,7 +314,9 @@ EMJMCMC2016$methods(
             tdl.id <- order(p.add, decreasing = T)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
-          message("Data filtered! Insignificant variables deleted!")
+          if (glob.model$print.freq > 0L) {
+            message("Data filtered! Insignificant variables deleted!")
+          }
           if (length(to.del) > 0) {
             hash::clear(hashStat)
             hashStat <- hash::hash()
@@ -687,7 +691,9 @@ EMJMCMC2016$methods(
             tdl.id <- order(p.add, decreasing = T)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
-          message("Data filtered! Insignificant variables deleted!")
+          if (glob.model$print.freq > 0L) {
+            message("Data filtered! Insignificant variables deleted!")
+          }
           if (length(to.del) > 0) {
             hash::clear(hashStat)
             fparam <<- fparam[-to.del]
@@ -1346,7 +1352,7 @@ EMJMCMC2016$methods(
           iidd <- bittodec(varcand) + 1
           waiccand <- statistics1[iidd, 2]
           mlikcand <- statistics1[iidd, 1]
-        } else if (exists("hashStat")) {
+        } else if (exists("hashStat") && length(hashStat) > 0) {
           iidd <- paste(varcand, collapse = "")
           waiccand <- hash::values(hashStat[iidd])[2]
           mlikcand <- hash::values(hashStat[iidd])[1]

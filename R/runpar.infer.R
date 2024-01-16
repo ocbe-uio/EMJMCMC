@@ -45,7 +45,7 @@ runpar.infer=function(vect)
     }
 
   },error = function(err){
-    print(paste0("error in thread",  vect[length(vect)]))
+    print(paste0("error in thread ",  vect[length(vect)]))
     print(err)
     vect$cpu=as.integer(vect$cpu)+as.integer(stats::runif(1,1,10000))
     if(vect$cpu<50000)

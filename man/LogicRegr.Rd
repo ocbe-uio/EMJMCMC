@@ -19,6 +19,7 @@ LogicRegr(
   p.surv = 0.1,
   ncores = -1,
   n.mods = 1000,
+  print.freq = 1000L,
   advanced = list(presearch = TRUE, locstop = FALSE, estimator =
     estimate.logic.bern.tCCH, estimator.args = list(data = data.example, n = 1000, m =
     50, r = 1), recalc_margin = 250, save.beta = FALSE, interact = TRUE, relations =
@@ -27,10 +28,10 @@ LogicRegr(
     last.mutation = 5000, max.tree.size = 1, Nvars.max = 100, p.allow.replace = 0.9,
     p.allow.tree = 0.2, p.nor = 0.2, p.and = 1), 
      n.models = 10000, unique = TRUE,
-    max.cpu = 4, max.cpu.glob = 4, create.table = FALSE, create.hash = TRUE, pseudo.paral
-    = TRUE, burn.in = 50, outgraphs = FALSE, print.freq = 1000, advanced.param =
-    list(max.N.glob = as.integer(10), min.N.glob = as.integer(5), max.N = as.integer(3),
-    min.N = as.integer(1), printable = FALSE))
+    max.cpu = ncores, max.cpu.glob = ncores, create.table = FALSE, create.hash = TRUE,
+    pseudo.paral = TRUE, burn.in = 50, outgraphs = FALSE, print.freq = print.freq,
+    advanced.param = list(max.N.glob = as.integer(10), min.N.glob = as.integer(5), max.N
+    = as.integer(3), min.N = as.integer(1), printable = FALSE))
 )
 }
 \arguments{
@@ -65,6 +66,8 @@ addressed in the analysis}
 
 \item{n.mods}{the number of the best models in the thread to calculate
 marginal inclusion probabilities}
+
+\item{print.freq}{printing frequency of the intermediate results}
 
 \item{advanced}{should only be adrresed by experienced users to tune advanced
 parameters of GMJMCMC, advanced corresponds to the vector of tuning
