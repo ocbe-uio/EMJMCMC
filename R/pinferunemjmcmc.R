@@ -108,7 +108,10 @@ pinferunemjmcmc = function(
   #based on all of the runs
   ml.max=max(max.popul)
   post.popul=post.popul*exp(-ml.max+max.popul)
-  p.gen.post=post.popul/sum(post.popul)
+
+  p.gen.post <- post.popul/sum(post.popul)
+  p.gen.post[is.nan(p.gen.post)] <- 0 # workaround for 0 / 0 above
+
 
   #perform BMA of the redictions across the runs
   pred = NULL
