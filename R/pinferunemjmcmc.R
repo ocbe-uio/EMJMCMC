@@ -150,26 +150,34 @@ pinferunemjmcmc = function(
 
   posteriors=hash::values(hfinal)
   hash::clear(hfinal)
-  #delete the unused further variables
-  rm(hfinal)
-  rm(resa)
-  rm(post.popul)
-  rm(max.popul)
   #simplify the found trees and their posteriors
   posteriors=as.data.frame(posteriors)
-  posteriors=data.frame(X=row.names(posteriors),x=posteriors$posteriors)
-  posteriors$X=as.character(posteriors$X)
+  posteriors <- data.frame(
+    "feature" = as.character(row.names(posteriors)),
+    "posterior" = posteriors$posteriors
+  )
   res1 = NULL
   if(simplify){
 
 
-    res1=simplifyposteriors.infer(X = runemjmcmc.params$data,posteriors = posteriors, thf = report.level,resp = as.character(runemjmcmc.params$formula)[2])
+    res1 <- simplifyposteriors.infer(
+      X = runemjmcmc.params$data,
+      posteriors = posteriors,
+      thf = report.level,
+      resp = as.character(runemjmcmc.params$formula)[2]
+    )
     rownames(res1) = NULL
     res1$feature = as.character(res1$feature)
   }
-  posteriors=posteriors[order(posteriors$x, decreasing = T),]
-  colnames(posteriors)=c("feature","posterior")
-  rm(params)
-  return(list(feat.stat = cbind(res1$feature,res1$posterior),predictions = pred,allposteriors = posteriors, threads.stats = results))
+  if (nrow(posteriors) > 0) {
+    posteriors <- posteriors[order(posteriors$posterior, decreasing = TRUE), ]
+  }
+  return(
+    list(
+      feat.stat = cbind(res1$feature, res1$posterior),
+      predictions = pred,allposteriors = posteriors,
+      threads.stats = results
+    )
+  )
 
 }
