@@ -127,7 +127,9 @@ EMJMCMC2016$methods(
             tdl.id <- order(p.add, decreasing = T)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
-          message("Data filtered! Insignificant variables deleted!")
+          if (glob.model$print.freq > 0L) {
+            message("Data filtered! Insignificant variables deleted!")
+          }
           if (length(to.del) > 0) {
             hash::clear(hashStat)
             hashStat <- hash::hash()
@@ -312,7 +314,9 @@ EMJMCMC2016$methods(
             tdl.id <- order(p.add, decreasing = T)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
-          message("Data filtered! Insignificant variables deleted!")
+          if (glob.model$print.freq > 0L) {
+            message("Data filtered! Insignificant variables deleted!")
+          }
           if (length(to.del) > 0) {
             hash::clear(hashStat)
             hashStat <- hash::hash()
@@ -687,7 +691,9 @@ EMJMCMC2016$methods(
             tdl.id <- order(p.add, decreasing = T)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
-          message("Data filtered! Insignificant variables deleted!")
+          if (glob.model$print.freq > 0L) {
+            message("Data filtered! Insignificant variables deleted!")
+          }
           if (length(to.del) > 0) {
             hash::clear(hashStat)
             fparam <<- fparam[-to.del]

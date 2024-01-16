@@ -24,6 +24,7 @@
 #' @param advanced should only be adrresed by experienced users to tune advanced
 #' parameters of GMJMCMC, advanced corresponds to the vector of tuning
 #' parameters of runemjmcmc function
+#' @param print.freq printing frequency of the intermediate results
 #' @return a list of
 #' \describe{
 #'  \item{feat.stat}{detected logical expressions and their marginal inclusion
@@ -43,7 +44,7 @@
 LogicRegr = function(
   formula, data, family = "Gaussian",prior = "J",report.level = 0.5, d = 20,
   cmax = 5, kmax = 20, p.and = 0.9, p.not = 0.05, p.surv = 0.1, ncores = -1,
-  n.mods = 1000,
+  n.mods = 1000, print.freq = 1000L,
   advanced = list(
     presearch = TRUE,locstop = FALSE,
     estimator = estimate.logic.bern.tCCH,
@@ -58,7 +59,7 @@ LogicRegr = function(
     ),
     n.models = 10000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
     create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 50,
-    outgraphs = FALSE, print.freq = 1000,
+    outgraphs = FALSE, print.freq = print.freq,
     advanced.param = list(
       max.N.glob=as.integer(10),
       min.N.glob=as.integer(5),

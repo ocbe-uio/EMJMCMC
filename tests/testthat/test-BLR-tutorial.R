@@ -17,8 +17,12 @@ m <- clusterGeneration::rcorrmatrix(M, alphad = 2.5)
 
 # simulate 1000 binary variables with this correlation matrix
 sample_size <- 1000L
-X <- suppressWarnings(
-  bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m)
+invisible(
+  capture.output(
+    X <- suppressWarnings(
+      bindata::rmvbin(sample_size, margprob = rep(0.5, M), bincorr = m)
+    )
+  )
 )
 
 # prepare the correlation matrix in the melted format
@@ -46,14 +50,14 @@ formula1 <- as.formula(
 res4G <- LogicRegr(
   formula = formula1, data = df, family = "Gaussian", prior = "G",
   report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
-  p.surv = 0.2, ncores = n_threads
+  p.surv = 0.2, ncores = n_threads, print.freq = 0L
 )
 
 # Bayesian logic regression with the Jeffreys prior
 res4J <- LogicRegr(
   formula = formula1, data = df, family = "Gaussian", prior = "J",
   report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
-  p.surv = 0.2, ncores = n_threads
+  p.surv = 0.2, ncores = n_threads, print.freq = 0L
 )
 
 # NULLs are expected because predict = FALSE on LogicRegr
