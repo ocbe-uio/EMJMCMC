@@ -57,7 +57,7 @@ LogicRegr = function(
       max.tree.size = 1, Nvars.max = 100, p.allow.replace=0.9, p.allow.tree=0.2,
       p.nor=0.2, p.and = 1
     ),
-    n.models = 10000, unique = TRUE, max.cpu = 4, max.cpu.glob = 4,
+    n.models = 10000, unique = TRUE, max.cpu = ncores, max.cpu.glob = ncores,
     create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE, burn.in = 50,
     outgraphs = FALSE, print.freq = print.freq,
     advanced.param = list(

@@ -132,15 +132,15 @@ if (interactive()) {
   set.seed(4)
   res.alt <- suppressMessages(
     pinferunemjmcmc(
-      n.cores = min(20, parallel::detectCores() - 1), report.level = 0.2,
-      num.mod.best = 10, simplify = TRUE,
-      predict = TRUE, test.data = test, link.function = g,
+      n.cores = n_threads, report.level = 0.2,
+      num.mod.best = 10, simplify = FALSE,
+      predict = FALSE, test.data = test, link.function = g,
       runemjmcmc.params = list(
         formula = formula1, latnames = c("I(age)"), data = train,
         estimator = estimate.logic.lm.jef, estimator.args = estimator.args,
         recalc_margin = 249, save.beta = TRUE, interact = TRUE, outgraphs = FALSE,
         interact.param = gmjmcmc.params, n.models = 10000, unique = FALSE,
-        max.cpu = 4, max.cpu.glob = 4, create.table = FALSE, create.hash = TRUE,
+        max.cpu = n_threads, max.cpu.glob = n_threads, create.table = FALSE, create.hash = TRUE,
         pseudo.paral = FALSE, burn.in = 1000, print.freq = 0,
         advanced.param = mjmcmc.params
       )
