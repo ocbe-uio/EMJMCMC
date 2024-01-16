@@ -1352,7 +1352,7 @@ EMJMCMC2016$methods(
           iidd <- bittodec(varcand) + 1
           waiccand <- statistics1[iidd, 2]
           mlikcand <- statistics1[iidd, 1]
-        } else if (exists("hashStat")) {
+        } else if (exists("hashStat") && length(hashStat) > 0) {
           iidd <- paste(varcand, collapse = "")
           waiccand <- hash::values(hashStat[iidd])[2]
           mlikcand <- hash::values(hashStat[iidd])[1]
