@@ -126,4 +126,6 @@ LogicRegr(formula = formula1,data = data.example,family = "Gaussian",prior = "G"
 
 ## Developed by [Aliaksandr Hubin](https://scholar.google.com/citations?user=Lx-G8ckAAAAJ&hl=en/), [Geir Storvik](https://scholar.google.no/citations?user=0xDw_sQAAAAJ&hl=en) and [Florian Frommlet](https://scholar.google.com/citations?user=Nmh2LqgAAAAJ&hl=en)
 
- ***
+# Related software
+
+For functions to estimate BGNLMs through a Genetically Modified Jumping MCMC algorithm, check out the [GMJMCMC](https://github.com/jonlachmann/GMJMCMC) package.
