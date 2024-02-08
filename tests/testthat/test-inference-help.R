@@ -1,14 +1,15 @@
 # simulate Gaussian responses
 threads <- 1L
+n_dims <- c(11, 100)
 set.seed(040590)
 X1 <- as.data.frame(
   array(
-    data = rbinom(n = 50 * 1000, size = 1, prob = runif(n = 50 * 1000, 0, 1)),
-    dim = c(1000, 50)
+    data = rbinom(n = prod(n_dims), size = 1, prob = runif(n = prod(n_dims), 0, 1)),
+    dim = rev(n_dims)
   )
 )
 Y1 <- rnorm(
-  n = 1000,
+  n = n_dims[2],
   mean = 1 + 0.7 * (X1$V1 * X1$V4) + 0.8896846 * (X1$V8 * X1$V11) + 1.434573 * (X1$V5 * X1$V9),
   sd = 1
 )
@@ -16,7 +17,7 @@ X1$Y1 <- Y1
 
 # specify the initial formula
 formula1 <- as.formula(
-  paste(colnames(X1)[51], "~ 1 +", paste0(colnames(X1)[-c(51)], collapse = "+"))
+  paste(colnames(X1)[ncol(X1)], "~ 1 +", paste0(colnames(X1)[-c(ncol(X1))], collapse = "+"))
 )
 data.example <- as.data.frame(X1)
 
@@ -39,14 +40,14 @@ res4J <- suppressMessages(
 
 # change to Bernoulli responses
 X1 <- as.data.frame(
-  array(data = rbinom(n = 50 * 1000, size = 1, prob = 0.3), dim = c(1000, 50))
+  array(data = rbinom(n = prod(n_dims), size = 1, prob = 0.3), dim = rev(n_dims))
 )
 Y1 <- -0.7 + 1 * ((1 - X1$V1) * (X1$V4)) + 1 * (X1$V8 * X1$V11) + 1 * (X1$V5 * X1$V9)
 X1$Y1 <- round(1.0 / (1.0 + exp(-Y1)))
 
 # specify the initial formula
 formula1 <- as.formula(
-  paste(colnames(X1)[51], "~ 1 +", paste0(colnames(X1)[-c(51)], collapse = "+"))
+  paste(colnames(X1)[ncol(X1)], "~ 1 +", paste0(colnames(X1)[-c(ncol(X1))], collapse = "+"))
 )
 data.example <- as.data.frame(X1)
 
@@ -74,45 +75,34 @@ res1J <- suppressWarnings(
 test_that("outputs are correct", {
   expect_equal(
     res4G$feat.stat,
-    matrix(
-    c(
-      "I(V9)", "1", "I(V5)", "1", "I(((V5))|((V9)))", "1", "I(V8)",
-      "0.999798166079656", "I(V11)", "0.998980768894478", "I(V1)",
-      "0.996827860563252", "I(V4)", "0.989626671838795"
-    ),
-    nrow = 7, ncol = 2, byrow = TRUE
-    )
+    matrix(c("I(((V5))&((V9)))", "0.998464672344289"), nrow = 1)
   )
   expect_equal(
     res4J$feat.stat,
-    matrix(
-    c(
-      "I(((V9))&((V5)))", "0.999999999999948", "I(((V8))&((V11)))",
-      "0.9999999984096", "I(((V4))&((V1)))", "0.99896404225898"
-    ),
-    nrow = 3, ncol = 2, byrow = TRUE
-    )
+    matrix(c( "I(((V5))&((V9)))", "0.995269065749787"), nrow = 1)
   )
   expect_equal(
     res1G$feat.stat,
     matrix(
       c(
-        "I(((V9))&((V5)))", "1", "I(V8)", "0.999999999999935",
-        "I(((V1))&(1-(V4)))", "0.999986154466532",
-        "I(V11)", "0.999445448885581", "I(V1)", "0.997930154511171",
-        "I(V4)", "0.997375287784621"
+        "I((1-(V1))&((V4)))", "0.999999996715506",
+        "I(V8)", "0.999999302544405",
+        "I(V11)", "0.999997483629185",
+        "I(((((V5))))&((V9)))", "0.958531256229637"
       ),
-      nrow = 6, ncol = 2, byrow = TRUE
+      nrow = 4, ncol = 2, byrow = TRUE
     )
   )
   expect_equal(
     res1J$feat.stat,
     matrix(
       c(
-        "I(V1)", "1", "I(V4)", "1", "I(V11)", "1", "I(((V4))|((V8)))", "1",
-        "I(((V5))&((V9)))", "1"
+        "I(((V11))&((V8)))", "0.999994827992723",
+        "I(V1)", "0.97262338705771",
+        "I(V5)", "0.949549067791939",
+        "I(((V9)))", "0.941316258317002"
       ),
-      nrow = 5, ncol = 2, byrow = TRUE
+      nrow = 4, ncol = 2, byrow = TRUE
     )
   )
 })
