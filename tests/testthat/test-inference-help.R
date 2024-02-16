@@ -73,6 +73,7 @@ res1J <- suppressWarnings(
   )
 )
 test_that("outputs are correct", {
+  # TODO: Results seem to be OS-dependent, so replace with lighter tests (see test-LogicRegr-example-match-1.4.3.R)
   expect_equal(
     res4G$feat.stat,
     matrix(c("I(((V5))&((V9)))", "0.998464672344289"), nrow = 1)
