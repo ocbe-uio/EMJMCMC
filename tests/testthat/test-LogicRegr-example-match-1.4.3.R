@@ -43,10 +43,10 @@ res4J <- EMJMCMC::LogicRegr(
 )
 
 test_that("LogicRegr output matches version 1.4.3", {
-  obs_4G <- as.numeric(res4G$allposteriors[, 2])
-  obs_4J <- as.numeric(res4J$allposteriors[, 2])
-  expect_length(obs_4G, 15L)
-  expect_true(all(obs_4G >= 0) && all(obs_4G <= 1))
-  expect_length(obs_4J, 15L)
-  expect_true(all(obs_4J >= 0) && all(obs_4J <= 1))
+  obs_4G <- as.numeric(res4G$feat.stat[, 2])
+  obs_4J <- as.numeric(res4J$feat.stat[, 2])
+  expect_length(obs_4G, 3L)
+  expect_true(all(obs_4G > 0.9) && all(obs_4G < 1))
+  expect_length(obs_4J, 4L)
+  expect_true(all(obs_4J > 0.6) && all(obs_4J < 1))
 })

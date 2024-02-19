@@ -63,7 +63,6 @@ for (i in seq_len(M)) {
 results <- parall.gmj(X = params, M = n_cores)
 
 test_that("parall.gmj output matches version 1.4.3", {
-  # TODO: results below are from dev version. Install 1.4.3 and rerun to match.
   expect_length(results, M)
   for (i in seq_len(M)) {
     expect_length(results[[i]], 4L)
