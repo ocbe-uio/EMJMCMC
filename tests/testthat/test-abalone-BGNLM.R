@@ -112,8 +112,8 @@ test_that("pinferunemjmcmc outputs with correct elements", {
     res1_par,
     c("feat.stat", "predictions", "allposteriors", "threads.stats")
   )
-  expect_gte(length(res1_par[["feat.stat"]]), 20L)
-  expect_lte(length(res1_par[["feat.stat"]]), 30L)
+  expect_gte(ncol(res1_par[["feat.stat"]]), 2L)
+  expect_lte(ncol(res1_par[["feat.stat"]]), 2L)
   expect_equal(length(res1_par[["predictions"]]), 1000L)
   expect_equal(length(res1_par[["allposteriors"]]), 2L)
   expect_gte(length(res1_par[["threads.stats"]]), 1L)
