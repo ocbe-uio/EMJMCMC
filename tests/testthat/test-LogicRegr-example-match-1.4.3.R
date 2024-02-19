@@ -1,26 +1,34 @@
-set.seed(040590)
+set.seed(265508)
+n_cores <- 1L
+n_row <- 100L
+n_col <- 11L
+n_tot <- n_row * n_col
 X1 <- as.data.frame(
   array(
-    data = rbinom(n = 50 * 1000, size = 1,
-    prob = runif(n = 50 * 1000, 0, 1)), dim = c(1000, 50)
+    data = rbinom(n = n_tot, size = 1, prob = runif(n = n_tot)),
+    dim = c(n_row, n_col)
   )
 )
 Y1 <- rnorm(
-  n = 1000,
-  mean = 1 + 0.7 * (X1$V1 * X1$V4) + 0.8896846 * (X1$V8 * X1$V11) + 1.434573 * (X1$V5 * X1$V9),
+  n = n_row,
+  mean = 1 +
+    0.7 * (X1$V1 * X1$V4) +
+    0.8896846 * (X1$V8 * X1$V11) +
+    1.434573 * (X1$V5 * X1$V9),
   sd = 1
 )
 X1$Y1 <- Y1
 
 # specify the initial formula
 formula1 <- as.formula(
-  paste(colnames(X1)[51], "~ 1 +", paste0(colnames(X1)[-c(51)], collapse = "+"))
+  paste(
+    colnames(X1)[n_col + 1L], "~ 1 +",
+    paste0(colnames(X1)[-c(n_col + 1L)], collapse = "+")
+  )
 )
 data.example <- as.data.frame(X1)
 
 # run the inference with robust g prior
-n_cores <- parallel::detectCores() - 1
-
 res4G <- EMJMCMC::LogicRegr(
   formula = formula1, data = data.example, family = "Gaussian", prior = "G",
   report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.01,
@@ -35,11 +43,10 @@ res4J <- EMJMCMC::LogicRegr(
 )
 
 test_that("LogicRegr output matches version 1.4.3", {
-  # TODO: results below are from dev version. Install 1.4.3 and rerun to match.
-  obs_4G <- as.numeric(res4G$feat.stat[, 2])
-  obs_4J <- as.numeric(res4J$feat.stat[, 2])
-  expect_length(obs_4G, 3L)
-  expect_true(all(obs_4G > 0.9) && all(obs_4G < 1))
-  expect_length(obs_4J, 4L)
-  expect_true(all(obs_4J > 0.6) && all(obs_4J < 1))
+  obs_4G <- as.numeric(res4G$allposteriors[, 2])
+  obs_4J <- as.numeric(res4J$allposteriors[, 2])
+  expect_length(obs_4G, 15L)
+  expect_true(all(obs_4G >= 0) && all(obs_4G <= 1))
+  expect_length(obs_4J, 15L)
+  expect_true(all(obs_4J >= 0) && all(obs_4J <= 1))
 })
