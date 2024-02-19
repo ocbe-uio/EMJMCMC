@@ -49,5 +49,6 @@ test_that("pinferunemjmcmc output matches version 1.4.3", {
   expect_equal(ncol(res1$feat.stat), 2L)
   expect_equal(mean(res1$allposteriors$posterior), 0.3, tolerance = 1e-1)
   expect_true(all(res1$threads.stats[[1]]$p.post >= 0))
+  print(res1$threads.stats) # TEMP
   expect_true(all(res1$threads.stats[[1]]$p.post <= 1))
 })
