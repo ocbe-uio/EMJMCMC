@@ -1,5 +1,5 @@
 set.seed(80334)
-n_cores <- min(parallel::detectCores() - 1L, 20L)
+n_cores <- 1L
 M <- 1L
 n_row <- 100L
 n_col <- 50L
