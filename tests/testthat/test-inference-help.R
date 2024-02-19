@@ -73,37 +73,8 @@ res1J <- suppressWarnings(
   )
 )
 test_that("outputs are correct", {
-  # TODO: Results seem to be OS-dependent, so replace with lighter tests (see test-LogicRegr-example-match-1.4.3.R)
-  expect_equal(
-    res4G$feat.stat,
-    matrix(c("I(((V5))&((V9)))", "0.998464672344289"), nrow = 1)
-  )
-  expect_equal(
-    res4J$feat.stat,
-    matrix(c( "I(((V5))&((V9)))", "0.995269065749787"), nrow = 1)
-  )
-  expect_equal(
-    res1G$feat.stat,
-    matrix(
-      c(
-        "I((1-(V1))&((V4)))", "0.999999996715506",
-        "I(V8)", "0.999999302544405",
-        "I(V11)", "0.999997483629185",
-        "I(((((V5))))&((V9)))", "0.958531256229637"
-      ),
-      nrow = 4, ncol = 2, byrow = TRUE
-    )
-  )
-  expect_equal(
-    res1J$feat.stat,
-    matrix(
-      c(
-        "I(((V11))&((V8)))", "0.999994827992723",
-        "I(V1)", "0.97262338705771",
-        "I(V5)", "0.949549067791939",
-        "I(((V9)))", "0.941316258317002"
-      ),
-      nrow = 4, ncol = 2, byrow = TRUE
-    )
-  )
+  expect_equal(ncol(res4G$feat.stat), 2L)
+  expect_equal(ncol(res4J$feat.stat), 2L)
+  expect_equal(ncol(res1G$feat.stat), 2L)
+  expect_equal(ncol(res1J$feat.stat), 2L)
 })
