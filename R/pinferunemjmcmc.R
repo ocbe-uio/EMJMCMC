@@ -175,7 +175,8 @@ pinferunemjmcmc = function(
   return(
     list(
       feat.stat = cbind(res1$feature, res1$posterior),
-      predictions = pred,allposteriors = posteriors,
+      predictions = pred,
+      allposteriors = posteriors,
       threads.stats = results
     )
   )

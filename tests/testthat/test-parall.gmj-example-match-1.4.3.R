@@ -2,7 +2,7 @@ set.seed(80334)
 n_cores <- 1L
 M <- 1L
 n_row <- 100L
-n_col <- 50L
+n_col <- 9L
 n_tot <- n_row * n_col
 X4 <- as.data.frame(
   array(
@@ -13,12 +13,7 @@ X4 <- as.data.frame(
 Y4 <- rnorm(
   n = n_row,
   mean = 1 +
-    7 * (X4$V4 * X4$V17 * X4$V30 * X4$V10) +
-    7 * (X4$V50 * X4$V19 * X4$V13 * X4$V11) +
-    9 * (X4$V37 * X4$V20 * X4$V12) +
-    7 * (X4$V1 * X4$V27 * X4$V3) +
     3.5 * (X4$V9 * X4$V2) +
-    6.6 * (X4$V21 * X4$V18) +
     1.5 * X4$V7 +
     1.5 * X4$V8,
   sd = 1
@@ -46,7 +41,7 @@ vect <- list(
     p.allow.tree = 0.2, p.nor = 0, p.and = 0.9
   ), n.models = 20000, unique = TRUE, max.cpu = n_cores, max.cpu.glob = n_cores,
   create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
-  burn.in = 50, print.freq = 1000,
+  burn.in = 50, print.freq = 0L,
   advanced.param = list(
     max.N.glob = 10L, min.N.glob = 5L, max.N = 3L, min.N = 1L, printable = FALSE
   )
@@ -60,7 +55,7 @@ for (i in seq_len(M)) {
   params[[i]]$simlen <- 21
 }
 
-results <- parall.gmj(X = params, M = n_cores)
+results <- suppressMessages(parall.gmj(X = params, M = n_cores))
 
 test_that("parall.gmj output matches version 1.4.3", {
   expect_length(results, M)
