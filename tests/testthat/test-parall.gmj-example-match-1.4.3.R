@@ -46,7 +46,7 @@ vect <- list(
     p.allow.tree = 0.2, p.nor = 0, p.and = 0.9
   ), n.models = 20000, unique = TRUE, max.cpu = n_cores, max.cpu.glob = n_cores,
   create.table = FALSE, create.hash = TRUE, pseudo.paral = TRUE,
-  burn.in = 50, print.freq = 1000,
+  burn.in = 50, print.freq = 0L,
   advanced.param = list(
     max.N.glob = 10L, min.N.glob = 5L, max.N = 3L, min.N = 1L, printable = FALSE
   )
@@ -60,7 +60,7 @@ for (i in seq_len(M)) {
   params[[i]]$simlen <- 21
 }
 
-results <- parall.gmj(X = params, M = n_cores)
+results <- suppressMessages(parall.gmj(X = params, M = n_cores))
 
 test_that("parall.gmj output matches version 1.4.3", {
   expect_length(results, M)
