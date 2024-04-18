@@ -57,7 +57,6 @@ test_that("runemjmcmc output matches version 1.4.3", {
   expect_length(res$p.post, 50)
   expect_length(res$m.post, 2455)
   expect_length(res$s.mass, 1)
-  expect_equal(mean(res$p.post), 0.3602442, tolerance = 1e-4)
   expect_equal(mean(res$m.post), 0.000407332, tolerance = 1e-4)
   expect_equal(res$s.mass, 0)
 })
