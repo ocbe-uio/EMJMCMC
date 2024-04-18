@@ -16,7 +16,7 @@ Description: In the package article <doi:10.1613/jair.1.13047>,
 License: GPL
 Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, BAS, stringi, parallel, methods, speedglm, stats
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests:
     testthat (>= 3.0.0), bindata, clusterGeneration, reshape2
 Config/testthat/edition: 3

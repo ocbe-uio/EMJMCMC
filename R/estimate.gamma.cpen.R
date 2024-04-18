@@ -1,5 +1,4 @@
 #' @title Estimate gamma cpen
-#' @export
 #' @importFrom stringi stri_replace_all stri_split_fixed stri_count_fixed
 #' @param formula formula
 #' @param data dataset
@@ -41,7 +40,6 @@ estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000
 }
 
 #' @title Estimate gamma cpen 2
-#' @export
 #' @inheritParams estimate.gamma.cpen
 estimate.gamma.cpen_2 = function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("to23","expi","logi","to35","sini","troot","sigmoid"))
 {
