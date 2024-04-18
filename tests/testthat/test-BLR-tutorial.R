@@ -53,16 +53,6 @@ res4G <- LogicRegr(
   p.surv = 0.2, ncores = n_threads, print.freq = 0L
 )
 
-# Bayesian logic regression with the Jeffreys prior
-res4J <- LogicRegr(
-  formula = formula1, data = df, family = "Gaussian", prior = "J",
-  report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
-  p.surv = 0.2, ncores = n_threads, print.freq = 0L
-)
-
-# NULLs are expected because predict = FALSE on LogicRegr
-
-# # print the results for the robust g-prior
 test_that("Results for the G-prior are sensible", {
   for (i in seq_len(nrow(res4G$allposteriors))) {
     expect_gte(res4G$allposteriors[i, 2], 0)
@@ -74,60 +64,65 @@ test_that("Results for the G-prior are sensible", {
   expect_length(res4G, 4L)
 })
 
-# #print the results for the Jeffreys prior
-test_that("Results for the Jeffrey's prior are sensible", {
-  for (i in seq_len(nrow(res4J$allposteriors))) {
-    expect_gte(res4J$allposteriors[i, 2], 0)
-    expect_lte(res4J$allposteriors[i, 2], 1)
-  }
-  expect_gte(res4J$threads.stats[[1]]$post.populi, 0)
-  expect_gt(res4J$threads.stats[[1]]$cterm, -1000)
-  expect_equal(res4J$threads.stats[[1]]$preds, NULL)
-  expect_length(res4J, 4L)
-})
-
-# simulate Gaussian responses from a model with two-way interactions
-# and an age effect which is an extension of S.4 of the paper
-Xp <- data.frame(X)
-Xp$age <- rpois(sample_size,lambda = 34)
-Xp$Y <- rnorm(
-  n = sample_size,
-  mean = 1 + 0.7 * (Xp$X1 * Xp$X4) + 0.89 * (Xp$X8 * Xp$X11) + 1.43 * (Xp$X5 * Xp$X9) + 2 * Xp$age,
-  sd = 1
-)
-teid  <- sample.int(size = 100, n = sample_size, replace = FALSE)
-test  <- Xp[teid, ]
-train <- Xp[-teid, ]
-
-# specify the initial formula
-formula1 = as.formula(
-  paste("Y ~ 1 +", paste0(colnames(test)[-c(51, 52)], collapse = "+"))
-)
-
-# specify the link function
-g = function(x) x
-
-# specify the parameters of the custom estimator function
-estimator.args <- list(
-  data = train,
-  n = dim(train)[1],
-  m = stringi::stri_count_fixed(as.character(formula1)[3],"+"),
-  k.max = 15
-)
-
-# specify the parameters of gmjmcmc algorithm
-gmjmcmc.params <- list(
-  allow_offsprings = 1, mutation_rate = 250, last.mutation = 10000,
-  max.tree.size = 5, Nvars.max = 15, p.allow.replace = 0.9, p.allow.tree = 0.01,
-  p.nor = 0.01, p.and = 0.9
-)
-
-# specify some advenced parameters of mjmcmc
-mjmcmc.params <- list(
-  max.N.glob = 10, min.N.glob = 5, max.N = 3, min.N = 1, printable = FALSE
-)
-
 if (interactive()) {
+  # Bayesian logic regression with the Jeffreys prior
+  res4J <- LogicRegr(
+    formula = formula1, data = df, family = "Gaussian", prior = "J",
+    report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.1,
+    p.surv = 0.2, ncores = n_threads, print.freq = 0L
+  )
+  test_that("Results for the Jeffrey's prior are sensible", {
+    for (i in seq_len(nrow(res4J$allposteriors))) {
+      expect_gte(res4J$allposteriors[i, 2], 0)
+      expect_lte(res4J$allposteriors[i, 2], 1)
+    }
+    expect_gte(res4J$threads.stats[[1]]$post.populi, 0)
+    expect_gt(res4J$threads.stats[[1]]$cterm, -1000)
+    expect_equal(res4J$threads.stats[[1]]$preds, NULL)
+    expect_length(res4J, 4L)
+  })
+
+  # simulate Gaussian responses from a model with two-way interactions
+  # and an age effect which is an extension of S.4 of the paper
+  Xp <- data.frame(X)
+  Xp$age <- rpois(sample_size,lambda = 34)
+  Xp$Y <- rnorm(
+    n = sample_size,
+    mean = 1 + 0.7 * (Xp$X1 * Xp$X4) + 0.89 * (Xp$X8 * Xp$X11) + 1.43 * (Xp$X5 * Xp$X9) + 2 * Xp$age,
+    sd = 1
+  )
+  teid  <- sample.int(size = 100, n = sample_size, replace = FALSE)
+  test  <- Xp[teid, ]
+  train <- Xp[-teid, ]
+
+  # specify the initial formula
+  formula1 = as.formula(
+    paste("Y ~ 1 +", paste0(colnames(test)[-c(51, 52)], collapse = "+"))
+  )
+
+  # specify the link function
+  g = function(x) x
+
+  # specify the parameters of the custom estimator function
+  estimator.args <- list(
+    data = train,
+    n = dim(train)[1],
+    m = stringi::stri_count_fixed(as.character(formula1)[3],"+"),
+    k.max = 15
+  )
+
+  # specify the parameters of gmjmcmc algorithm
+  gmjmcmc.params <- list(
+    allow_offsprings = 1, mutation_rate = 250, last.mutation = 10000,
+    max.tree.size = 5, Nvars.max = 15, p.allow.replace = 0.9, p.allow.tree = 0.01,
+    p.nor = 0.01, p.and = 0.9
+  )
+
+  # specify some advenced parameters of mjmcmc
+  mjmcmc.params <- list(
+    max.N.glob = 10, min.N.glob = 5, max.N = 3, min.N = 1, printable = FALSE
+  )
+
   # run the inference of BLR with a non-binary covariate and predicions
   set.seed(4)
   res.alt <- suppressMessages(

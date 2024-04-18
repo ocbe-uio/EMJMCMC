@@ -1,22 +1,23 @@
 Package: EMJMCMC
 Type: Package
 Title: Flexible Bayesian Nonlinear Model Configuration
-Version: 1.4.4.9039
-Date: 2022-03-06
+Version: 1.4.4.9040
+Date: 2024-04-18
 Authors@R:
   c(
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
     person("Waldir", "Leoncio", email = "w.l.netto@medisin.uio.no", role = c("cre"))
   )
 Maintainer: Waldir Leoncio <w.l.netto@medisin.uio.no>
-Description: In the package article <doi:10.1613/jair.1.13047>,
-  we introduced an approach for estimating posterior model probabilities
-  and Bayesian model averaging and selection with possible simultaneous
-  feature engineering based on some primitive recursive functions.
+Description: Implementation of the software from
+  Hubin, A., Storvik, G., & Frommlet, F. (2021) <doi:10.1613/jair.1.13047>,
+  which introduced an approach for estimating posterior model
+  probabilities and Bayesian model averaging and selection with possible
+  simultaneous feature engineering based on some primitive recursive functions.
 License: GPL
 Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, BAS, stringi, parallel, methods, speedglm, stats
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests:
     testthat (>= 3.0.0), bindata, clusterGeneration, reshape2
 Config/testthat/edition: 3
