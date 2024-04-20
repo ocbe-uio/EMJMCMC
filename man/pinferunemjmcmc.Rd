@@ -7,7 +7,6 @@ and predictions in an expert but rather easy to use way}
 \usage{
 pinferunemjmcmc(
   n.cores = 4,
-  pseudopar = TRUE,
   mcgmj = mcgmjpse,
   report.level = 0.5,
   simplify = FALSE,
