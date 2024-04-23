@@ -6,3 +6,4 @@ illustrations
 ^temp$
 README.md
 ^\.github$
+^cran-comments\.md$
