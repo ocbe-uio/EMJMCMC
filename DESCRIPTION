@@ -2,7 +2,7 @@ Package: EMJMCMC
 Type: Package
 Title: Expert Toolbox for Running (R)(G)MJMCMC for Bayesian Model Selection and Averaging
 Version: 1.5.0
-Date: 2024-04-18
+Date: 2024-04-23
 Authors@R:
   c(
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
