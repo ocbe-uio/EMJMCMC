@@ -7,7 +7,7 @@ Authors@R:
   c(
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
     person("Waldir", "Leoncio", email = "w.l.netto@medisin.uio.no", role = c("cre","aut")),
-    person("Geir", "Storvik", role = c("ctb"))
+    person("Geir", "Storvik", role = c("ctb")),
     person("Florian", "Frommlet", role = c("ctb"))
   )
 Maintainer: Waldir Leoncio <w.l.netto@medisin.uio.no>
