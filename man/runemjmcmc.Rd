@@ -104,7 +104,7 @@ runemjmcmc(
 
 \item{interact}{a boolean parameter defining if feature engineering is allowed in the search}
 
-\item{deep.method}{an integer in {1,2,3,4} defining the method of estimating the alpha parameters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047}
+\item{deep.method}{an integer in \{1, 2, 3, 4\} defining the method of estimating the alpha parameters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047}
 
 \item{relations}{a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = T)}
 

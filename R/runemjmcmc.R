@@ -11,7 +11,7 @@
 #' @param secondary a character vector of names other covariates excluded from those defined in formula (relevant for GMJMCMC only)
 #' @param latnames a character vector of names other covariates excluded from populations of GMJMCMC, for example for continuous covariates to be combined with BLR (relevant for GMJMCMC only) or the names of latent Gaussian variables to be selected in BGNLMM
 #' @param save.beta a boolean parameter defining if beta coefficients for the models should be stored (must be set to TRUE if one is interested in predictions)
-#' @param deep.method an integer in {1,2,3,4} defining the method of estimating the alpha parameters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047
+#' @param deep.method an integer in \{1, 2, 3, 4\} defining the method of estimating the alpha parameters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047
 #' @param estimator a function returning a list with marginal likelihood, waic, dic and coefficients of the addressed model. The list should be of a format: list(mlik = mlik,waic = waic , dic = dic,summary.fixed =list(mean = coefficients))
 #' @param estimator.args a list of arguments of estimator functions to be used (formula parameter has to be omitted, see the example)
 #' @param n.models maximal number of models to be estimated during the search
