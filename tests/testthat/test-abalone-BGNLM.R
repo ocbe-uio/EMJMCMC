@@ -31,7 +31,7 @@ test_that("Input dataset is still roughly the same", {
 formula1 = as.formula(paste(colnames(test)[1],"~ 1 +",paste0(colnames(test)[-1],collapse = "+")))
 
 #define the number or cpus
-M = min(20, parallel::detectCores() - 1)
+M = 2 
 #define the size of the simulated samples
 NM= 100
 #define \k_{max} + 1 from the paper
