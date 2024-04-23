@@ -66,9 +66,9 @@ runemjmcmc(
 
 \item{data}{a data frame containing both covariates and response}
 
-\item{secondary}{a charactor vector of names other covariates excluded from those defined in formula (relevant for GMJMCMC only)}
+\item{secondary}{a character vector of names other covariates excluded from those defined in formula (relevant for GMJMCMC only)}
 
-\item{latnames}{a charactor vector of names other covariates excluded from populations of GMJMCMC, for example for continious covariates to be combined with BLR (relevant for GMJMCMC only) or the names of latent Gaussian variables to be selected in BGNLMM}
+\item{latnames}{a character vector of names other covariates excluded from populations of GMJMCMC, for example for continuous covariates to be combined with BLR (relevant for GMJMCMC only) or the names of latent Gaussian variables to be selected in BGNLMM}
 
 \item{estimator}{a function returning a list with marginal likelihood, waic, dic and coefficients of the addressed model. The list should be of a format: list(mlik = mlik,waic = waic , dic = dic,summary.fixed =list(mean = coefficients))}
 
@@ -76,7 +76,7 @@ runemjmcmc(
 
 \item{n.models}{maximal number of models to be estimated during the search}
 
-\item{p.add.default}{a parameter defining sparcity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for paramters in the current pool}
+\item{p.add.default}{a parameter defining sparsity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for parameters in the current pool}
 
 \item{p.add}{a default marginal inclusion probability parameter to be changed during the search to the true value}
 
@@ -86,25 +86,25 @@ runemjmcmc(
 
 \item{locstop.nd}{Defines whether local greedy optimizers stop at the first local optima found (locstop.nd=TRUE) or not (locstop.nd=FALSE)}
 
-\item{latent}{a latent random field to be adressed (to be specifucally used when estimator = INLA, currently unsupported)}
+\item{latent}{a latent random field to be addressed (to be specifically used when estimator = INLA, currently unsupported)}
 
 \item{max.cpu}{maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = F}
 
 \item{max.cpu.glob}{maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = F}
 
-\item{create.table}{a boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results}
+\item{create.table}{a Boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results}
 
-\item{hash.length}{a paramter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = T)}
+\item{hash.length}{a parameter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = T)}
 
 \item{presearch}{a boolean parameter defining if greedy forward and backward regression steps are used for initialization of initial approximations of marginal inclusion probabilities}
 
-\item{locstop}{a boolean parameter defining if the presearch is stopped at the first local exremum visited}
+\item{locstop}{a boolean parameter defining if the presearch is stopped at the first local extremum visited}
 
 \item{pseudo.paral}{defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table=T)}
 
 \item{interact}{a boolean parameter defining if feature engineering is allowed in the search}
 
-\item{deep.method}{an integer in {1,2,3,4} defining the method of estimating the alpha paramters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047}
+\item{deep.method}{an integer in {1,2,3,4} defining the method of estimating the alpha parameters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047}
 
 \item{relations}{a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = T)}
 
@@ -112,15 +112,15 @@ runemjmcmc(
 
 \item{gen.prob}{a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if \code{interact.param$allow_offsprings} is either 3 or 4)}
 
-\item{pool.cross}{a parameter defining the probability of adressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)}
+\item{pool.cross}{a parameter defining the probability of addressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)}
 
 \item{p.epsilon}{a parameter to define minimal deviations from 0 and 1 probabilities when allowing adaptive MCMC based on marginal inclusion probabilities}
 
-\item{del.sigma}{a parameter decribing probability of deleting each of the function from the selected faeture in the reduction operator(only relevant for the deep regression models context)}
+\item{del.sigma}{a parameter describing probability of deleting each of the function from the selected feature in the reduction operator(only relevant for the deep regression models context)}
 
-\item{pool.cor.prob}{a boolean parameter indicating if inclusion of the filtered covariates during mutations are based on probabilities proportional to the absoulute values of correlations of these parameters and the observations (should not be addressed for multivariate observations, e.g. survival studies with Cox regression)}
+\item{pool.cor.prob}{a boolean parameter indicating if inclusion of the filtered covariates during mutations are based on probabilities proportional to the absolute values of correlations of these parameters and the observations (should not be addressed for multivariate observations, e.g. survival studies with Cox regression)}
 
-\item{interact.param}{a list of parameters for GMJMCMC, where allow_offsprings is 1 for logic regression context, 2 for the old version of GMJMCMC for deep regressions, 3 for the new version of GMJMCMC for deep regressions and 4 for the RGMJMCMC for the deep regressions; mutation_rate defines how often changes of the search space are allowed in terms of the number of MJMCMC iterations per search space; last.mutation defines the iteration after which changes of search space are no longer allowed; max.tree.size is a parameter defining maximal depth of features; Nvars.max is a parameter defining maximal number of covariates in the search space after the first filtration; p.allow.replace is a parameter defining the upepr bound on the probability allowing the replacement of correspondin features with marginal inclusion probabilities below it; p.allow.tree is a lower bound for the probability of not being filtered out after initializing steps of MJMCMC in GMJMCMC; p.nor is a parameter for not operator in the logic regression context (allow_offsprings==1); p.and = is the probability of & crossover in the logic regression context (allow_offsprings==1)}
+\item{interact.param}{a list of parameters for GMJMCMC, where allow_offsprings is 1 for logic regression context, 2 for the old version of GMJMCMC for deep regressions, 3 for the new version of GMJMCMC for deep regressions and 4 for the RGMJMCMC for the deep regressions; mutation_rate defines how often changes of the search space are allowed in terms of the number of MJMCMC iterations per search space; last.mutation defines the iteration after which changes of search space are no longer allowed; max.tree.size is a parameter defining maximal depth of features; Nvars.max is a parameter defining maximal number of covariates in the search space after the first filtration; p.allow.replace is a parameter defining the upper bound on the probability allowing the replacement of corresponding features with marginal inclusion probabilities below it; p.allow.tree is a lower bound for the probability of not being filtered out after initializing steps of MJMCMC in GMJMCMC; p.nor is a parameter for not operator in the logic regression context (allow_offsprings==1); p.and = is the probability of & crossover in the logic regression context (allow_offsprings==1)}
 
 \item{prand}{probability of changes of components in randomization kernels of RGMJMCMC}
 
@@ -128,7 +128,7 @@ runemjmcmc(
 
 \item{sup.large.n}{omitted currently}
 
-\item{recalc_margin}{a parameter defining how often marginal inclusion probabilities whould be recalculated}
+\item{recalc_margin}{a parameter defining how often marginal inclusion probabilities would be recalculated}
 
 \item{create.hash}{a parameter defining if by default the results are stored in a hash table}
 
@@ -170,7 +170,7 @@ specified values of some parameters and default values of other parameters.
 \details{
 The algorithm is an extended Metropolis-Hastings algorithm
 (or its Genetically modified version) mixing single site changes with
-occationally large jumps. The models are described through the gamma vector,
+occasionally large jumps. The models are described through the gamma vector,
 a binary vector indicating which variables that are included in the model.
 
 See Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017),

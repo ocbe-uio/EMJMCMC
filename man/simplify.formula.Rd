@@ -2,7 +2,7 @@
 % Please edit documentation in R/simplify.formula.R
 \name{simplify.formula}
 \alias{simplify.formula}
-\title{A function parsing the formula into the vectors of charactor arrays
+\title{A function parsing the formula into the vectors of character arrays
 of responses and covariates}
 \usage{
 simplify.formula(fmla, names)
@@ -15,12 +15,12 @@ simplify.formula(fmla, names)
 \value{
 a list of
 \describe{
- \item{fobserved}{a vector of charactor arrays corresponding to the observations}
- \item{fparam}{a vector of charactor arrays corresponding to the covariates}
+ \item{fobserved}{a vector of character arrays corresponding to the observations}
+ \item{fparam}{a vector of character arrays corresponding to the covariates}
 }
 }
 \description{
-A function parsing the formula into the vectors of charactor arrays
+A function parsing the formula into the vectors of character arrays
 of responses and covariates
 }
 \examples{

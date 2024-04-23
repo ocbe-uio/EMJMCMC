@@ -2,8 +2,8 @@
 #' @param formula a formula object for the model to be addressed
 #' @param data a data frame object containing variables and observations
 #' corresponding to the formula used
-#' @param family distribution family for the responces
-#' @param prior integers 1,2 or 3 corresonding to AIC, BIC or Gelman's g-prior
+#' @param family distribution family for the responses
+#' @param prior integers 1,2 or 3 corresponding to AIC, BIC or Gelman's g-prior
 #' @param n sample size
 #' @param g g parameter of Gelman's g prior
 #' @return a list of
@@ -40,7 +40,7 @@ else
   logmarglik =  .5*(log(1.0 + g) * (n - p)  - log(1.0 + g * (1.0 - Rsquare)) * (n - 1))*(p!=1)
 }
 
-# use dic and aic as bic and aic correspondinly
+# use dic and aic as bic and aic correspondingly
 return(list(mlik = logmarglik,waic = stats::AIC(out) , dic =  stats::BIC(out),summary.fixed =list(mean = stats::coef(out))))
 
 }

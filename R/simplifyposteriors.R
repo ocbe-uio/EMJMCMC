@@ -3,10 +3,10 @@
 #' (mainly for Logic Regression and Deep Regression contexts)
 #' @param X a data.frame containing the data on the covariates
 #' @param posteriors a data.frame with expressions in the first column and their posteriors in the second column from all of the runs
-#' @param th initial filtering before summarization treshold
-#' @param thf treshold for final filtering after summarization
+#' @param th initial filtering before summary threshold
+#' @param thf threshold for final filtering after summary
 #' @param resp the response to be addressed
-#' @return res, a data.frame with the summirized across runs expressions and
+#' @return res, a data.frame with the summarized across runs expressions and
 #' their posteriors
 #' @seealso runemjmcmc
 #' @keywords methods models

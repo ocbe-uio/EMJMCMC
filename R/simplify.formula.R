@@ -1,11 +1,11 @@
-#' @title A function parsing the formula into the vectors of charactor arrays
+#' @title A function parsing the formula into the vectors of character arrays
 #' of responses and covariates
 #' @param fmla an R formula object
 #' @param names all column names from the data.frame to be used with the formula
 #' @return a list of
 #' \describe{
-#'  \item{fobserved}{a vector of charactor arrays corresponding to the observations}
-#'  \item{fparam}{a vector of charactor arrays corresponding to the covariates}
+#'  \item{fobserved}{a vector of character arrays corresponding to the observations}
+#'  \item{fparam}{a vector of character arrays corresponding to the covariates}
 #' }
 #' @seealso formula data.frame
 #' @example inst/examples/simplify.formula_example.R

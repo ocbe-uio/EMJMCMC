@@ -13,7 +13,7 @@
 #'  \item{dic}{BIC model selection criterion}
 #'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
 #' }
-#' @seealso BAS::bayesglm.fit, esimate.logic.glm
+#' @seealso BAS::bayesglm.fit, estimate.logic.glm
 #' @example inst/examples/estimate.logic.lm_example.R
 #' @keywords methods models
 #' @export

@@ -10,7 +10,7 @@ truncfactorial(x)
 \item{x}{a non-negative integer number}
 }
 \value{
-\code{truncfactorial(x)}, truncated facctorial as min(x!,171!)
+\code{truncfactorial(x)}, truncated factorial as min(x!,171!)
 }
 \description{
 truncated factorial to avoid stack overflow for huge values

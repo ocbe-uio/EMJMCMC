@@ -12,7 +12,7 @@
 #' Windows OS currently, up to a maximal number of cores can be used on
 #' linux based systems)
 #' @param preschedule if pseudoscheduling should be used for the jobs if
-#' their number exeeds M (if TRUE) otherwise the jobs are performed
+#' their number exceeds M (if TRUE) otherwise the jobs are performed
 #' sequentially w.r.t. their order
 #' @return a vector of lists of
 #' \describe{

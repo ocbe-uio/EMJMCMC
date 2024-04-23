@@ -2,7 +2,7 @@
 #' @param formula a formula object for the model to be addressed
 #' @param data a data frame object containing variables and observations
 #' corresponding to the formula used
-#' @param family distribution family foe the responces
+#' @param family distribution family foe the responses
 #' @param prior either "AIC" or "BIC"
 #' @param logn log sample size
 #' @return
@@ -18,7 +18,7 @@
 #' @export
 estimate.speedglm <- function(formula, data, family, prior, logn) # weird behaviour, bad control of singularity
 {
-# use dic and aic as bic and aic correspondinly
+# use dic and aic as bic and aic correspondingly
 X <- stats::model.matrix(object = formula,data = data)
 out <- speedglm::speedglm.wfit(y = data[,1], X = X, intercept=FALSE, family=family,eigendec = T, method = "Cholesky")
 if(prior == "AIC")

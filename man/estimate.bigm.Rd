@@ -11,7 +11,7 @@ estimate.bigm(formula, data, family, prior, n, maxit = 2, chunksize = 1e+06)
 
 \item{data}{a data frame object containing variables and observations corresponding to the formula used}
 
-\item{family}{distribution family foe the responces}
+\item{family}{distribution family foe the responses}
 
 \item{prior}{either "AIC" or "BIC"}
 
@@ -19,7 +19,7 @@ estimate.bigm(formula, data, family, prior, n, maxit = 2, chunksize = 1e+06)
 
 \item{maxit}{maximum number of Fisher scoring iterations}
 
-\item{chunksize}{size of chunks for processng the data frame}
+\item{chunksize}{size of chunks for processing the data frame}
 }
 \value{
 a list of

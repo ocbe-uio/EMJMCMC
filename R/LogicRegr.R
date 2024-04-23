@@ -6,10 +6,10 @@
 #' @param data a data frame object containing variables and observations
 #' corresponding to the formula used
 #' @param family a string taking values of either "Gaussian" or "Bernoulli"
-#' correspodning to the linear or logistic Bayesian logic regression contexts
-#' @param prior character values "J" or "G" corresponing either to Jeffey's
+#' corresponding to the linear or logistic Bayesian logic regression contexts
+#' @param prior character values "J" or "G" corresponding either to Jeffey's
 #' or robust g prior
-#' @param report.level a numeric value in (0,1) specifying the treshold for
+#' @param report.level a numeric value in (0,1) specifying the threshold for
 #' detections based on the marginal inclusion probabilities
 #' @param d population size for the GMJMCMC algorithm
 #' @param cmax the maximal allowed depth of logical expressions to be considered
@@ -21,7 +21,7 @@
 #' addressed in the analysis
 #' @param n.mods the number of the best models in the thread to calculate
 #' marginal inclusion probabilities
-#' @param advanced should only be adrresed by experienced users to tune advanced
+#' @param advanced should only be addressed by experienced users to tune advanced
 #' parameters of GMJMCMC, advanced corresponds to the vector of tuning
 #' parameters of runemjmcmc function
 #' @param print.freq printing frequency of the intermediate results

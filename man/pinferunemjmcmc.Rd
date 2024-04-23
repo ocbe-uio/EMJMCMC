@@ -21,10 +21,10 @@ pinferunemjmcmc(
 \item{n.cores}{the maximal number of cores (and (R)(G)MJMCMC threads) to
 be addressed in the analysis}
 
-\item{mcgmj}{an mclapply like function for perfroming for perfroming
+\item{mcgmj}{an mclapply like function for performing for performing
 parallel computing, do not change the default unless you are using Windows}
 
-\item{report.level}{a numeric value in (0,1) specifying the treshold for
+\item{report.level}{a numeric value in (0,1) specifying the threshold for
 detections based on the marginal inclusion probabilities}
 
 \item{simplify}{a logical value specifying in simplification of the features
