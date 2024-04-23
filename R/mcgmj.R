@@ -3,4 +3,4 @@
 
 mcgmjpar = function(X,FUN,mc.cores) parallel::mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores)
 
-mcgmjpse = function(X,FUN,mc.cores) lapply(X,FUN)
+mcgmjpse = function(X,FUN,mc.cores) ifelse(.Platform[[1]]=="unix",parallel::mclapply(X= X,FUN = FUN,mc.preschedule = T,mc.cores = mc.cores), lapply(X,FUN))
