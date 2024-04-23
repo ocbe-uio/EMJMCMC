@@ -115,7 +115,7 @@ LogicRegr = function(
 
   return(
     pinferunemjmcmc(
-      n.cores = ncores, report.level = report.level, simplify = TRUE,
+      n.cores = ncores,  report.level = report.level, simplify = TRUE,
       num.mod.best = n.mods, predict = FALSE, runemjmcmc.params = advanced
     )
   )

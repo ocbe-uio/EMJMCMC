@@ -97,7 +97,7 @@ if (interactive()) {
 
   # specify the initial formula
   formula1 = as.formula(
-    paste("Y ~ 1 +", paste0(colnames(test)[-c(51, 52)], collapse = "+"))
+    paste("Y ~ 1 +", paste0(colnames(test)[-c(12, 13)], collapse = "+"))
   )
 
   # specify the link function
@@ -114,7 +114,7 @@ if (interactive()) {
   # specify the parameters of gmjmcmc algorithm
   gmjmcmc.params <- list(
     allow_offsprings = 1, mutation_rate = 250, last.mutation = 10000,
-    max.tree.size = 5, Nvars.max = 15, p.allow.replace = 0.9, p.allow.tree = 0.01,
+    max.tree.size = 5, Nvars.max = 10, p.allow.replace = 0.9, p.allow.tree = 0.01,
     p.nor = 0.01, p.and = 0.9
   )
 
@@ -128,8 +128,8 @@ if (interactive()) {
   res.alt <- suppressMessages(
     pinferunemjmcmc(
       n.cores = n_threads, report.level = 0.2,
-      num.mod.best = 10, simplify = FALSE,
-      predict = FALSE, test.data = test, link.function = g,
+      num.mod.best = 100, simplify = TRUE,
+      predict = TRUE, test.data = test, link.function = g,
       runemjmcmc.params = list(
         formula = formula1, latnames = c("I(age)"), data = train,
         estimator = estimate.logic.lm.jef, estimator.args = estimator.args,
@@ -142,10 +142,8 @@ if (interactive()) {
     )
   )
 
-  test_that("Output with non-binary convariance is correct", {
-    expect_null(res.alt$feat.stat)
-    tmean <- 1 + 2 * test$age + 0.7 * (test$X1 * test$X4) + 0.89 * (test$X8 * test$X11) + 1.43 * (test$X5 * test$X9)
-    expect_gt(sqrt(mean((tmean -test$Y)^2)), 1)
-    expect_gt(mean(abs((tmean -test$Y))), 0.8)
+  test_that("Output with non-binary convariare is correct", {
+    expect_gt(sqrt(mean((res.alt$predictions -test$Y)^2)), 1)
+    expect_gt(mean(abs((res.alt$predictions -test$Y))), 0.8)
   })
 }

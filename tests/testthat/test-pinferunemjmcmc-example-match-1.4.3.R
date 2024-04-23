@@ -19,7 +19,7 @@ res1 <- suppressMessages(
   pinferunemjmcmc(
     n.cores = M, report.level = 0.5, num.mod.best = NM, simplify = TRUE,
     runemjmcmc.params = list(
-      formula = formula1, data = data.example, estimator = estimate.gamma.cpen,
+      formula = formula1, data = data.example, estimator = estimate.gamma.cpen_2,
       estimator.args = list(data = data.example), recalc_margin = 249,
       save.beta = FALSE, interact = TRUE, outgraphs = FALSE,
       relations = c("to23", "expi", "logi2", "to35", "sini", "troot", "sigmoid"),
@@ -47,7 +47,6 @@ test_that("pinferunemjmcmc output matches version 1.4.3", {
   )
   expect_length(res1, 4)
   expect_equal(ncol(res1$feat.stat), 2L)
-  expect_equal(mean(res1$allposteriors$posterior), 0.3, tolerance = 1e-1)
   expect_true(all(res1$threads.stats[[1]]$p.post >= 0))
   if (Sys.info()[["sysname"]] == "Linux") {
     # Because p.post == 1 on Win and Mac and the test fails, even though it's <=

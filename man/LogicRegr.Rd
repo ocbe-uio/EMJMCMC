@@ -120,7 +120,7 @@ n_cores <- parallel::detectCores() - 1
   res4G <- LogicRegr(
     formula = formula1, data = data.example, family = "Gaussian", prior = "G",
     report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.01,
-    p.surv = 0.2, ncores = n_cores
+    p.surv = 0.2, ncores = n_cores,pseudopar = TRUE
   )
   print(res4G$feat.stat)
 
@@ -128,7 +128,7 @@ n_cores <- parallel::detectCores() - 1
   res4J <- LogicRegr(
     formula = formula1, data = data.example, family = "Gaussian", prior = "J",
     report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.01,
-    p.surv = 0.2, ncores = n_cores
+    p.surv = 0.2, ncores = n_cores,pseudopar = TRUE
   )
   print(res4J$feat.stat)
 }
