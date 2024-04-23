@@ -19,7 +19,6 @@
 #' @param p.surv minimal survival probabilities for the features to be allowed to enter the next population
 #' @param ncores the maximal number of cores (and GMJMCMC threads) to be
 #' addressed in the analysis
-#' @param pseudopar whether the ncores chains will run in sequentially (the only option under Windows OS) or in parallel 
 #' @param n.mods the number of the best models in the thread to calculate
 #' marginal inclusion probabilities
 #' @param advanced should only be adrresed by experienced users to tune advanced
@@ -45,7 +44,7 @@
 LogicRegr = function(
   formula, data, family = "Gaussian",prior = "J",report.level = 0.5, d = 20,
   cmax = 5, kmax = 20, p.and = 0.9, p.not = 0.05, p.surv = 0.1, ncores = -1,
-  pseudopar = TRUE,n.mods = 1000, print.freq = 1000L,
+  n.mods = 1000, print.freq = 1000L,
   advanced = list(
     presearch = TRUE,locstop = FALSE,
     estimator = estimate.logic.bern.tCCH,
@@ -116,7 +115,7 @@ LogicRegr = function(
 
   return(
     pinferunemjmcmc(
-      n.cores = ncores, mcgmj = ifelse(pseudopar,mcgmjpse, mcgmjpar), report.level = report.level, simplify = TRUE,
+      n.cores = ncores,  report.level = report.level, simplify = TRUE,
       num.mod.best = n.mods, predict = FALSE, runemjmcmc.params = advanced
     )
   )

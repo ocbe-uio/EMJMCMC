@@ -18,7 +18,6 @@ LogicRegr(
   p.not = 0.05,
   p.surv = 0.1,
   ncores = -1,
-  pseudopar = TRUE,
   n.mods = 1000,
   print.freq = 1000L,
   advanced = list(presearch = TRUE, locstop = FALSE, estimator =
@@ -64,8 +63,6 @@ detections based on the marginal inclusion probabilities}
 
 \item{ncores}{the maximal number of cores (and GMJMCMC threads) to be
 addressed in the analysis}
-
-\item{pseudopar}{whether the ncores chains will run in sequentially (the only option under Windows OS) or in parallel}
 
 \item{n.mods}{the number of the best models in the thread to calculate
 marginal inclusion probabilities}
