@@ -1,16 +1,18 @@
 Package: EMJMCMC
 Type: Package
-Title: Flexible Bayesian Nonlinear Model Configuration
-Version: 1.4.4.9040
+Title: Expert Toolbox for Running (R)(G)MJMCMC for Bayesian Model Selection and Averaging
+Version: 1.5.0
 Date: 2024-04-18
 Authors@R:
   c(
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
-    person("Waldir", "Leoncio", email = "w.l.netto@medisin.uio.no", role = c("cre"))
+    person("Waldir", "Leoncio", email = "w.l.netto@medisin.uio.no", role = c("cre","aut")),
+    person("Geir", "Storvik", role = c("ctb"))
+    person("Florian", "Frommlet", role = c("ctb"))
   )
 Maintainer: Waldir Leoncio <w.l.netto@medisin.uio.no>
-Description: Implementation of the software from
-  Hubin, A., Storvik, G., & Frommlet, F. (2021) <doi:10.1613/jair.1.13047>,
+Description: Implementation of the software from Hubin, A., Storvik, G. (2018) <doi:10.1016/j.csda.2018.05.020>, Hubin, A., Storvik, G., & Frommlet, F. (2020) <doi:10.1214/18-BA1141>
+  Hubin, A., Storvik, G., & Frommlet, F. (2021) <doi:10.1613/jair.1.13047>, Hubin, A., Frommlet, F., & Storvik, G. <doi:10.48550/arXiv.2110.05316>, and Hubin, A., Heinze, G., & De Bin, R. <doi:10.3390/fractalfract7090641>
   which introduced an approach for estimating posterior model
   probabilities and Bayesian model averaging and selection with possible
   simultaneous feature engineering based on some primitive recursive functions.
