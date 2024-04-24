@@ -1,6 +1,6 @@
 Package: EMJMCMC
 Type: Package
-Title: Expert Toolbox for Running (R)(G)MJMCMC for Bayesian Model Selection and Averaging
+Title: Evolutionary Mode Jumping Markov Chain Monte Carlo Expert Toolbox 
 Version: 1.5.0
 Date: 2024-04-23
 Authors@R:
@@ -11,11 +11,9 @@ Authors@R:
     person("Florian", "Frommlet", role = c("ctb"))
   )
 Maintainer: Waldir Leoncio <w.l.netto@medisin.uio.no>
-Description: Implementation of the software from Hubin, A., Storvik, G. (2018) <doi:10.1016/j.csda.2018.05.020>, Hubin, A., Storvik, G., & Frommlet, F. (2020) <doi:10.1214/18-BA1141>
-  Hubin, A., Storvik, G., & Frommlet, F. (2021) <doi:10.1613/jair.1.13047>, Hubin, A., Frommlet, F., & Storvik, G. (2021) <doi:10.48550/arXiv.2110.05316>, and Hubin, A., Heinze, G., & De Bin, R. (2023) <doi:10.3390/fractalfract7090641>
+Description: Implementation of the Mode Jumping Markov Chain Monte Carlo algorithm from Hubin, A., Storvik, G. (2018) <doi:10.1016/j.csda.2018.05.020>, Genetically Modified Mode Jumping Markov Chain Monte Carlo from Hubin, A., Storvik, G., & Frommlet, F. (2020) <doi:10.1214/18-BA1141>, Hubin, A., Storvik, G., & Frommlet, F. (2021) <doi:10.1613/jair.1.13047>, and Hubin, A., Heinze, G., & De Bin, R. (2023) <doi:10.3390/fractalfract7090641>, and Reversible Genetically Modified Mode Jumping Markov Chain Monte Carlo Hubin, A., Frommlet, F., & Storvik, G. (2021) <doi:10.48550/arXiv.2110.05316>.
   which introduced an approach for estimating posterior model
-  probabilities and Bayesian model averaging and selection with possible
-  simultaneous feature engineering based on some primitive recursive functions.
+  probabilities and Bayesian model averaging across a wide set of Bayesian models including linear, generalized linear, generalized linear mixed, generalized nonlinear, generalized nonlinear mixed, and logic regression models.
 License: GPL
 Depends: R (>= 3.4.1), bigmemory
 Imports: glmnet, biglm, hash, BAS, stringi, parallel, methods, speedglm, stats
