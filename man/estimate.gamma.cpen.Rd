@@ -23,6 +23,9 @@ estimate.gamma.cpen(
 
 \item{relat}{relations}
 }
+\value{
+A list of `mlik`, `waic`, `dic`, and `summary.fixed`
+}
 \description{
 Estimate gamma cpen
 }

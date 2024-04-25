@@ -32,7 +32,7 @@ EMJMCMC2016$methods(
         # print(dec)
         sum.one <- sum(bit) * which.max(bit) + sum(bit[Nvars - 7:Nvars + 1]) * Nvars
         jjj <- 1
-        while (!add.key(dec, bit, sum.one, T)) {
+        while (!add.key(dec, bit, sum.one, TRUE)) {
           hash.level <- hash.level + 1
           bit1 <- dectobit.alt(2654435761 * (dec + 97 * sum.one + hash.level * 36599) + hash.level * 59 + hash.level)
           dec <- hashing(bit1) + 1
@@ -45,7 +45,7 @@ EMJMCMC2016$methods(
         hash.level <- 0
         dec <- hashing(bit) + 1
         sum.one <- sum(bit) * which.max(bit) + sum(bit[Nvars - 7:Nvars + 1]) * Nvars
-        while (!add.key(dec, bit, sum.one, F)) {
+        while (!add.key(dec, bit, sum.one, FALSE)) {
           hash.level <- hash.level + 1
           bit1 <- dectobit.alt(2654435761 * (dec + 97 * sum.one + hash.level * 36599) + hash.level * 59 + hash.level)
           dec <- hashing(bit1) + 1

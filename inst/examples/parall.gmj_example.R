@@ -56,7 +56,7 @@ for (i in 1:M) {
   params[[i]]$NM <- 1000
   params[[i]]$simlen <- 21
 }
-\dontrun{
+\donttest{
   message("begin simulation ", j)
   set.seed(363571)
   results <- parall.gmj(X = params, M = 1)

@@ -555,14 +555,14 @@ EMJMCMC2016$methods(
             }
 
 
-            add <- T
+            add <- TRUE
 
 
             ids.lat <- integer(0)
             if (latnames[1] != "") {
               ids.lat <- which(fparam %in% latnames)
               if (sum(stringi::stri_count_fixed(str = proposal, pattern = latnames)) > 0) {
-                add <- F
+                add <- FALSE
               }
             }
             if (length(ids.lat) == 0) {
@@ -574,7 +574,7 @@ EMJMCMC2016$methods(
             # print(proposal)
             if (proposal %in% latnames) {
               if ((proposal %in% fparam[ids.lat])) {
-                add <- F
+                add <- FALSE
               }
             } else {
               if (add) {
@@ -583,13 +583,13 @@ EMJMCMC2016$methods(
                     bet.act <- do.call(.self$estimator, c(estimator.args, stats::as.formula(stri_paste(fobserved, "~ 1 +", paste0(c(fparam[-ids.lat], proposal), collapse = "+")))))$summary.fixed$mean
 
                     if (is.na(bet.act[length(fparam[-ids.lat]) + 2]) && (action.type != 4 && gen.prob[2] == 0 || gen.prob[2] != 0)) {
-                      add <- F
+                      add <- FALSE
                     } else {
                       idel <- idel + 1
                     }
                   },
                   error = function(err) {
-                    add <- F
+                    add <- FALSE
                   },
                   finally = {}
                 )))
@@ -659,12 +659,12 @@ EMJMCMC2016$methods(
         acc_moves <- 1
         j.a <- 1
       } else if (allow_offsprings == 4 && j %% mutation_rate == 0 && (j <= last.mutation || Nvars != Nvars.max)) {
-        add.buf <- F
+        add.buf <- FALSE
 
         # perform preliminary filtration here
         if (Nvars > Nvars.max || j == mutation_rate) {
           on.suggested <- 1
-          preaccepted <- F
+          preaccepted <- FALSE
           # do the stuff here
           if (j == mutation_rate) {
             fparam.pool <<- unique(c(fparam.pool, filtered))
@@ -711,7 +711,7 @@ EMJMCMC2016$methods(
             p2 <- array(1, dim = (Nvars))
             acc_moves <- 1
             j.a <- 1
-            super.backward <- F
+            super.backward <- FALSE
           }
         } else {
           if (Nvars >= Nvars.max) {
@@ -753,7 +753,7 @@ EMJMCMC2016$methods(
                   mlikcur <- mlikcur.buf
                   varcurb <- varcurb.buf
                 }
-                preaccepted <- F
+                preaccepted <- FALSE
               }
 
               tmp.buf <- fparam[which(varcurb == 1)]
@@ -808,11 +808,11 @@ EMJMCMC2016$methods(
                 p.add <<- p.add.buf.1
                 mlikcur <- mlikcur.buf
                 varcurb <- varcurb.buf
-                preaccepted <- F
+                preaccepted <- FALSE
                 # on.suggested<-on.suggested+1
               } else {
                 if (printable.opt) print("mutation is preaccepted")
-                preaccepted <- T
+                preaccepted <- TRUE
               }
             }
             on.suggested <- on.suggested + 1
@@ -1017,20 +1017,20 @@ EMJMCMC2016$methods(
               proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
             }
 
-            add <- T
+            add <- TRUE
 
             tryCatch(utils::capture.output(
               {
                 bet.act <- do.call(.self$estimator, c(estimator.args, stats::as.formula(stri_paste(fobserved, "~ 1 +", paste0(c(fparam, proposal), collapse = "+")))))$summary.fixed$mean
 
                 if (is.na(bet.act[length(fparam) + 2])) {
-                  add <- F
+                  add <- FALSE
                 } else {
                   idel <- idel + 1
                 }
               },
               error = function(err) {
-                add <- F
+                add <- FALSE
               }
             ))
 

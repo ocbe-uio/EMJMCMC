@@ -29,7 +29,7 @@ formula1 <- as.formula(
 # specify tuning parameters of the algorithm for exploring DBRM of interest
 # notice that allow_offsprings=3 corresponds to the GMJMCMC runs and
 # allow_offsprings=4 -to the RGMJMCMC runs
-\dontrun{
+\donttest{
   res <- runemjmcmc(
     formula = formula1, outgraphs = FALSE, data = X4,
     estimator = estimate.gamma.cpen, estimator.args = list(data = data.example),
