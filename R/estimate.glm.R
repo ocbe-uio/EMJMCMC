@@ -3,7 +3,7 @@
 #' @param data a data frame object containing variables and observations
 #' corresponding to the formula used
 #' @param family distribution family for the responses
-#' @param prior integers 1,2 or 3 corresponding to AIC, BIC or Gelman's g-prior
+#' @param prior integers 1,2 or 3 corresponding to AIC, BIC or Zellner's g-prior
 #' @param n sample size
 #' @param g g parameter of Zellner's g prior
 #' @return a list of
