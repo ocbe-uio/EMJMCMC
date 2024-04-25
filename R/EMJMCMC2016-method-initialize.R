@@ -45,7 +45,7 @@ EMJMCMC2016$methods(initialize = function(estimator.function = estimate.gamma.cp
     max.N.randomize <<- as.integer(1)
     deep.method <<- as.integer(1)
     type.randomize <<- as.integer(3)
-    pool.cor.prob <<- F
+    pool.cor.prob <<- FALSE
     prand <<- 0.01
     max.cpu.glob <<- as.integer(Nvars * 0.05 + 1)
     max.cpu.hyper <<- as.integer(2)
