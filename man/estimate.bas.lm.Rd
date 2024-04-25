@@ -11,7 +11,7 @@ estimate.bas.lm(formula, data, prior, n, g = 0)
 
 \item{data}{a data frame object containing variables and observations corresponding to the formula used}
 
-\item{prior}{integers 1, 2 or 3 are allowed corresponding to AIC, BIC or Gelman's g-prior}
+\item{prior}{integers 1, 2 or 3 are allowed corresponding to AIC, BIC or Zellner's g-prior}
 
 \item{n}{sample size}
 
