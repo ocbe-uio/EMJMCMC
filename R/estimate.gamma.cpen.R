@@ -5,6 +5,8 @@
 #' @param r r
 #' @param logn logn
 #' @param relat relations
+#' @return A list of `mlik`, `waic`, `dic`, znc `summary.fixed`
+#' @export
 estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000.0), relat = c("cos", "sigmoid", "tanh", "atan", "sin", "erf")) {
   fparam <- NULL
   fmla.proc <- as.character(formula)[2:3]
@@ -41,6 +43,8 @@ estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000
 
 #' @title Estimate gamma cpen 2
 #' @inheritParams estimate.gamma.cpen
+#' @return A list of `mlik`, `waic`, `dic`, znc `summary.fixed`
+#' @export
 estimate.gamma.cpen_2 = function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("to23","expi","logi","to35","sini","troot","sigmoid"))
 {
   fparam=NULL
