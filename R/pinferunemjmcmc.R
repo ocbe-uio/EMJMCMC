@@ -39,7 +39,7 @@ pinferunemjmcmc = function(
 
   if(predict)
   {
-    runemjmcmc.params$save.beta = T
+    runemjmcmc.params$save.beta = TRUE
 
     if(length(test.data)==0)
     {

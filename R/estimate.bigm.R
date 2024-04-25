@@ -21,7 +21,7 @@
 estimate.bigm <- function(formula, data, family, prior, n, maxit = 2, chunksize = 1000000) # nice behaviour
 {
   out <- biglm::bigglm(
-    data = data, family = family, formula = formula, sandwich = F,
+    data = data, family = family, formula = formula, sandwich = FALSE,
     maxit = maxit, chunksize = chunksize
   )
   if (prior == "AIC") {

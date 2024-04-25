@@ -3,7 +3,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
 #define the function estimating parameters of a given Bernoulli logic regression with robust g prior
   if(is.null(formula))
     return(list(mlik =  -10000 + stats::rnorm(1,0,1),waic =10000 , dic =  10000,summary.fixed =list(mean = 1)))
-  X = scale(stats::model.matrix(object = formula,data = data),center = T,scale = F)
+  X = scale(stats::model.matrix(object = formula,data = data),center = TRUE,scale = FALSE)
   X[,1] = 1
   fmla.proc=as.character(formula)[2:3]
   out = stats::glm(formula = stats::as.formula(paste0(fmla.proc[1],"~X+0")),data=data,family = stats::binomial())
@@ -21,7 +21,7 @@ estimate.logic.bern.tCCH = function(formula = NULL,y.id = 51, data, n=1000, m=50
 
   fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]=stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+  fparam =stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = FALSE)[[1]]
   sj=(stringi::stri_count_fixed(str = fparam, pattern = "&"))
   sj=sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
   sj=sj+1

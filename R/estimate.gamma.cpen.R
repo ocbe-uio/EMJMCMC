@@ -11,7 +11,7 @@ estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000
   fobserved <- fmla.proc[1]
   fmla.proc[2] <- stringi::stri_replace_all(str = fmla.proc[2], fixed = " ", replacement = "")
   fmla.proc[2] <- stringi::stri_replace_all(str = fmla.proc[2], fixed = "\n", replacement = "")
-  fparam <- stringi::stri_split_fixed(str = fmla.proc[2], pattern = "+I", omit_empty = F)[[1]]
+  fparam <- stringi::stri_split_fixed(str = fmla.proc[2], pattern = "+I", omit_empty = FALSE)[[1]]
   sj <- (stringi::stri_count_fixed(str = fparam, pattern = "*"))
   sj <- sj + (stringi::stri_count_fixed(str = fparam, pattern = "+"))
   for (rel in relat) {
@@ -48,7 +48,7 @@ estimate.gamma.cpen_2 = function(formula, data,r = 1.0/223.0,logn=log(223.0),rel
   fobserved = fmla.proc[1]
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
+  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = FALSE)[[1]]
   sj=(stri_count_fixed(str = fparam, pattern = "*"))
   sj=sj+(stri_count_fixed(str = fparam, pattern = "+"))
   for(rel in relat)

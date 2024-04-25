@@ -39,7 +39,7 @@ simplifyposteriors.infer=function(X,posteriors,th=0.0000001,thf=0.5, resp)
     res=res[tokeep,]
   }else
     warning(paste0("No features with posteriors above ",thf,". Returning everything"))
-  res=res[order(res$V1, decreasing = T),]
+  res=res[order(res$V1, decreasing = TRUE),]
   hash::clear(rhash)
   rm(rhash)
   tokeep = which(res[,1]>1)

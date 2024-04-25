@@ -60,7 +60,7 @@ EMJMCMC2016$methods(
       p.post <- (p.post + varcur * zyx[i])
     }
 
-    if (!exists("p.post") || is.null(p.post) || sum(p.post, na.rm = T) == 0 || sum(p.post, na.rm = T) > Nvars) {
+    if (!exists("p.post") || is.null(p.post) || sum(p.post, na.rm = TRUE) == 0 || sum(p.post, na.rm = TRUE) > Nvars) {
       p.post <- array(data = 0.5, dim = Nvars)
     }
     # hash::values(hashStat)[which((1:(lHash * linx)) %%linx == 4)]<-zyx

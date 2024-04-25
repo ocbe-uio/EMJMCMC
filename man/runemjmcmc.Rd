@@ -15,18 +15,18 @@ runemjmcmc(
   n.models,
   p.add.default = 1,
   p.add = 0.5,
-  unique = F,
-  save.beta = F,
-  locstop.nd = F,
+  unique = FALSE,
+  save.beta = FALSE,
+  locstop.nd = FALSE,
   latent = "",
   max.cpu = 4,
   max.cpu.glob = 2,
-  create.table = T,
+  create.table = TRUE,
   hash.length = 20,
-  presearch = T,
-  locstop = F,
-  pseudo.paral = F,
-  interact = F,
+  presearch = TRUE,
+  locstop = FALSE,
+  pseudo.paral = FALSE,
+  interact = FALSE,
   deep.method = 1,
   relations = c("", "sin", "cos", "sigmoid", "tanh", "atan", "erf"),
   relations.prob = c(0.4, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
@@ -34,22 +34,22 @@ runemjmcmc(
   pool.cross = 0.9,
   p.epsilon = 1e-04,
   del.sigma = 0.5,
-  pool.cor.prob = F,
+  pool.cor.prob = FALSE,
   interact.param = list(allow_offsprings = 2, mutation_rate = 100, last.mutation = 2000,
     max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7, p.allow.tree = 0.1,
     p.nor = 0.3, p.and = 0.7),
   prand = 0.01,
-  keep.origin = T,
+  keep.origin = TRUE,
   sup.large.n = 5000,
   recalc_margin = 2^10,
-  create.hash = F,
+  create.hash = FALSE,
   interact.order = 1,
   burn.in = 1,
   eps = 10^6,
   max.time = 120,
   max.it = 25000,
   print.freq = 100,
-  outgraphs = F,
+  outgraphs = FALSE,
   advanced.param = NULL,
   distrib_of_neighbourhoods = t(array(data = c(7.6651604, 16.773326, 14.541629,
     12.839445, 2.964227, 13.048343, 7.165434, 0.9936905, 15.94249, 11.040131, 3.200394,
@@ -88,25 +88,25 @@ runemjmcmc(
 
 \item{latent}{a latent random field to be addressed (to be specifically used when estimator = INLA, currently unsupported)}
 
-\item{max.cpu}{maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = F}
+\item{max.cpu}{maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE}
 
-\item{max.cpu.glob}{maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = F}
+\item{max.cpu.glob}{maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE}
 
 \item{create.table}{a Boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results}
 
-\item{hash.length}{a parameter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = T)}
+\item{hash.length}{a parameter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = TRUE)}
 
 \item{presearch}{a boolean parameter defining if greedy forward and backward regression steps are used for initialization of initial approximations of marginal inclusion probabilities}
 
 \item{locstop}{a boolean parameter defining if the presearch is stopped at the first local extremum visited}
 
-\item{pseudo.paral}{defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table=T)}
+\item{pseudo.paral}{defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table= TRUE)}
 
 \item{interact}{a boolean parameter defining if feature engineering is allowed in the search}
 
 \item{deep.method}{an integer in \{1, 2, 3, 4\} defining the method of estimating the alpha parameters of BGNLM, details to be found in https://www.jair.org/index.php/jair/article/view/13047}
 
-\item{relations}{a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = T)}
+\item{relations}{a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = TRUE)}
 
 \item{relations.prob}{probability distribution of addressing modifications defined in relations parameter (both vectors must be of the same length)}
 
@@ -238,7 +238,7 @@ formula1 <- as.formula(
 Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017), Hubin & Storvik (2017)
 }
 \seealso{
-global objects statistics1 (if create.table==T) or hashStat (if create.table==F) contain all marginal likelihoods and two other model selection criteria as well as all of the beta coefficients for the models (if save.beta==T)
+global objects statistics1 (if create.table== TRUE) or hashStat (if create.table== FALSE) contain all marginal likelihoods and two other model selection criteria as well as all of the beta coefficients for the models (if save.beta== TRUE)
 }
 \author{
 Aliaksandr Hubin
