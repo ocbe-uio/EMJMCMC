@@ -18,7 +18,7 @@ corresponding to the formula used}
 
 \item{n}{sample size}
 
-\item{g}{g parameter of Gelman's g prior}
+\item{g}{g parameter of Zellner's g prior}
 }
 \value{
 a list of

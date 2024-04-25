@@ -5,7 +5,7 @@
 #' @param family distribution family for the responses
 #' @param prior integers 1,2 or 3 corresponding to AIC, BIC or Gelman's g-prior
 #' @param n sample size
-#' @param g g parameter of Gelman's g prior
+#' @param g g parameter of Zellner's g prior
 #' @return a list of
 #' \describe{
 #'  \item{mlik}{marginal likelihood of the model}
