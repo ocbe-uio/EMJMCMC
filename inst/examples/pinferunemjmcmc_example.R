@@ -23,7 +23,7 @@ thf <- 0.05
 # specify tuning parameters of the algorithm for exploring DBRM of interest
 # notice that allow_offsprings=3 corresponds to the GMJMCMC runs and
 # allow_offsprings=4 -to the RGMJMCMC runs
-\dontrun{
+\donttest{
   res1 <- pinferunemjmcmc(
     n.cores = M, report.level = 0.5, num.mod.best = NM, simplify = TRUE,
     runemjmcmc.params = list(
@@ -80,7 +80,7 @@ formula1 <- as.formula(
   )
 )
 
-\dontrun{
+\donttest{
   res <- pinferunemjmcmc(
     n.cores = 30, report.level = 0.5, num.mod.best = NM, simplify = TRUE,
     predict = TRUE, test.data = as.data.frame(test), link.function = g,
