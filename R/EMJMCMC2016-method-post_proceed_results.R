@@ -11,7 +11,7 @@ EMJMCMC2016$methods(
     if (nconsum > 0) {
       zyx[xyz] <- exp(statistics1[xyz, 1] - statistics1[moddee, 1]) / nconsum
     } else {
-      nnnorm <- sum(statistics1[xyz, 4], na.rm = T)
+      nnnorm <- sum(statistics1[xyz, 4], na.rm = TRUE)
       if (nnnorm == 0) {
         nnnorm <- 1
       }
@@ -28,7 +28,7 @@ EMJMCMC2016$methods(
       p.post <- (p.post + varcur * statistics1[i, 15])
     }
 
-    if (!exists("p.post") || is.null(p.post) || sum(p.post, na.rm = T) == 0 || sum(p.post, na.rm = T) > Nvars) {
+    if (!exists("p.post") || is.null(p.post) || sum(p.post, na.rm = TRUE) == 0 || sum(p.post, na.rm = TRUE) > Nvars) {
       p.post <- array(data = 0.5, dim = Nvars)
     }
 

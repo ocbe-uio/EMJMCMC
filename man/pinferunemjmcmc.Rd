@@ -178,7 +178,7 @@ formula1 <- as.formula(
   for (jjjj in 1:10)
   {
     resw <- as.integer(res$predictions >= 0.1 * jjjj)
-    prec <- (1 - sum(abs(resw - test$X), na.rm = T) / length(resw))
+    prec <- (1 - sum(abs(resw - test$X), na.rm = TRUE) / length(resw))
     print(prec)
     # FNR
     ps <- which(test$X == 1)

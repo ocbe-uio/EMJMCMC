@@ -38,7 +38,7 @@ for(i in 1:length(posteriors[,1])) {
 res<-as.data.frame(t(hash::values(rhash)[c(3,4),]))
 res$V1<-as.numeric(as.character(res$V1))
 res<-res[which(res$V1>thf),]
-res<-res[order(res$V1, decreasing = T),]
+res<-res[order(res$V1, decreasing = TRUE),]
 hash::clear(rhash)
 rm(rhash)
 res[which(res[,1]>1),1]<-1

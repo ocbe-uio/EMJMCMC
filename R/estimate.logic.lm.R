@@ -25,7 +25,7 @@ fmla.proc<-as.character(formula)[2:3]
 fobserved <- fmla.proc[1]
 fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
 fmla.proc[2]<-stringi::stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = F)[[1]]
+fparam <-stringi::stri_split_fixed(str = fmla.proc[2],pattern = "+",omit_empty = FALSE)[[1]]
 sj<-(stringi::stri_count_fixed(str = fparam, pattern = "&"))
 sj<-sj+(stringi::stri_count_fixed(str = fparam, pattern = "|"))
 sj<-sj+1

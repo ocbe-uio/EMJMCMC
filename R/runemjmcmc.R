@@ -19,14 +19,14 @@
 #' @param locstop.nd Defines whether local greedy optimizers stop at the first local optima found (locstop.nd=TRUE) or not (locstop.nd=FALSE)
 #' @param latent a latent random field to be addressed (to be specifically used when estimator = INLA, currently unsupported)
 #' @param create.table a Boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results
-#' @param hash.length a parameter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = T)
-#' @param pseudo.paral defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table=T)
-#' @param max.cpu maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = F
-#' @param max.cpu.glob maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = F
+#' @param hash.length a parameter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = TRUE)
+#' @param pseudo.paral defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table= TRUE)
+#' @param max.cpu maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE
+#' @param max.cpu.glob maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE
 #' @param presearch a boolean parameter defining if greedy forward and backward regression steps are used for initialization of initial approximations of marginal inclusion probabilities
 #' @param locstop a boolean parameter defining if the presearch is stopped at the first local extremum visited
 #' @param interact a boolean parameter defining if feature engineering is allowed in the search
-#' @param relations a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = T)
+#' @param relations a vector of allowed modification functions (only relevant when feature engineering is enabled by means of interact = TRUE)
 #' @param relations.prob probability distribution of addressing modifications defined in relations parameter (both vectors must be of the same length)
 #' @param gen.prob a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if \code{interact.param$allow_offsprings} is either 3 or 4)
 #' @param pool.cross a parameter defining the probability of addressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)
@@ -65,25 +65,25 @@
 #' }
 #' @references Hubin & Storvik (2016),Hubin, Storvik & Frommlet (2017), Hubin & Storvik (2017)
 #' @author Aliaksandr Hubin
-#' @seealso global objects statistics1 (if create.table==T) or hashStat (if create.table==F) contain all marginal likelihoods and two other model selection criteria as well as all of the beta coefficients for the models (if save.beta==T)
+#' @seealso global objects statistics1 (if create.table== TRUE) or hashStat (if create.table== FALSE) contain all marginal likelihoods and two other model selection criteria as well as all of the beta coefficients for the models (if save.beta== TRUE)
 #' @example /inst/examples/runemjmcmc_example.R
 #' @keywords methods models
 #' @export
 runemjmcmc<-function(
   formula, data, secondary = vector(mode="character", length=0), latnames="",
   estimator,estimator.args = "list",n.models,p.add.default = 1,p.add = 0.5,
-  unique = F,save.beta=F, locstop.nd = F, latent="",max.cpu=4,max.cpu.glob=2,
-  create.table=T, hash.length = 20, presearch=T, locstop =F ,pseudo.paral = F,
-  interact = F,deep.method =1,
+  unique = FALSE,save.beta= FALSE, locstop.nd = FALSE, latent="",max.cpu=4,max.cpu.glob=2,
+  create.table= TRUE, hash.length = 20, presearch= TRUE, locstop = FALSE ,pseudo.paral = FALSE,
+  interact = FALSE,deep.method =1,
   relations = c("","sin","cos","sigmoid","tanh","atan","erf"),
   relations.prob =c(0.4,0.1,0.1,0.1,0.1,0.1,0.1),gen.prob = c(1,10,5,1,0),
-  pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = F,
+  pool.cross = 0.9,p.epsilon = 0.0001, del.sigma = 0.5,pool.cor.prob = FALSE,
   interact.param=list(allow_offsprings=2,mutation_rate = 100,last.mutation=2000,
   max.tree.size = 10000, Nvars.max = 100, p.allow.replace = 0.7,
-  p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = T,
-  sup.large.n = 5000, recalc_margin = 2^10, create.hash=F,interact.order=1,
+  p.allow.tree=0.1,p.nor=0.3,p.and = 0.7), prand = 0.01,keep.origin = TRUE,
+  sup.large.n = 5000, recalc_margin = 2^10, create.hash= FALSE,interact.order=1,
   burn.in=1, eps = 10^6, max.time = 120,max.it = 25000, print.freq = 100,
-  outgraphs=F,advanced.param=NULL,
+  outgraphs= FALSE,advanced.param=NULL,
   distrib_of_neighbourhoods=t(array(data = c(7.6651604,16.773326,14.541629,12.839445,2.964227,13.048343,7.165434, 0.9936905,15.942490,11.040131,3.200394,15.349051,5.466632,14.676458, 1.5184551,9.285762,6.125034,3.627547,13.343413,2.923767,15.318774, 14.5295380,1.521960,11.804457,5.070282,6.934380,10.578945,12.455602, 6.0826035,2.453729,14.340435,14.863495,1.028312,12.685017,13.806295),dim = c(7,5))),
   distrib_of_proposals = c(76.91870,71.25264,87.68184,60.55921,15812.39852),
   quiet = TRUE)
@@ -207,7 +207,7 @@ if(create.table)
   truth = ppp$p.post # make sure it is equal to Truth column from the article
   truth.m = ppp$m.post
   truth.prob = ppp$s.mass
-  ordering = sort(ppp$p.post,index.return=T)
+  ordering = sort(ppp$p.post,index.return= TRUE)
 }
 else if(create.hash)
 {
@@ -215,7 +215,7 @@ else if(create.hash)
   truth = ppp$p.post # make sure it is equal to Truth column from the article
   truth.m = ppp$m.post
   truth.prob = ppp$s.mass
-  ordering = sort(ppp$p.post,index.return=T)
+  ordering = sort(ppp$p.post,index.return= TRUE)
 }
 if (!quiet) {
   message("Post Proceed Results")
