@@ -14,7 +14,7 @@ corresponding to the formula used}
 
 \item{family}{distribution family for the responses}
 
-\item{prior}{integers 1,2 or 3 corresponding to AIC, BIC or Gelman's g-prior}
+\item{prior}{integers 1,2 or 3 corresponding to AIC, BIC or Zellner's g-prior}
 
 \item{n}{sample size}
 
