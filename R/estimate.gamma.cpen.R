@@ -1,8 +1,8 @@
-#' @title Estimate gamma cpen
+#' @title Estimate marginal log posterior of a single BGNLM model 
 #' @importFrom stringi stri_replace_all stri_split_fixed stri_count_fixed
 #' @param formula formula
 #' @param data dataset
-#' @param r r
+#' @param r prior inclusion penalty parameter
 #' @param logn logn
 #' @param relat relations
 estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000.0), relat = c("cos", "sigmoid", "tanh", "atan", "sin", "erf")) {
