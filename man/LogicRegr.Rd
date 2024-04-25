@@ -114,7 +114,7 @@ data.example <- as.data.frame(X1)
 
 
 # run the inference with robust g prior
-n_cores <- parallel::detectCores() - 1
+n_cores <- 1L
 
 \donttest{
   res4G <- LogicRegr(
