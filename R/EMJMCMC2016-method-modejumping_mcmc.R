@@ -1628,8 +1628,6 @@ EMJMCMC2016$methods(
         }
       }
 
-      # }),abort = function(){if(printable.opt)print("error");varcur<-varcurb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
-
       if (thin_rate != -1) {
         if (acc_moves == accept_old && j > glob.model$burnin && j %% as.integer(thin_rate) == 0) # carry out smart thinning
           {
