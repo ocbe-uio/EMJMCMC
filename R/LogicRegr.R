@@ -79,12 +79,12 @@ LogicRegr = function(
   advanced$interact.param$p.allow.tree = p.surv
   if(!prior %in% c("J","G"))
   {
-    warning("Wrong prior supplied. J (for Jeffrey's) and G (for robust g) priors are allowd only. Setting J as default.")
+    warning("Wrong prior supplied. J (for Jeffrey's) and G (for robust g) priors are allowed only. Setting J as default.")
     prior = "J"
   }
   if(!family %in% c("Gaussian","Bernoulli"))
   {
-    warning("Wrong familty supplied. Gaussian and Bernoulli families are allowd only. Setting Gaussian as default.")
+    warning("Wrong familty supplied. Gaussian and Bernoulli families are allowed only. Setting Gaussian as default.")
     family = "Gaussian"
   }
   if(family == "Gaussian")
