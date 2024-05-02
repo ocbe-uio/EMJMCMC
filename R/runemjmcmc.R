@@ -21,8 +21,8 @@
 #' @param create.table a Boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results
 #' @param hash.length a parameter defining hash size for the big.memory based hash table as 2^hash.length (only relevant when create.table = TRUE)
 #' @param pseudo.paral defines if lapply or mclapply is used for local vectorized computations within the chain (can only be TRUE if create.table= TRUE)
-#' @param max.cpu maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE
-#' @param max.cpu.glob maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE
+#' @param max.cpu maximal number of CPUs in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE
+#' @param max.cpu.glob maximal number of CPUs in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE
 #' @param presearch a boolean parameter defining if greedy forward and backward regression steps are used for initialization of initial approximations of marginal inclusion probabilities
 #' @param locstop a boolean parameter defining if the presearch is stopped at the first local extremum visited
 #' @param interact a boolean parameter defining if feature engineering is allowed in the search
@@ -31,7 +31,7 @@
 #' @param gen.prob a vector of probabilities for different operators in GMJMCMC or RGMJMCMC in the deep regression context (hence only relevant if \code{interact.param$allow_offsprings} is either 3 or 4)
 #' @param pool.cross a parameter defining the probability of addressing covariates from the current pool of covariates in GMJMCMC (covariates from the set of filtered covariates can be addressed with probability 1-pool.cross) (only relevant when interact = TRUE)
 #' @param p.add a default marginal inclusion probability parameter to be changed during the search to the true value
-#' @param p.add.default a parameter defining sparsity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for parameters in the current pool
+#' @param p.add.default a parameter defining sparsity after filtrations in GMJMCMC as initial marginal inclusion probabilities vector for parameters in the current pool
 #' @param p.epsilon a parameter to define minimal deviations from 0 and 1 probabilities when allowing adaptive MCMC based on marginal inclusion probabilities
 #' @param del.sigma a parameter describing probability of deleting each of the function from the selected feature in the reduction operator(only relevant for the deep regression models context)
 #' @param pool.cor.prob a boolean parameter indicating if inclusion of the filtered covariates during mutations are based on probabilities proportional to the absolute values of correlations of these parameters and the observations (should not be addressed for multivariate observations, e.g. survival studies with Cox regression)

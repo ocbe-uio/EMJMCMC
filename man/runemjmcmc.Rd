@@ -76,7 +76,7 @@ runemjmcmc(
 
 \item{n.models}{maximal number of models to be estimated during the search}
 
-\item{p.add.default}{a parameter defining sparsity after filtrations in gmjmcmc as initial marginal inclusion probabilities vector for parameters in the current pool}
+\item{p.add.default}{a parameter defining sparsity after filtrations in GMJMCMC as initial marginal inclusion probabilities vector for parameters in the current pool}
 
 \item{p.add}{a default marginal inclusion probability parameter to be changed during the search to the true value}
 
@@ -88,9 +88,9 @@ runemjmcmc(
 
 \item{latent}{a latent random field to be addressed (to be specifically used when estimator = INLA, currently unsupported)}
 
-\item{max.cpu}{maximal number of cpus in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE}
+\item{max.cpu}{maximal number of CPUs in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE}
 
-\item{max.cpu.glob}{maximal number of cpus in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE}
+\item{max.cpu.glob}{maximal number of CPUs in global moves in MJMCMC when within chain parallelization is allowed pseudo.paral = FALSE}
 
 \item{create.table}{a Boolean variable defining if a big.memory based hash table (only available for MJMCMC with no feature engineering, allows data sharing between CPUs) or the original R hash data structure (available for all algorithm, does not allow data sharing between CPUs) is used for storing of the results}
 
