@@ -2,7 +2,7 @@ Package: EMJMCMC
 Type: Package
 Title: Evolutionary Mode Jumping Markov Chain Monte Carlo Expert Toolbox
 Version: 1.5.0
-Date: 2024-04-25
+Date: 2024-05-02
 Authors@R:
   c(
     person("Aliaksandr", "Hubin", email = "aliaksah@math.uio.no", role = c("aut")),
