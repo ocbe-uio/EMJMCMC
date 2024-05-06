@@ -1,4 +1,0 @@
-"posterior","tree"
-0.999999999999999,"I(PeriodDays)"
-0.999999728023933,"I(I(PeriodDays)*I(PeriodDays))"
-0.999956752529273,"I(I(I(HostStarTempK)*I(PeriodDays))*I(PeriodDays))"

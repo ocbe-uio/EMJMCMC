@@ -1,4 +1,0 @@
-"posterior","tree"
-1,"I(PeriodDays)"
-0.999999398727687,"I(I(PeriodDays)*I(PeriodDays))"
-0.999997140434354,"I(to23(I(PeriodDays)))"

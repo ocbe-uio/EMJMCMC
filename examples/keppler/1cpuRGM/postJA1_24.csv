@@ -1,4 +1,0 @@
-"posterior","tree"
-0.999999999999998,"I(PeriodDays)"
-0.999999999993592,"I(I(PeriodDays)*I(logi(I(I(PeriodDays)*I(PeriodDays)))))"
-0.999918883747804,"I(I(PeriodDays)*I(sini(I(HostStarMassSlrMass))))"
