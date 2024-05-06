@@ -4,15 +4,15 @@
 #' such as:
 #' \describe{
 #'  \item{vect$simlen}{the number of parameters of runemjmcmc in vect}
-#'  \item{vect$cpu}{the cpu id for to set the unique seed}
+#'  \item{vect$cpu}{the CPU id for to set the unique seed}
 #'  \item{vect$NM}{the number of unique best models from runemjmcmc to
 #'    base the output report upon}
 #' }
-#' @param M a number of cpus to be used (can only be equal to 1 on
+#' @param M a number of CPUs to be used (can only be equal to 1 on
 #' Windows OS currently, up to a maximal number of cores can be used on
-#' linux based systems)
+#' Linux-based systems)
 #' @param preschedule if pseudoscheduling should be used for the jobs if
-#' their number exeeds M (if TRUE) otherwise the jobs are performed
+#' their number exceeds M (if TRUE) otherwise the jobs are performed
 #' sequentially w.r.t. their order
 #' @return a vector of lists of
 #' \describe{
@@ -45,7 +45,7 @@ parall.gmj <- function(X, M = 16, preschedule = FALSE) {
 #' additional fields that must come after runemjmcmc parameters such as:
 #' \describe{
 #'  \item{vect$simlen}{the number of parameters of runemjmcmc in vect}
-#'  \item{vect$cpu}{the cpu id for to set the unique seed}
+#'  \item{vect$cpu}{the CPU id for to set the unique seed}
 #'  \item{vect$NM}{the number of unique best models from runemjmcmc to
 #'    base the output report upon}
 #' }
@@ -69,9 +69,9 @@ set.seed(as.integer(vect$cpu))
 do.call(runemjmcmc, vect[1:vect$simlen])
 vals<-hash::values(hashStat)
 fparam<-mySearch$fparam
-cterm<-max(vals[1,],na.rm = T)
+cterm<-max(vals[1,],na.rm = TRUE)
 ppp<-mySearch$post_proceed_results_hash(hashStat = hashStat)
-post.populi<-sum(exp(hash::values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
+post.populi<-sum(exp(hash::values(hashStat)[1,][1:vect$NM]-cterm),na.rm = TRUE)
 hash::clear(hashStat)
 rm(vals)
 return(list(post.populi = post.populi, p.post =  ppp$p.post, cterm = cterm, fparam = fparam))

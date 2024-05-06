@@ -12,13 +12,13 @@ estimate.glm(formula, data, family, prior, n = 1, g = 0)
 \item{data}{a data frame object containing variables and observations
 corresponding to the formula used}
 
-\item{family}{distribution family for the responces}
+\item{family}{distribution family for the responses}
 
-\item{prior}{integers 1,2 or 3 corresonding to AIC, BIC or Gelman's g-prior}
+\item{prior}{integers 1,2 or 3 corresponding to AIC, BIC or Zellner's g-prior}
 
 \item{n}{sample size}
 
-\item{g}{g parameter of Gelman's g prior}
+\item{g}{g parameter of Zellner's g prior}
 }
 \value{
 a list of

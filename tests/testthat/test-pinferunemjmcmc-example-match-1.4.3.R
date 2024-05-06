@@ -6,7 +6,7 @@ formula1 <- as.formula(
   paste(colnames(X)[5], "~ 1 +", paste0(colnames(X)[-5], collapse = "+"))
 )
 
-M <- 2 # define the number or cpus
+M <- 2 # define the number or CPUs
 NM <- 100 # define the size of the simulated samples
 compmax <- 16 # define \k_{max} + 1 from the paper
 th <- (10)^(-5) # define treshold for preinclusion of the tree into the analysis

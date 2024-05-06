@@ -12,7 +12,7 @@ estimate.speedglm(formula, data, family, prior, logn)
 \item{data}{a data frame object containing variables and observations
 corresponding to the formula used}
 
-\item{family}{distribution family foe the responces}
+\item{family}{distribution family foe the responses}
 
 \item{prior}{either "AIC" or "BIC"}
 

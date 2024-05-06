@@ -1,11 +1,11 @@
 #' @title Obtaining Bayesian estimators of interest from a GLM model
 #' @param formula a formula object for the model to be addressed
 #' @param data a data frame object containing variables and observations corresponding to the formula used
-#' @param family distribution family foe the responces
+#' @param family distribution family foe the responses
 #' @param prior either "AIC" or "BIC"
 #' @param n sample size
 #' @param maxit maximum number of Fisher scoring iterations
-#' @param chunksize size of chunks for processng the data frame
+#' @param chunksize size of chunks for processing the data frame
 #' @return a list of
 #' \describe{
 #'  \item{mlik}{marginal likelihood of the model}
@@ -21,7 +21,7 @@
 estimate.bigm <- function(formula, data, family, prior, n, maxit = 2, chunksize = 1000000) # nice behaviour
 {
   out <- biglm::bigglm(
-    data = data, family = family, formula = formula, sandwich = F,
+    data = data, family = family, formula = formula, sandwich = FALSE,
     maxit = maxit, chunksize = chunksize
   )
   if (prior == "AIC") {

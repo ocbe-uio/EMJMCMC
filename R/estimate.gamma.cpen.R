@@ -1,17 +1,25 @@
-#' @title Estimate gamma cpen
+#' @title Estimate marginal log posterior of a single BGNLM model 
 #' @importFrom stringi stri_replace_all stri_split_fixed stri_count_fixed
 #' @param formula formula
 #' @param data dataset
-#' @param r r
+#' @param r prior inclusion penalty parameter
 #' @param logn logn
-#' @param relat relations
+#' @param relat a set of nonlinear transformations in the class of BGNLMs of interest
+#' @return  A list of
+#' \describe{
+#'  \item{mlik}{marginal likelihood of the model}
+#'  \item{waic}{AIC model selection criterion}
+#'  \item{dic}{BIC model selection criterion}
+#'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @export
 estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000.0), relat = c("cos", "sigmoid", "tanh", "atan", "sin", "erf")) {
   fparam <- NULL
   fmla.proc <- as.character(formula)[2:3]
   fobserved <- fmla.proc[1]
   fmla.proc[2] <- stringi::stri_replace_all(str = fmla.proc[2], fixed = " ", replacement = "")
   fmla.proc[2] <- stringi::stri_replace_all(str = fmla.proc[2], fixed = "\n", replacement = "")
-  fparam <- stringi::stri_split_fixed(str = fmla.proc[2], pattern = "+I", omit_empty = F)[[1]]
+  fparam <- stringi::stri_split_fixed(str = fmla.proc[2], pattern = "+I", omit_empty = FALSE)[[1]]
   sj <- (stringi::stri_count_fixed(str = fparam, pattern = "*"))
   sj <- sj + (stringi::stri_count_fixed(str = fparam, pattern = "+"))
   for (rel in relat) {
@@ -39,8 +47,21 @@ estimate.gamma.cpen <- function(formula, data, r = 1.0 / 1000.0, logn = log(1000
   return(list(mlik = mlik, waic = waic, dic = dic, summary.fixed = summary.fixed))
 }
 
-#' @title Estimate gamma cpen 2
-#' @inheritParams estimate.gamma.cpen
+#' @title Estimate marginal log posterior of a single BGNLM model with alternative defaults
+#' @importFrom stringi stri_replace_all stri_split_fixed stri_count_fixed
+#' @param formula formula
+#' @param data dataset
+#' @param r prior inclusion penalty parameter
+#' @param logn logn
+#' @param relat a set of nonlinear transformations in the class of BGNLMs of interest
+#' @return  A list of
+#' \describe{
+#'  \item{mlik}{marginal likelihood of the model}
+#'  \item{waic}{AIC model selection criterion}
+#'  \item{dic}{BIC model selection criterion}
+#'  \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+#' }
+#' @export
 estimate.gamma.cpen_2 = function(formula, data,r = 1.0/223.0,logn=log(223.0),relat=c("to23","expi","logi","to35","sini","troot","sigmoid"))
 {
   fparam=NULL
@@ -48,7 +69,7 @@ estimate.gamma.cpen_2 = function(formula, data,r = 1.0/223.0,logn=log(223.0),rel
   fobserved = fmla.proc[1]
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = " ",replacement = "")
   fmla.proc[2]=stri_replace_all(str = fmla.proc[2],fixed = "\n",replacement = "")
-  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = F)[[1]]
+  fparam =stri_split_fixed(str = fmla.proc[2],pattern = "+I",omit_empty = FALSE)[[1]]
   sj=(stri_count_fixed(str = fparam, pattern = "*"))
   sj=sj+(stri_count_fixed(str = fparam, pattern = "+"))
   for(rel in relat)
@@ -90,5 +111,4 @@ sini <- function(x) sin(x / 180 * pi)
 to23 <- function(x) abs(x)^(2.3)
 to25 <- function(x) abs(x)^(2.5)
 to35 <- function(x) abs(x)^(3.5)
-troot <- function(x) abs(x)^(1 / 3)
 troot <- function(x) abs(x)^(1 / 3)

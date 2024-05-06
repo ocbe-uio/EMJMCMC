@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate.gamma.cpen.R
 \name{estimate.gamma.cpen}
 \alias{estimate.gamma.cpen}
-\title{Estimate gamma cpen}
+\title{Estimate marginal log posterior of a single BGNLM model}
 \usage{
 estimate.gamma.cpen(
   formula,
@@ -17,12 +17,21 @@ estimate.gamma.cpen(
 
 \item{data}{dataset}
 
-\item{r}{r}
+\item{r}{prior inclusion penalty parameter}
 
 \item{logn}{logn}
 
-\item{relat}{relations}
+\item{relat}{a set of nonlinear transformations in the class of BGNLMs of interest}
+}
+\value{
+A list of
+\describe{
+ \item{mlik}{marginal likelihood of the model}
+ \item{waic}{AIC model selection criterion}
+ \item{dic}{BIC model selection criterion}
+ \item{summary.fixed$mean}{a vector of posterior modes of the parameters}
+}
 }
 \description{
-Estimate gamma cpen
+Estimate marginal log posterior of a single BGNLM model
 }

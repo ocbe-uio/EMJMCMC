@@ -41,12 +41,12 @@ LogicRegr(
 corresponding to the formula used}
 
 \item{family}{a string taking values of either "Gaussian" or "Bernoulli"
-correspodning to the linear or logistic Bayesian logic regression contexts}
+corresponding to the linear or logistic Bayesian logic regression contexts}
 
-\item{prior}{character values "J" or "G" corresponing either to Jeffey's
+\item{prior}{character values "J" or "G" corresponding either to Jeffey's
 or robust g prior}
 
-\item{report.level}{a numeric value in (0,1) specifying the treshold for
+\item{report.level}{a numeric value in (0,1) specifying the threshold for
 detections based on the marginal inclusion probabilities}
 
 \item{d}{population size for the GMJMCMC algorithm}
@@ -69,7 +69,7 @@ marginal inclusion probabilities}
 
 \item{print.freq}{printing frequency of the intermediate results}
 
-\item{advanced}{should only be adrresed by experienced users to tune advanced
+\item{advanced}{should only be addressed by experienced users to tune advanced
 parameters of GMJMCMC, advanced corresponds to the vector of tuning
 parameters of runemjmcmc function}
 }
@@ -114,13 +114,13 @@ data.example <- as.data.frame(X1)
 
 
 # run the inference with robust g prior
-n_cores <- parallel::detectCores() - 1
+n_cores <- 1L
 
-\dontrun{
+\donttest{
   res4G <- LogicRegr(
     formula = formula1, data = data.example, family = "Gaussian", prior = "G",
     report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.01,
-    p.surv = 0.2, ncores = n_cores,pseudopar = TRUE
+    p.surv = 0.2, ncores = n_cores
   )
   print(res4G$feat.stat)
 
@@ -128,7 +128,7 @@ n_cores <- parallel::detectCores() - 1
   res4J <- LogicRegr(
     formula = formula1, data = data.example, family = "Gaussian", prior = "J",
     report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.01,
-    p.surv = 0.2, ncores = n_cores,pseudopar = TRUE
+    p.surv = 0.2, ncores = n_cores
   )
   print(res4J$feat.stat)
 }

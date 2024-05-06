@@ -150,7 +150,7 @@ EMJMCMC2016$methods(
         opt.achieved <- TRUE
         fm <- fmb
         closeAllConnections()
-        options(error = traceback)
+        withr::local_options(error = traceback)
         onerr <- TRUE
       })
 

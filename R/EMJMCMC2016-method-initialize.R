@@ -7,7 +7,7 @@ EMJMCMC2016$methods(initialize = function(estimator.function = estimate.gamma.cp
   estimator <<- estimator.function
   estimator.args <<- estimator.args.list
   latent.formula <<- latent.formula
-  temp.file <- gsub("\\W", "", tempfile(tmpdir = ""))
+  temp.file <- gsub("\\W", "", tempfile())
   g.results <<- big.matrix(
     nrow = 4, ncol = 2,
     backingpath = tempdir(),
@@ -45,7 +45,7 @@ EMJMCMC2016$methods(initialize = function(estimator.function = estimate.gamma.cp
     max.N.randomize <<- as.integer(1)
     deep.method <<- as.integer(1)
     type.randomize <<- as.integer(3)
-    pool.cor.prob <<- F
+    pool.cor.prob <<- FALSE
     prand <<- 0.01
     max.cpu.glob <<- as.integer(Nvars * 0.05 + 1)
     max.cpu.hyper <<- as.integer(2)

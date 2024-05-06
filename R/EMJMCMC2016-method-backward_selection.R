@@ -139,7 +139,7 @@ EMJMCMC2016$methods(
         varcur <- varcurb
         fm <- fmb
         closeAllConnections()
-        options(error = traceback)
+        withr::local_options(error = traceback)
         onerr <- TRUE
       })
 

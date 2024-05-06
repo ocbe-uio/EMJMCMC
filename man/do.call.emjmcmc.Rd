@@ -11,7 +11,7 @@ do.call.emjmcmc(vect)
 additional fields that must come after runemjmcmc parameters such as:
 \describe{
  \item{vect$simlen}{the number of parameters of runemjmcmc in vect}
- \item{vect$cpu}{the cpu id for to set the unique seed}
+ \item{vect$cpu}{the CPU id for to set the unique seed}
  \item{vect$NM}{the number of unique best models from runemjmcmc to
    base the output report upon}
 }}

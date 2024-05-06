@@ -4,7 +4,7 @@ EMJMCMC2016$methods(
     res <- 0
     for (i in ids)
     {
-      res <- res + statistics1[i, 15] * link.g(sum(statistics1[i, 16:nvars] * covariates, na.rm = T))
+      res <- res + statistics1[i, 15] * link.g(sum(statistics1[i, 16:nvars] * covariates, na.rm = TRUE))
     }
     return(list(forecast = res))
   }

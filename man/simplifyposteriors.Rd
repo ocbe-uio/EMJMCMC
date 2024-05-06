@@ -13,14 +13,14 @@ simplifyposteriors(X, posteriors, th = 1e-04, thf = 0.2, resp)
 
 \item{posteriors}{a data.frame with expressions in the first column and their posteriors in the second column from all of the runs}
 
-\item{th}{initial filtering before summarization treshold}
+\item{th}{initial filtering before summary threshold}
 
-\item{thf}{treshold for final filtering after summarization}
+\item{thf}{threshold for final filtering after summary}
 
 \item{resp}{the response to be addressed}
 }
 \value{
-res, a data.frame with the summirized across runs expressions and
+res, a data.frame with the summarized across runs expressions and
 their posteriors
 }
 \description{

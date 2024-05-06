@@ -20,9 +20,9 @@ data.example <- as.data.frame(X1)
 
 
 # run the inference with robust g prior
-n_cores <- parallel::detectCores() - 1
+n_cores <- 1L
 
-\dontrun{
+\donttest{
   res4G <- LogicRegr(
     formula = formula1, data = data.example, family = "Gaussian", prior = "G",
     report.level = 0.5, d = 15, cmax = 2, kmax = 15, p.and = 0.9, p.not = 0.01,

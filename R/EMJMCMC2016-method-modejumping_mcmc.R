@@ -124,7 +124,7 @@ EMJMCMC2016$methods(
             to.del <- to.del[-sample(x = Nvars, size = sample(x = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
           }
           if (length(to.del) < Nvars - Nvars.max) {
-            tdl.id <- order(p.add, decreasing = T)
+            tdl.id <- order(p.add, decreasing = TRUE)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
           if (glob.model$print.freq > 0L) {
@@ -186,7 +186,7 @@ EMJMCMC2016$methods(
 
               if (sjm + sjf + 1 <= max.tree.size) {
                 if (allow_offsprings == 1) {
-                  if (!grepl(father, mother, fixed = T) && !grepl(mother, father, fixed = T)) {
+                  if (!grepl(father, mother, fixed = TRUE) && !grepl(mother, father, fixed = TRUE)) {
                     proposal <- stri_paste(paste(ifelse(stats::runif(n = 1, min = 0, max = 1) < p.nor, "I((1-", "I(("), mother, sep = ""), paste(ifelse(stats::runif(n = 1, min = 0, max = 1) < p.nor, "(1-", "("), father, "))", sep = ""), sep = ifelse(stats::runif(n = 1, min = 0, max = 1) < p.and, ")&", ")|"))
                   } else {
                     if (max(sjm, sjf) > 1) {
@@ -288,7 +288,7 @@ EMJMCMC2016$methods(
 
         # perform preliminary filtration here
         if (Nvars > Nvars.max || j == mutation_rate) {
-          # pool.cor.prob = T
+          # pool.cor.prob = TRUE
           # do the stuff here
           if (j == mutation_rate) {
             fparam.pool <<- unique(c(fparam.pool, filtered))
@@ -311,7 +311,7 @@ EMJMCMC2016$methods(
             to.del <- to.del[-sample(x = Nvars, size = sample(x = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
           }
           if (length(to.del) < Nvars - Nvars.max) {
-            tdl.id <- order(p.add, decreasing = T)
+            tdl.id <- order(p.add, decreasing = TRUE)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
           if (glob.model$print.freq > 0L) {
@@ -555,14 +555,14 @@ EMJMCMC2016$methods(
             }
 
 
-            add <- T
+            add <- TRUE
 
 
             ids.lat <- integer(0)
             if (latnames[1] != "") {
               ids.lat <- which(fparam %in% latnames)
               if (sum(stringi::stri_count_fixed(str = proposal, pattern = latnames)) > 0) {
-                add <- F
+                add <- FALSE
               }
             }
             if (length(ids.lat) == 0) {
@@ -574,7 +574,7 @@ EMJMCMC2016$methods(
             # print(proposal)
             if (proposal %in% latnames) {
               if ((proposal %in% fparam[ids.lat])) {
-                add <- F
+                add <- FALSE
               }
             } else {
               if (add) {
@@ -583,13 +583,13 @@ EMJMCMC2016$methods(
                     bet.act <- do.call(.self$estimator, c(estimator.args, stats::as.formula(stri_paste(fobserved, "~ 1 +", paste0(c(fparam[-ids.lat], proposal), collapse = "+")))))$summary.fixed$mean
 
                     if (is.na(bet.act[length(fparam[-ids.lat]) + 2]) && (action.type != 4 && gen.prob[2] == 0 || gen.prob[2] != 0)) {
-                      add <- F
+                      add <- FALSE
                     } else {
                       idel <- idel + 1
                     }
                   },
                   error = function(err) {
-                    add <- F
+                    add <- FALSE
                   },
                   finally = {}
                 )))
@@ -659,12 +659,12 @@ EMJMCMC2016$methods(
         acc_moves <- 1
         j.a <- 1
       } else if (allow_offsprings == 4 && j %% mutation_rate == 0 && (j <= last.mutation || Nvars != Nvars.max)) {
-        add.buf <- F
+        add.buf <- FALSE
 
         # perform preliminary filtration here
         if (Nvars > Nvars.max || j == mutation_rate) {
           on.suggested <- 1
-          preaccepted <- F
+          preaccepted <- FALSE
           # do the stuff here
           if (j == mutation_rate) {
             fparam.pool <<- unique(c(fparam.pool, filtered))
@@ -688,7 +688,7 @@ EMJMCMC2016$methods(
             to.del <- to.del[-sample(x = Nvars, size = sample(x = Nvars - 1, size = 1), prob = p.add + p.epsilon)]
           }
           if (length(to.del) < Nvars - Nvars.max) {
-            tdl.id <- order(p.add, decreasing = T)
+            tdl.id <- order(p.add, decreasing = TRUE)
             to.del <- to.del[-tdl.id[1:Nvars.max]]
           }
           if (glob.model$print.freq > 0L) {
@@ -711,7 +711,7 @@ EMJMCMC2016$methods(
             p2 <- array(1, dim = (Nvars))
             acc_moves <- 1
             j.a <- 1
-            super.backward <- F
+            super.backward <- FALSE
           }
         } else {
           if (Nvars >= Nvars.max) {
@@ -753,7 +753,7 @@ EMJMCMC2016$methods(
                   mlikcur <- mlikcur.buf
                   varcurb <- varcurb.buf
                 }
-                preaccepted <- F
+                preaccepted <- FALSE
               }
 
               tmp.buf <- fparam[which(varcurb == 1)]
@@ -808,11 +808,11 @@ EMJMCMC2016$methods(
                 p.add <<- p.add.buf.1
                 mlikcur <- mlikcur.buf
                 varcurb <- varcurb.buf
-                preaccepted <- F
+                preaccepted <- FALSE
                 # on.suggested<-on.suggested+1
               } else {
                 if (printable.opt) print("mutation is preaccepted")
-                preaccepted <- T
+                preaccepted <- TRUE
               }
             }
             on.suggested <- on.suggested + 1
@@ -1017,20 +1017,20 @@ EMJMCMC2016$methods(
               proposal <- fparam.pool[sample(x = length(fparam.pool), size = 1)]
             }
 
-            add <- T
+            add <- TRUE
 
             tryCatch(utils::capture.output(
               {
                 bet.act <- do.call(.self$estimator, c(estimator.args, stats::as.formula(stri_paste(fobserved, "~ 1 +", paste0(c(fparam, proposal), collapse = "+")))))$summary.fixed$mean
 
                 if (is.na(bet.act[length(fparam) + 2])) {
-                  add <- F
+                  add <- FALSE
                 } else {
                   idel <- idel + 1
                 }
               },
               error = function(err) {
-                add <- F
+                add <- FALSE
               }
             ))
 
@@ -1410,7 +1410,7 @@ EMJMCMC2016$methods(
           }
 
           if (LocImprove == as.array(0)) {
-            thact <- sum(ratcand, -ratcur, -SA.forw$log.prob.cur, SA.forw$log.prob.fix, SA.back$log.prob.cur, -SA.back$log.prob.fix, na.rm = T)
+            thact <- sum(ratcand, -ratcur, -SA.forw$log.prob.cur, SA.forw$log.prob.fix, SA.back$log.prob.cur, -SA.back$log.prob.fix, na.rm = TRUE)
             if (log(stats::runif(n = 1, min = 0, max = 1)) <= thact) {
               ratcur <- ratcand
               mlikcur <- ratcand
@@ -1439,7 +1439,7 @@ EMJMCMC2016$methods(
               modglob <- SA.back$modglob
             }
           } else {
-            thact <- sum(ratcand, -ratcur, -SA.forw$log.prob.cur, SA.forw$log.prob.fix, vect[[mod_id]]$log.mod.switchback.prob, -vect[[mod_id]]$log.mod.switch.prob, na.rm = T)
+            thact <- sum(ratcand, -ratcur, -SA.forw$log.prob.cur, SA.forw$log.prob.fix, vect[[mod_id]]$log.mod.switchback.prob, -vect[[mod_id]]$log.mod.switch.prob, na.rm = TRUE)
             if (log(stats::runif(n = 1, min = 0, max = 1)) <= thact) {
               ratcur <- ratcand
               mlikcur <- ratcand
@@ -1503,7 +1503,7 @@ EMJMCMC2016$methods(
 
 
           # if(log(stats::runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - MTMCMC.forw$log.prob.cur + MTMCMC.forw$log.prob.fix + MTMCMC.back$log.prob.cur - MTMCMC.back$log.prob.fix))
-          thact <- sum(ratcand, -ratcur, -MTMCMC.forw$log.prob.cur, MTMCMC.forw$log.prob.fix, MTMCMC.back$log.prob.cur, -MTMCMC.back$log.prob.fix, na.rm = T)
+          thact <- sum(ratcand, -ratcur, -MTMCMC.forw$log.prob.cur, MTMCMC.forw$log.prob.fix, MTMCMC.back$log.prob.cur, -MTMCMC.back$log.prob.fix, na.rm = TRUE)
           if (log(stats::runif(n = 1, min = 0, max = 1)) <= thact) {
             ratcur <- ratcand
             mlikcur <- ratcand
@@ -1588,7 +1588,7 @@ EMJMCMC2016$methods(
 
 
           # if(log(stats::runif(n = 1,min = 0,max = 1))<=(ratcand - ratcur - GREEDY.forw$log.prob.cur + GREEDY.forw$log.prob.fix + GREEDY.back$log.prob.cur - GREEDY.back$log.prob.fix))
-          thact <- sum(ratcand, -ratcur, -GREEDY.forw$log.prob.cur, GREEDY.forw$log.prob.fix, GREEDY.back$log.prob.cur, -GREEDY.back$log.prob.fix, na.rm = T)
+          thact <- sum(ratcand, -ratcur, -GREEDY.forw$log.prob.cur, GREEDY.forw$log.prob.fix, GREEDY.back$log.prob.cur, -GREEDY.back$log.prob.fix, na.rm = TRUE)
           if (log(stats::runif(n = 1, min = 0, max = 1)) <= thact) {
             ratcur <- ratcand
             mlikcur <- ratcand
@@ -1627,8 +1627,6 @@ EMJMCMC2016$methods(
           }
         }
       }
-
-      # }),abort = function(){if(printable.opt)print("error");varcur<-varcurb;closeAllConnections();options(error=traceback);  onerr<-TRUE})
 
       if (thin_rate != -1) {
         if (acc_moves == accept_old && j > glob.model$burnin && j %% as.integer(thin_rate) == 0) # carry out smart thinning

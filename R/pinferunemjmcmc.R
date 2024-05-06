@@ -2,9 +2,9 @@
 #' and predictions in an expert but rather easy to use way
 #' @param n.cores the maximal number of cores (and (R)(G)MJMCMC threads) to
 #' be addressed in the analysis
-#' @param mcgmj an mclapply like function for perfroming for perfroming
+#' @param mcgmj an mclapply like function for performing for performing
 #' parallel computing, do not change the default unless you are using Windows
-#' @param report.level a numeric value in (0,1) specifying the treshold for
+#' @param report.level a numeric value in (0,1) specifying the threshold for
 #' detections based on the marginal inclusion probabilities
 #' @param simplify a logical value specifying in simplification of the features
 #' is to be done after the search is completed
@@ -39,7 +39,7 @@ pinferunemjmcmc = function(
 
   if(predict)
   {
-    runemjmcmc.params$save.beta = T
+    runemjmcmc.params$save.beta = TRUE
 
     if(length(test.data)==0)
     {

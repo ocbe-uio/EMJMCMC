@@ -7,9 +7,9 @@ runpar.infer=function(vect)
     do.call(runemjmcmc, vect[1:(length(vect)-5)])
     vals=hash::values(hashStat)
     fparam=mySearch$fparam
-    cterm=max(vals[1,],na.rm = T)
+    cterm=max(vals[1,],na.rm = TRUE)
     ppp=mySearch$post_proceed_results_hash(hashStat = hashStat)
-    post.populi=sum(exp(hash::values(hashStat)[1,][1:vect$NM]-cterm),na.rm = T)
+    post.populi=sum(exp(hash::values(hashStat)[1,][1:vect$NM]-cterm),na.rm = TRUE)
 
     betas = NULL
     mliks = NULL

@@ -60,7 +60,7 @@ formula1 <- as.formula(
 estimate.logic.lm(formula = formula1, data = X4, n = 1000, m = 50)
 }
 \seealso{
-BAS::bayesglm.fit, esimate.logic.glm
+BAS::bayesglm.fit, estimate.logic.glm
 }
 \keyword{methods}
 \keyword{models}

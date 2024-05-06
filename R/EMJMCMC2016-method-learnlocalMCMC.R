@@ -256,7 +256,7 @@ EMJMCMC2016$methods(
       }), abort = function() {
         fm <- fmb
         closeAllConnections()
-        options(error = traceback)
+        withr::local_options(error = traceback)
         onerr <- TRUE
       })
     }

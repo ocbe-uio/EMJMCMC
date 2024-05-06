@@ -12,17 +12,17 @@ several additional fields that must come after runemjmcmc parameters
 such as:
 \describe{
  \item{vect$simlen}{the number of parameters of runemjmcmc in vect}
- \item{vect$cpu}{the cpu id for to set the unique seed}
+ \item{vect$cpu}{the CPU id for to set the unique seed}
  \item{vect$NM}{the number of unique best models from runemjmcmc to
    base the output report upon}
 }}
 
-\item{M}{a number of cpus to be used (can only be equal to 1 on
+\item{M}{a number of CPUs to be used (can only be equal to 1 on
 Windows OS currently, up to a maximal number of cores can be used on
-linux based systems)}
+Linux-based systems)}
 
 \item{preschedule}{if pseudoscheduling should be used for the jobs if
-their number exeeds M (if TRUE) otherwise the jobs are performed
+their number exceeds M (if TRUE) otherwise the jobs are performed
 sequentially w.r.t. their order}
 }
 \value{
@@ -100,7 +100,7 @@ for (i in 1:M) {
   params[[i]]$NM <- 1000
   params[[i]]$simlen <- 21
 }
-\dontrun{
+\donttest{
   message("begin simulation ", j)
   set.seed(363571)
   results <- parall.gmj(X = params, M = 1)

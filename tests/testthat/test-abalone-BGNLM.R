@@ -7,7 +7,7 @@
 #***********************IMPORTANT******************************************************
 
 
-data.example = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/abalone%20age/abalone.data",header = F)
+data.example = read.csv("https://raw.githubusercontent.com/aliaksah/EMJMCMC2016/master/supplementaries/BGNLM/abalone%20age/abalone.data",header = FALSE)
 data.example$MS=as.integer(data.example$V1=="M")
 data.example$FS=as.integer(data.example$V1=="F")
 data.example$V1=data.example$V9
@@ -30,8 +30,8 @@ test_that("Input dataset is still roughly the same", {
 #specify the initial formula
 formula1 = as.formula(paste(colnames(test)[1],"~ 1 +",paste0(colnames(test)[-1],collapse = "+")))
 
-#define the number or cpus
-M = 2 
+#define the number or CPUs
+M = 2
 #define the size of the simulated samples
 NM= 100
 #define \k_{max} + 1 from the paper
